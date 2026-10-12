@@ -1,6 +1,6 @@
 # Learn Any Skill (LAS): Design
 
-Status: draft · Prototype: [`prototypes/onboarding/index.html`](../prototypes/onboarding/index.html)
+Status: draft · Prototype: [`prototypes/app/index.html`](../prototypes/app/index.html) (onboarding, first session, Today, Progress; sample analysis results)
 
 | Doc | Covers |
 |---|---|
@@ -314,7 +314,7 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 
 | Phase | Deliverable |
 |---|---|
-| 0 | Clickable onboarding prototype ✅ |
+| 0 | Clickable prototype: onboarding, a full first session (learn, practice, perform, one-fix feedback, fix drill, second attempt, wrap-up), Today with check-ins, and Progress ✅ |
 | 1 | MCP server, store, onboarding tools as MCP Apps widgets, the skill, and two packs (Python for quizzes and code, bouldering for movement) |
 | 2 | Evaluators: movement (MediaPipe in the studio), code (Pyodide), audio (basic-pitch), speech (whisper.cpp + pronunciation scoring) |
 | 3 | Studio PWA with phone pairing; FSRS reviews; scheduled check-ins |

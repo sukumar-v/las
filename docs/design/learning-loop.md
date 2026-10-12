@@ -2,7 +2,7 @@
 
 How LAS teaches once onboarding is done. Covers the daily home screen, what happens in a session, how sessions are planned, teaching, drills, feedback, follow-ups, progress, and what happens when a milestone is reached.
 
-Related: [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [skill packs](skill-packs.md) · [overview](../DESIGN.md)
+Related: [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [skill packs](skill-packs.md) · [overview](../DESIGN.md) · clickable: [`prototypes/app`](../../prototypes/app/index.html) (session 1, Today, Progress)
 
 ```mermaid
 flowchart LR

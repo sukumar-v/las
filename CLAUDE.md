@@ -1,6 +1,6 @@
 # Learn Any Skill (LAS)
 
-Design: `docs/DESIGN.md`. Onboarding prototype: `prototypes/onboarding/index.html` (single file, no build step).
+Design: `docs/DESIGN.md`. Clickable prototype: `prototypes/app/index.html` (single file, no build step): onboarding, the first session, Today and Progress. Evaluator results in it are samples.
 
 ## Rules
 

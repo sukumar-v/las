@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- artifact:start -->
-<title>Learn Any Skill Onboarding</title>
+<title>Learn Any Skill</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=DM+Mono:wght@400;500&family=Gabarito:wght@500;700;800&display=swap">
@@ -259,16 +259,125 @@ details.profile pre{font-family:var(--mono);font-size:12px;line-height:1.5;overf
 .cta .main:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
 .cta .alt{min-height:32px}
 .toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:10;text-align:center}
+
+/* ---------- learning loop ---------- */
+.fig{width:100%;height:auto;display:block}
+.fig .wall{stroke:var(--muted);stroke-width:3}
+.fig .hold{fill:var(--flag)}
+.fig .limb{stroke:var(--ink);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.fig .torso{stroke-width:8}
+.fig .head{fill:var(--ink)}
+.fig .mark{fill:none;stroke:var(--warn);stroke-width:2.5}
+.fig .gap{stroke:var(--warn);stroke-width:2;stroke-dasharray:3 3}
+.chart{width:100%;height:auto;display:block}
+.chart .ok{fill:var(--accent)} .chart .bad{fill:var(--warn)} .chart .up{fill:var(--flag)}
+.chart .thr{stroke:var(--warn);stroke-width:1.5;stroke-dasharray:4 3}
+.chart .base{stroke:var(--line);stroke-width:1.5}
+.chart .beat{stroke:var(--muted);stroke-width:1.5} .chart .grid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
+.chart .lbl{fill:var(--muted);font-family:var(--mono);font-size:9px}
+.chart .curve,.chart .tone{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round}
+.visopts{display:grid;gap:10px}
+.visopts.n2{grid-template-columns:1fr 1fr} .visopts.n3{grid-template-columns:repeat(3,1fr)}
+.visopt{border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:700;min-width:0}
+.visopt .fig{max-width:110px}
+.visopt.right{border-color:var(--good);background:var(--good-soft)} .visopt.wrong{border-color:var(--warn);background:var(--warn-soft)}
+.visopt:disabled{cursor:default;color:inherit}
+.reveal{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;font-size:15px}
+.reveal.good{background:var(--good-soft)} .reveal.good .ic{color:var(--good)}
+.reveal.warn{background:var(--warn-soft)} .reveal.warn .ic{color:var(--warn)}
+.checklist{display:flex;flex-direction:column;gap:8px}
+.tick{display:flex;align-items:center;gap:12px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;font-weight:700}
+.tick .ic{color:var(--line);border:1.5px solid var(--line);border-radius:6px;padding:1px}
+.tick[aria-pressed="true"]{border-color:var(--good);background:var(--good-soft)}
+.tick[aria-pressed="true"] .ic{color:var(--on-accent);background:var(--good);border-color:var(--good)}
+#simwrap{flex-direction:row;align-items:center;gap:14px}
+.simfig{width:44%;max-width:150px;flex:none}
+.readout{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.readout b.mono{font-family:var(--display);font-size:34px;line-height:1}
+.readout i,.rubric i,.meter{display:block;height:10px;border-radius:5px;background:var(--sunk);border:1px solid var(--line);overflow:hidden}
+.readout i b,.rubric i b{display:block;height:100%}
+.readout .ok,.rubric .ok{background:var(--accent)} .readout .bad,.rubric .bad{background:var(--warn)}
+.readout small{color:var(--muted);font-size:12px}
+.meter i{display:block;height:100%;background:var(--accent)}
+.grid8{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.grid8 span{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:8px;padding:6px 0;background:var(--sunk)}
+.grid8 b{font-family:var(--display);font-size:22px;line-height:1;color:var(--accent)}
+.grid8 .rest b{color:var(--line)}
+.grid8 small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.grid8 .hl{background:var(--accent)} .grid8 .hl b,.grid8 .hl small{color:var(--on-accent)}
+.visopt .grid8{width:100%;gap:1px} .visopt .grid8 b{font-size:14px} .visopt .grid8 small{font-size:8px} .visopt .grid8 span{padding:3px 0;border-radius:4px}
+.vowels{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.vowel{border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.vowel b{font-family:var(--display);font-size:30px;line-height:1}
+.vowel small{color:var(--muted)}
+.swap{color:var(--accent);border-bottom:2px solid var(--accent)}
+pre.trace span{display:inline-block;width:100%;border-radius:4px;padding:0 4px}
+pre.trace span.on{background:var(--flag-soft);box-shadow:inset 3px 0 0 var(--flag)}
+.framing{display:flex;align-items:center;gap:14px;background:var(--surface);border:2px dashed var(--accent);border-radius:var(--r);padding:14px;color:var(--muted);font-size:14px}
+.framing .fig{width:70px;flex:none;opacity:.55}
+.framing.mic .ic{width:36px;height:36px;color:var(--accent)}
+.recbtn{height:64px;border-radius:999px;border:0;background:var(--warn);color:#fff;font-family:var(--display);font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px}
+.recbtn:disabled{opacity:.8}
+.editor{width:100%;min-height:150px;font-family:var(--mono);font-size:14px;line-height:1.5;border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--sunk);resize:vertical}
+.editor:focus{outline:none;border-color:var(--accent)}
+.tests{display:flex;flex-direction:column;gap:6px}
+.tests div{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-radius:10px;padding:8px 10px;font-size:13px}
+.tests .ok{background:var(--good-soft);color:var(--good)} .tests .bad{background:var(--warn-soft);color:var(--warn)}
+.pipe{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pipe li{display:flex;gap:12px;align-items:center;color:var(--muted);font-weight:700}
+.pipe li .ic{color:var(--line);transition:color .2s ease}
+.pipe li.done{color:var(--ink)} .pipe li.done .ic{color:var(--good)}
+.fixcard{background:var(--surface);border:2px solid var(--warn);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.fixcard h1{margin:0;font-size:24px}
+.fixcard .eyebrow{color:var(--warn)}
+.evidence{background:var(--sunk);border-radius:12px;padding:10px}
+.why{display:flex;gap:10px}
+.why .fig{width:50%}
+.praise{display:flex;gap:10px;align-items:center;background:var(--good-soft);border-radius:12px;padding:12px 14px}
+.praise .ic{color:var(--good)}
+.vbars{display:flex;justify-content:space-around;align-items:flex-end;height:110px}
+.vbars div{display:flex;flex-direction:column;align-items:center;gap:3px}
+.vbars i{display:block;width:26px;border-radius:6px}
+.vbars .ok{background:var(--accent)} .vbars .bad{background:var(--warn)}
+.vbars b{font-family:var(--display);font-size:18px}
+.vbars small{color:var(--muted);font-size:11px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.pair div{display:flex;flex-direction:column;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.rubric{display:flex;flex-direction:column;gap:8px;width:100%}
+.rubric div{display:grid;grid-template-columns:100px 1fr;align-items:center;gap:10px;font-size:14px}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.ba > div{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.ba > div.up{border-color:var(--good);background:var(--good-soft)}
+.ba b{font-family:var(--display);font-size:22px}
+.ba .arrow{font-size:22px;color:var(--muted)}
+.mastery{display:flex;gap:14px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.mastery div{display:flex;flex-direction:column}
+.mastery span{color:var(--muted);font-size:14px}
+.ring .track{fill:none;stroke:var(--line);stroke-width:5}
+.ring .fill{fill:none;stroke:var(--accent);stroke-width:5;stroke-linecap:round}
+.tabs{display:flex;background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:3px;justify-self:center}
+.tabs button{border:0;background:none;border-radius:999px;padding:6px 14px;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+.next{background:var(--ink);color:var(--bg);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.next .eyebrow,.next .hint{color:inherit;opacity:.75}
+.next b{font-family:var(--display);font-size:22px;line-height:1.15}
+.cardbtn{display:flex;gap:12px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px}
+.cardbtn .ic{color:var(--accent)}
+.cardbtn span{display:flex;flex-direction:column}
+.cardbtn small{color:var(--muted)}
+.weekdots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.weekdots div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.weekdots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);display:block}
+.weekdots i.plan{border-color:var(--accent)} .weekdots i.done{background:var(--good);border-color:var(--good)}
+.weekdots span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.nodes div{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;font-size:14px;font-weight:700;min-width:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
 <div class="app">
   <header class="top">
-    <div class="bar">
-      <button class="iconbtn" id="back" type="button" aria-label="Back" data-act="back"></button>
-      <div class="progress" id="progress" aria-hidden="true"></div>
-      <span class="secname" id="secname"></span>
-    </div>
+    <div class="bar" id="bar"></div>
     <nav class="ribbon" id="ribbon" aria-label="Your answers so far"></nav>
   </header>
   <main id="screen" aria-live="polite"></main>
@@ -600,9 +709,9 @@ function matchCustom(id, text){
 
 /* ---------- state ---------- */
 const SECTIONS = ["Skill","Why","Picture it","Level","Time","Milestone","Plan"];
-const DEFAULT = {idx:0, skillId:null, skillName:"", why:[], after:null, afterCustom:"", diag:{}, adjust:0, baseline:null,
+const DEFAULT = {mode:"onboard", sess:null, app:null, idx:0, skillId:null, skillName:"", why:[], after:null, afterCustom:"", diag:{}, adjust:0, baseline:null,
   minutes:180, deadline:"none", access:[], injuries:[], milestone:null, later:null, showLadder:false, custom:""};
-const KEY = "las-onboarding-v2";
+const KEY = "las-prototype-v3";
 let S = clone(DEFAULT);
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(clone(DEFAULT), JSON.parse(raw)); } catch (e) {}
 if (S.diag) delete S.diag.flash;
@@ -964,14 +1073,13 @@ function profile(){
 function frame(){
   const scr = cur(), list = screens();
   const per = SECTIONS.map((_, s) => list.filter(x => x.sec === s));
-  $("#progress").innerHTML = SECTIONS.map((_, s) => {
+  const bars = SECTIONS.map((_, s) => {
     const items = per[s], pos = items.indexOf(scr);
     const fill = s < scr.sec ? 1 : s > scr.sec ? 0 : (pos + 1) / Math.max(items.length, 1);
     return `<span><i style="transform:scaleX(${fill})"></i></span>`;
   }).join("");
-  $("#back").innerHTML = icon("back");
-  $("#back").disabled = S.idx === 0;
-  $("#secname").textContent = SECTIONS[scr.sec];
+  $("#bar").innerHTML = `<button class="iconbtn" type="button" aria-label="Back" data-act="back" ${S.idx === 0 ? "disabled" : ""}>${icon("back")}</button>
+    <div class="progress" aria-hidden="true">${bars}</div><span class="secname">${SECTIONS[scr.sec]}</span>`;
   const rib = [];
   if (S.skillId && scr.sec > 0) rib.push([0, pack().icon, pack().name]);
   if (S.why.length && scr.sec > 1) rib.push([1, "heart", whyLabel(S.why[0]) + (S.why.length > 1 ? " +1" : "")]);
@@ -1010,6 +1118,7 @@ function ctaState(){
 }
 
 function render(dir){
+  if (S.mode !== "onboard") return renderLoop(dir);
   let scr = cur();
   if (["place","time","around","goal","plan"].includes(scr.id)) computeBaseline();
   if (scr.id === "plan" && !(S.milestone && S.milestone.rung > S.baseline)){ S.idx = screens().findIndex(x => x.id === "goal"); scr = cur(); }
@@ -1106,15 +1215,503 @@ function rhythmEnd(){
   render();
 }
 
+/* ---------- learning loop: first session, Today, Progress ---------- */
+const BLOCKS = ["Warm-up", "Learn", "Practice", "Perform", "Wrap-up"];
+
+/* Pack-specific session 1 content. Every pack fills the same slots; the screens are shared. */
+function loopContent(){
+  const id = S.skillId, noun = pack().noun;
+  if (id === "bouldering") return {
+    focus:"Hips close to the wall", nodes:["Silent feet", "Straight arms", "Hips close to the wall", "Flagging", "Reading sequences"], fi:2,
+    reason:"Picked because it's the biggest gap between you and your milestone.",
+    warmup:["Easy traverse, 3 minutes", "Shoulder circles and wrist rolls", "Two V0s with open-hand grips"],
+    learn:[
+      {type:"predict", q:"Which hip position puts less weight on your arms?", visOpts:[climber({hip:34}), climber({hip:88})], o:["Hips in", "Hips out"], a:0, why:"Hips in. Your feet take the load."},
+      {type:"sim", sim:"lean", q:"Drag your hips. Watch your arms."}
+    ],
+    practice:[
+      {type:"choice", q:"Which climber is resting best?", visOpts:[climber({hip:40, bend:16}), climber({hip:40}), climber({hip:85, bend:10})], o:["Bent arms", "Straight arms", "Hips out"], a:1, why:"Straight arms hang on bone, not muscle."}
+    ],
+    perform:{ev:"video", prompt:"Film one V2 attempt", how:"Side-on at 45°, about 4 m back, phone at hip height.", accept:"video/*",
+      steps:["Recording is usable", "Body points, 33 per frame", "6 moves found", "Mistake check"]},
+    fb:{fix:"Hips drift out on moves 3 to 5", praise:"Arms straight on 5 of 6 rests", vis:a => hipBars(a), why:() => climber({hip:34, line:true}) + climber({hip:88, line:true, mark:true})},
+    fix:{type:"choice", q:"Turn into the wall. Which frame has hips in?", visOpts:[climber({hip:32}), climber({hip:70})], o:["Frame A", "Frame B"], a:0, why:"Hip turned in, knee dropped toward the wall.", drill:"Hips-in traverse, 3 laps"},
+    metric:{name:"Moves with hips close", fmt:v => `${v} of 6`, a1:3, a2:5}
+  };
+  if (id === "guitar") return {
+    focus:"Strumming pattern D DU UDU", nodes:["Open chords", "Changes on the beat", "Strumming pattern", "Full song", "Barre chords"], fi:2,
+    reason:"Picked because your milestone needs this pattern.",
+    warmup:["Finger stretches, 1 minute", "Wrist circles", "Each open chord slowly, once"],
+    learn:[
+      {type:"predict", q:"In D DU UDU, when do the up strums land?", o:["On the 'and' counts", "On the numbers", "Anywhere"], a:0, why:"Down on the beat, up on the 'and'."},
+      {type:"demo", demo:"strum", q:"Press play. Follow the arrows."}
+    ],
+    practice:[
+      {type:"choice", q:"Which grid is D DU UDU?", visOpts:[strumGrid("D_D_D_D_"), strumGrid("DUDUDUDU"), strumGrid("D_DU_UDU")], o:["A", "B", "C"], a:2, why:"Down on 1, 2 and 4. Up on the 'and' of 2, 3 and 4."}
+    ],
+    perform:{ev:"audio", prompt:"Record 4 bars of the pattern on G", how:"70 bpm click in your headphones, phone about 1 m away.", accept:"audio/*",
+      steps:["Recording is usable", "Output delay calibrated", "32 strums found", "Timing check"]},
+    fb:{fix:"Up strums rush by about 60 ms", praise:"Down strums steady, within 20 ms", vis:a => strumTimeline(a === 1 ? 60 : 22), why:() => strumGrid("D_DU_UDU")},
+    fix:{type:"choice", q:"Where should the up strum land?", visOpts:[upPlace(0.3), upPlace(0.5), upPlace(0.7)], o:["Early", "Halfway", "Late"], a:1, why:"Exactly halfway between two beats.", drill:"Up strums only, with the click, 1 minute"},
+    metric:{name:"Up strum timing", fmt:v => `${v} ms early`, a1:60, a2:22, lower:true}
+  };
+  if (id === "spanish") return {
+    focus:"Ordering: Quisiera ___, por favor", nodes:["Greetings", "Ordering food", "Numbers and prices", "Asking directions"], fi:1,
+    reason:"Picked because ordering comes up first on any trip.",
+    learn:[
+      {type:"predict", q:"How many vowel sounds does Spanish have?", o:["5", "12", "20"], a:0, why:"Five, and they never glide."},
+      {type:"demo", demo:"vowels", q:"Tap a vowel to hear it."},
+      {type:"demo", demo:"order", q:"One pattern orders almost anything. Tap to swap."}
+    ],
+    practice:[
+      {type:"choice", say:"Quisiera un café, por favor", q:"What did you hear?", o:["I'd like a coffee, please", "A coffee costs one euro", "Where is the café?"], a:0, why:"Quisiera = I'd like."},
+      {type:"choice", say:"La cuenta, por favor", q:"What did you hear?", o:["The menu, please", "The bill, please", "The table, please"], a:1, why:"La cuenta = the bill."}
+    ],
+    perform:{ev:"speech", prompt:"Order a coffee and a pastry", how:"The coach plays the waiter. Answer out loud.", accept:"audio/*",
+      steps:["Recording is usable", "Transcript", "Sounds lined up", "Pronunciation check"]},
+    fb:{fix:"Your 'e' in cuenta slides into 'ay'", praise:"Clear tapped r in quisiera", vis:a => vowelBars(a), why:() => glideLines()},
+    fix:{type:"choice", q:"Which line is a pure Spanish 'e'?", visOpts:[glideLine(false), glideLine(true)], o:["A", "B"], a:0, why:"Flat line: the mouth holds still.", drill:"Shadow: mesa, cuenta, leche", say:"mesa, cuenta, leche"},
+    metric:{name:"'e' pronunciation", fmt:v => `${v}/100`, a1:52, a2:78}
+  };
+  if (id === "python"){
+    const r1 = S.sess && S.sess.run1, fails = r1 ? r1.filter(t => !t.ok).length : 2;
+    return {
+    focus:"Functions that return values", nodes:["Variables", "Loops", "Functions", "Strings", "Files"], fi:2,
+    reason:"Picked because your milestone is built from small functions.",
+    learn:[
+      {type:"predict", code:'def double(n):\n    return n * 2\n\nx = double(4)\nprint(x)', q:"What does print(x) show?", o:["8", "4", "None"], a:0, why:"The function hands 8 back to x."},
+      {type:"demo", demo:"trace", q:"Step through it. Watch the values."}
+    ],
+    practice:[
+      {type:"choice", code:'def greet(name):\n    print("Hi " + name)\n\nx = greet("Ana")\nprint(x)', q:"What does the last line print?", o:["Hi Ana", "None", "Error"], a:1, why:"No return, so x is None."}
+    ],
+    perform:{ev:"code", prompt:"Write count_words(text)", how:"Return how many words are in text. Hidden tests run when you press Run.",
+      steps:["Code runs", "3 hidden tests", "Trace the failing case"]},
+    fb:{fix:fails === 0 ? "All 3 tests pass. Now make it shorter" : fails === 1 ? "Fails one edge case" : "Fails on empty text and double spaces", praise:"Works on normal sentences", vis:a => testTable(S.sess["run" + a]), why:() => `<pre class="code">"".split(" ")  →  ['']\n"".split()     →  []</pre>`},
+    fix:{type:"choice", code:'print(len("".split(" ")))\nprint(len("".split()))', q:"What do these print?", o:["0 then 0", "1 then 0", "1 then 1"], a:1, why:'split(" ") keeps an empty piece. split() drops it.', drill:"Predict: split() vs split(\" \")"},
+    metric:{name:"Hidden tests passed", fmt:v => `${v} of 3`, a1:null, a2:null}
+  }; }
+  return {
+    focus:"Practice that sticks", nodes:["First session", "Basics", "First real result", "Comfortable"], fi:0,
+    reason:"Picked because good practice habits come first.",
+    learn:[
+      {type:"predict", q:"Which sticks better?", o:["One 3-hour session", "Three 40-minute sessions"], a:1, why:"Spread out. Memory gets a refresh each time."},
+      {type:"sim", sim:"spacing", q:"Drag the gap between sessions."}
+    ],
+    practice:[
+      {type:"choice", q:"Best way to fix a hard part?", o:["Repeat the whole piece", "Isolate it, slow it down", "Skip it"], a:1, why:"Small and slow first, then full speed."}
+    ],
+    perform:{ev:"coach", prompt:`Make one ${noun} attempt and add a photo`, how:"Good light, the whole piece in frame.", accept:"image/*",
+      steps:["Photo is usable", "Rubric: 3 criteria", "Coach review"]},
+    fb:{fix:"The second half looks rushed", praise:"Strong, careful start", vis:a => rubricBars(a), why:() => rubricBars(2)},
+    fix:{type:"choice", q:"How do you stop rushing the end?", o:["Go faster to finish", "Set a timer per section", "Stop halfway"], a:1, why:"Equal time per section keeps quality even.", drill:"Two timed sections, same length"},
+    metric:{name:"Rubric criteria met", fmt:v => `${v} of 3`, a1:2, a2:3}
+  };
+}
+
+/* ---- visuals ---- */
+function climber(o){
+  const W = 20, hip = o.hip == null ? 45 : o.hip, bend = o.bend || 0;
+  const hx = hip, hy = 122, sx = W + (hip - W) * 0.45 + 8, sy = 72;
+  const hand = [W + 5, 26], foot = [W + 5, 186];
+  const ex = (sx + hand[0]) / 2 + bend, ey = (sy + hand[1]) / 2;
+  const kx = (hx + foot[0]) / 2 + 18, ky = (hy + foot[1]) / 2;
+  return `<svg viewBox="0 0 120 200" class="fig" aria-hidden="true">
+    <line class="wall" x1="${W}" y1="4" x2="${W}" y2="196"/>
+    <ellipse class="hold" cx="${hand[0]}" cy="${hand[1] - 3}" rx="7" ry="4"/><ellipse class="hold" cx="${foot[0]}" cy="${foot[1] + 4}" rx="7" ry="4"/>
+    ${o.line ? `<line class="gap" x1="${W}" y1="${hy}" x2="${hx}" y2="${hy}"/>` : ""}
+    <path class="limb" d="M${hx} ${hy} L${kx} ${ky} L${foot[0]} ${foot[1]}"/>
+    <path class="limb torso" d="M${hx} ${hy} L${sx} ${sy}"/>
+    <path class="limb" d="M${sx} ${sy} L${ex} ${ey} L${hand[0]} ${hand[1]}"/>
+    <circle class="head" cx="${sx + 3}" cy="${sy - 17}" r="10"/>
+    ${o.mark ? `<circle class="mark" cx="${hx}" cy="${hy}" r="9"/>` : ""}
+  </svg>`;
+}
+function hipBars(a){
+  const v = a === 1 ? [18, 20, 41, 46, 38, 22] : [17, 19, 24, 33, 21, 18], T = 30, H = 110, max = 50;
+  const y = cm => 14 + (1 - cm / max) * (H - 30);
+  let s = `<svg viewBox="0 0 300 ${H}" class="chart" role="img" aria-label="Hip distance from the wall per move">`;
+  v.forEach((cm, i) => {
+    const x = 34 + i * 44;
+    s += `<rect class="${cm > T ? "bad" : "ok"}" x="${x}" y="${y(cm)}" width="26" height="${y(0) - y(cm)}" rx="4"/>`;
+    s += `<text class="lbl" x="${x + 13}" y="${H - 2}" text-anchor="middle">move ${i + 1}</text>`;
+  });
+  s += `<line class="thr" x1="26" y1="${y(T)}" x2="296" y2="${y(T)}"/><text class="lbl" x="2" y="${y(T) + 3}">30 cm</text>`;
+  return s + `<line class="base" x1="26" y1="${y(0)}" x2="296" y2="${y(0)}"/></svg>`;
+}
+function strumGrid(pat, hl){
+  const C = ["1", "&", "2", "&", "3", "&", "4", "&"];
+  return `<div class="grid8" aria-hidden="true">${pat.split("").map((c, i) => `<span class="${c === "_" ? "rest" : ""} ${hl === i ? "hl" : ""}"><b>${c === "D" ? "↓" : c === "U" ? "↑" : "·"}</b><small>${C[i]}</small></span>`).join("")}</div>`;
+}
+function strumTimeline(early){
+  const pat = "D_DU_UDU", W = 300, x0 = 16, step = (W - 32) / 8;
+  let s = `<svg viewBox="0 0 ${W} 70" class="chart" role="img" aria-label="Strum timing against the click">`;
+  for (let i = 0; i <= 8; i++) s += `<line class="${i % 2 ? "grid" : "beat"}" x1="${x0 + i * step}" y1="10" x2="${x0 + i * step}" y2="50"/>`;
+  pat.split("").forEach((c, i) => {
+    if (c === "_") return;
+    const off = c === "U" ? -early / 214 * step : 0;
+    s += `<circle class="${c === "U" && early > 40 ? "bad" : "ok"}" cx="${(x0 + i * step + off).toFixed(1)}" cy="30" r="6"/>`;
+  });
+  ["1", "2", "3", "4"].forEach((n, k) => { s += `<text class="lbl" x="${x0 + k * 2 * step}" y="64" text-anchor="middle">${n}</text>`; });
+  return s + `</svg>`;
+}
+function upPlace(f){
+  return `<svg viewBox="0 0 120 50" class="chart" aria-hidden="true"><line class="beat" x1="12" y1="8" x2="12" y2="40"/><line class="beat" x1="108" y1="8" x2="108" y2="40"/><line class="grid" x1="60" y1="8" x2="60" y2="40"/><circle class="ok" cx="12" cy="24" r="5"/><circle class="up" cx="${12 + 96 * f}" cy="24" r="5"/></svg>`;
+}
+function vowelBars(a){
+  const v = {a:88, e:a === 1 ? 52 : 78, i:90, o:84, u:86};
+  return `<div class="vbars">${Object.entries(v).map(([k, n]) => `<div><i class="${n < 70 ? "bad" : "ok"}" style="height:${n * 0.7}px"></i><b>${k}</b><small class="mono">${n}</small></div>`).join("")}</div>`;
+}
+function glideLine(g){ return `<svg viewBox="0 0 120 60" class="chart" aria-hidden="true"><path class="tone" d="${g ? "M10 40 C50 40 70 38 110 14" : "M10 30 L110 30"}"/></svg>`; }
+function glideLines(){ return `<div class="pair"><div>${glideLine(false)}<small>Spanish e: flat</small></div><div>${glideLine(true)}<small>English "ay": slides</small></div></div>`; }
+function rubricBars(a){
+  const r = [["Accuracy", 80], ["Consistency", a === 1 ? 45 : 75], ["Finish", 70]];
+  return `<div class="rubric">${r.map(([k, n]) => `<div><span>${k}</span><i><b class="${n < 60 ? "bad" : "ok"}" style="width:${n}%"></b></i></div>`).join("")}</div>`;
+}
+function testTable(run){
+  if (!run) return "";
+  return `<div class="tests">${run.map(t => `<div class="${t.ok ? "ok" : "bad"}"><span class="mono">${esc(t.t)}</span><span class="mono">${t.ok ? "✓" : `expected ${esc(t.exp)}, got ${esc(t.got)}`}</span></div>`).join("")}</div>`;
+}
+function ring(p, size){
+  const r = 15, c = 2 * Math.PI * r;
+  return `<svg viewBox="0 0 40 40" width="${size || 40}" height="${size || 40}" class="ring" aria-hidden="true"><circle cx="20" cy="20" r="${r}" class="track"/><circle cx="20" cy="20" r="${r}" class="fill" stroke-dasharray="${(c * p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 20 20)"/></svg>`;
+}
+function leanSim(hip){
+  const load = Math.round(20 + (hip - 30) / 65 * 70);
+  return `<div class="simfig">${climber({hip, line:true})}</div>
+    <div class="readout"><span class="eyebrow">Weight on your arms</span><b class="mono">${load}%</b><i><b style="width:${load}%" class="${load > 60 ? "bad" : "ok"}"></b></i><small>Illustrative model</small></div>`;
+}
+function spacingSim(gap){
+  const W = 300, H = 110, days = 30, X = d => 10 + d / days * (W - 20), Y = r => 10 + (1 - r) * (H - 30);
+  const reviews = gap === 0 ? [0] : Array.from({length:Math.floor(days / gap) + 1}, (_, k) => k * gap).filter(d => d < days).slice(0, 6);
+  let pts = [], k = 0, last = 0, St = 2.5;
+  for (let d = 0; d <= days; d += 0.5){
+    if (k < reviews.length && d >= reviews[k]){ last = reviews[k]; St = 2.5 * Math.pow(2, k); k++; }
+    pts.push(`${X(d).toFixed(1)},${Y(Math.exp(-(d - last) / St)).toFixed(1)}`);
+  }
+  const end = Math.round(Math.exp(-(days - last) / St) * 100);
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Memory over 30 days"><line class="base" x1="10" y1="${Y(0)}" x2="${W - 10}" y2="${Y(0)}"/>
+    <polyline class="curve" points="${pts.join(" ")}"/>${reviews.map(d => `<circle class="ok" cx="${X(d)}" cy="${Y(1)}" r="3.5"/>`).join("")}
+    <text class="lbl" x="10" y="${H - 4}">day 0</text><text class="lbl" x="${W - 10}" y="${H - 4}" text-anchor="end">day 30</text></svg>
+    <div class="row"><span>Sessions: <b class="mono">${reviews.length}</b></span><span>Kept after a month: <b class="mono">${end}%</b></span></div>`;
+}
+const TRACE = [
+  {l:3, v:{}, out:"", note:"Call double(4)"}, {l:0, v:{n:4}, out:"", note:"n is 4"}, {l:1, v:{n:4}, out:"", note:"Return 8"},
+  {l:3, v:{x:8}, out:"", note:"x is 8"}, {l:4, v:{x:8}, out:"8", note:"Print x"}
+];
+function traceView(i){
+  const code = ["def double(n):", "    return n * 2", "", "x = double(4)", "print(x)"], t = TRACE[i];
+  return `<pre class="code trace">${code.map((ln, k) => `<span class="${k === t.l ? "on" : ""}">${esc(ln) || " "}</span>`).join("\n")}</pre>
+    <div class="row"><span class="mono">${Object.entries(t.v).map(([k, v]) => `${k} = ${v}`).join("  ") || "–"}</span><span class="mono">${t.out ? `output: ${t.out}` : ""}</span></div>
+    <div class="row"><span>${esc(t.note)}</span><button class="btn" type="button" data-act="l-step">${i < TRACE.length - 1 ? "Step" : "Restart"}</button></div>`;
+}
+
+/* ---- audio helpers ---- */
+let LA = null;
+const actx = () => { try { if (!LA) LA = new (window.AudioContext || window.webkitAudioContext)(); LA.resume && LA.resume(); } catch (e) {} return LA; };
+function strumSound(up){
+  const c = actx(); if (!c) return;
+  try {
+    const len = 0.14, buf = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = buf; f.type = "bandpass"; f.frequency.value = up ? 2400 : 1100; f.Q.value = 0.8; g.gain.value = up ? 0.5 : 0.8;
+    src.connect(f).connect(g).connect(c.destination); src.start();
+  } catch (e) {}
+}
+let strumTimer = null;
+function playStrum(){
+  clearInterval(strumTimer);
+  const pat = "D_DU_UDU"; let i = 0;
+  strumTimer = setInterval(() => {
+    const k = i % 8, el = $("#strum"); if (!el || i >= 16){ clearInterval(strumTimer); if (el) el.innerHTML = strumGrid(pat); return; }
+    el.innerHTML = strumGrid(pat, k);
+    if (pat[k] !== "_") strumSound(pat[k] === "U");
+    i++;
+  }, 340);
+}
+function speak(text){
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "es-ES"; u.rate = 0.85;
+    const v = speechSynthesis.getVoices().find(x => /^es/i.test(x.lang)); if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) { toast("This device can't play speech. The text is shown instead."); }
+}
+
+/* ---- session steps ---- */
+function sessSteps(){
+  const L = loopContent(), st = [];
+  if (L.warmup && (S.skillId === "bouldering" || S.injuries.length)) st.push({b:0, id:"warmup"});
+  L.learn.forEach((_, n) => st.push({b:1, id:"learn", n}));
+  L.practice.forEach((_, n) => st.push({b:2, id:"practice", n}));
+  st.push({b:3, id:"capture", a:1}, {b:3, id:"analyze", a:1}, {b:3, id:"feedback"}, {b:3, id:"fix"}, {b:3, id:"capture", a:2}, {b:3, id:"analyze", a:2}, {b:4, id:"wrap"});
+  return st;
+}
+const STARTER = 'def count_words(text):\n    return len(text.split(" "))\n';
+function startSession(){
+  stopRhythm();
+  S.mode = "session";
+  S.sess = {i:0, ans:{}, ticks:[], sim:60, gap:0, tr:0, code:STARTER, run1:null, run2:null, cap:{}, disputed:false, whyOpen:false};
+  render(1);
+}
+function runTests(code){
+  const hasFn = /def\s+count_words\s*\(/.test(code);
+  const split = /\.split\(\s*\)/.test(code), guard = /if\s+not\s+text|==\s*["']{2}|len\(\s*text\s*\)\s*==\s*0/.test(code);
+  if (!hasFn) return [{t:'count_words("hello world")', exp:"2", got:"NameError", ok:false}, {t:'count_words("")', exp:"0", got:"NameError", ok:false}, {t:'count_words("a  b")', exp:"2", got:"NameError", ok:false}];
+  return [
+    {t:'count_words("hello world")', exp:"2", got:"2", ok:true},
+    {t:'count_words("")', exp:"0", got:split || guard ? "0" : "1", ok:split || guard},
+    {t:'count_words("a  b")', exp:"2", got:split ? "2" : "3", ok:split}
+  ];
+}
+const passed = run => run ? run.filter(t => t.ok).length : null;
+function metricVals(L){
+  if (S.skillId === "python") return {a1:passed(S.sess && S.sess.run1), a2:passed(S.sess && S.sess.run2)};
+  return {a1:L.metric.a1, a2:L.metric.a2};
+}
+const improved = L => { const m = metricVals(L); if (S.skillId === "python") return m.a2 === 3; return L.metric.lower ? m.a2 < m.a1 : m.a2 > m.a1; };
+
+function choiceView(c, key){
+  const pick = S.sess.ans[key], done = pick != null;
+  const opts = c.visOpts
+    ? `<div class="visopts n${c.visOpts.length}">${c.visOpts.map((svg, k) => `<button type="button" class="visopt ${done ? (k === c.a ? "right" : k === pick ? "wrong" : "") : ""}" data-act="l-pick" data-k="${key}" data-v="${k}" ${done ? "disabled" : ""}>${svg}<span>${esc(c.o[k])}</span></button>`).join("")}</div>`
+    : `<div class="opts">${c.o.map((o, k) => `<button type="button" class="opt ${done ? (k === c.a ? "right" : k === pick ? "wrong" : "") : ""}" data-act="l-pick" data-k="${key}" data-v="${k}" ${done ? "disabled" : ""}>${c.code ? `<span class="mono">${esc(o)}</span>` : esc(o)}</button>`).join("")}</div>`;
+  const listen = c.say ? `<div class="row"><button class="btn" type="button" data-act="l-say" data-v="${esc(c.say)}">${icon("mic", "ic sm")} Play</button>${S.sess.ans[key + "-txt"] ? `<span lang="es">${esc(c.say)}</span>` : `<button class="linkbtn" type="button" data-act="l-txt" data-v="${key}">Show the text</button>`}</div>` : "";
+  const reveal = done ? `<div class="reveal ${pick === c.a ? "good" : "warn"}">${icon(pick === c.a ? "check" : "spark")}<span><b>${pick === c.a ? "Right." : "Not quite."}</b> ${esc(c.why)}</span></div>` : "";
+  return `${c.code ? `<pre class="code">${esc(c.code)}</pre>` : ""}${listen}${opts}${reveal}`;
+}
+
+const SVIEWS = {
+  warmup(L){
+    return `<span class="eyebrow">Warm-up${S.injuries.length ? ` · adjusted for ${esc(S.injuries.join(", ").toLowerCase())}` : ""}</span>
+      <h1 tabindex="-1">Warm up first</h1>
+      <div class="checklist">${L.warmup.map((w, k) => `<button type="button" class="tick" data-act="l-tick" data-v="${k}" aria-pressed="${S.sess.ticks.includes(k)}">${icon("check")}<span>${esc(w)}</span></button>`).join("")}</div>`;
+  },
+  learn(L, st){
+    const c = L.learn[st.n];
+    let body = "";
+    if (c.type === "predict") body = choiceView(c, "l" + st.n);
+    else if (c.sim === "lean") body = `<div class="panel" id="simwrap">${leanSim(S.sess.sim)}</div><input type="range" id="l-sim" min="30" max="95" value="${S.sess.sim}" aria-label="Hip distance from the wall">`;
+    else if (c.sim === "spacing") body = `<div class="panel" id="simwrap">${spacingSim(S.sess.gap)}</div><input type="range" id="l-gap" min="0" max="7" value="${S.sess.gap}" aria-label="Days between sessions"><div class="rangehint"><span>all at once</span><span>weekly</span></div>`;
+    else if (c.demo === "strum") body = `<div class="panel"><div id="strum">${strumGrid("D_DU_UDU")}</div><button class="btn primary" type="button" data-act="l-strum">${icon("mic", "ic sm")} Play at 88 bpm</button></div>`;
+    else if (c.demo === "vowels") body = `<div class="vowels">${[["a", "casa"], ["e", "mesa"], ["i", "sí"], ["o", "solo"], ["u", "luna"]].map(([v, w]) => `<button type="button" class="vowel" data-act="l-say" data-v="${w}"><b>${v}</b><small lang="es">${w}</small></button>`).join("")}</div>`;
+    else if (c.demo === "order"){ const items = ["un café", "una tostada", "agua", "la cuenta"], k = S.sess.ord || 0;
+      body = `<div class="panel"><div class="prompt" lang="es">Quisiera <span class="swap">${items[k]}</span>, por favor</div>
+        <div class="chips">${items.map((x, j) => `<button type="button" class="chip" aria-pressed="${j === k}" data-act="l-ord" data-v="${j}" lang="es">${x}</button>`).join("")}</div>
+        <button class="btn" type="button" data-act="l-say" data-v="Quisiera ${items[k]}, por favor">${icon("mic", "ic sm")} Hear it</button></div>`; }
+    else if (c.demo === "trace") body = `<div class="panel" id="trace">${traceView(S.sess.tr)}</div>`;
+    return `<span class="eyebrow">Learn · ${esc(L.focus)}</span><h1 tabindex="-1">${esc(c.q)}</h1>${body}`;
+  },
+  practice(L, st){
+    const c = L.practice[st.n];
+    return `<span class="eyebrow">Practice · ${st.n + 1} of ${L.practice.length}</span><h1 tabindex="-1">${esc(c.q)}</h1>${choiceView(c, "p" + st.n)}`;
+  },
+  capture(L, st){
+    const P = L.perform, a = st.a;
+    const head = `<span class="eyebrow">Perform · attempt ${a}${a === 2 ? ` · focus: ${esc(lc1(L.fb.fix))}` : ""}</span><h1 tabindex="-1">${esc(P.prompt)}</h1><p class="sub">${esc(P.how)}</p>`;
+    if (P.ev === "code"){
+      const run = S.sess["run" + a];
+      return head + `<textarea id="l-code" class="editor" spellcheck="false" aria-label="Your code">${esc(S.sess.code)}</textarea>
+        <button class="btn" type="button" data-act="l-run">${icon("code", "ic sm")} Run tests</button>
+        ${run ? testTable(run) : `<p class="hint">Tests run in your browser. Nothing is uploaded.</p>`}`;
+    }
+    const cap = S.sess.cap[a];
+    const frameVis = P.ev === "video" ? `<div class="framing">${climber({hip:40})}<span>Whole body in the outline</span></div>` : `<div class="framing mic">${icon("mic")}<span>${P.ev === "speech" ? "Waiter: ¿Qué desea?" : "Click: 70 bpm"}</span></div>`;
+    return head + frameVis + (cap
+      ? `<div class="note">${icon("check")}<span><b>${esc(cap)}</b> ready to check</span></div>`
+      : `<button class="recbtn" type="button" data-act="l-rec">${icon(P.ev === "video" ? "cam" : P.ev === "coach" ? "image" : "mic")} ${P.ev === "coach" ? "Use a sample photo" : "Record (simulated)"}</button>
+         <label class="linkbtn" for="l-file" style="align-self:center">or pick a file</label><input type="file" id="l-file" accept="${P.accept}" hidden>`);
+  },
+  analyze(L, st){
+    return `<span class="eyebrow">Checking attempt ${st.a}</span><h1 tabindex="-1">Analyzing on your device</h1>
+      <ul class="pipe">${L.perform.steps.map((s, k) => `<li id="pipe${k}">${icon("check")}<span>${esc(s)}</span></li>`).join("")}</ul>
+      <p class="hint">Prototype: sample results, not a real analysis.</p>`;
+  },
+  feedback(L){
+    const F = L.fb;
+    return `<span class="eyebrow">Feedback · attempt 1</span>
+      <section class="fixcard"><span class="eyebrow">One fix</span><h1 tabindex="-1">${esc(F.fix)}</h1><div class="evidence">${F.vis(1)}</div>
+        ${S.sess.whyOpen ? `<div class="why">${F.why()}</div>` : `<button class="linkbtn" type="button" data-act="l-why">Why does this matter?</button>`}</section>
+      <div class="praise">${icon("heart")}<span><b>Good:</b> ${esc(F.praise)}</span></div>
+      ${S.sess.disputed ? `<p class="hint">Noted. This correction is muted for this attempt.</p>` : `<button class="linkbtn" type="button" data-act="l-dispute" style="align-self:flex-start">That's not right</button>`}`;
+  },
+  fix(L){
+    const c = L.fix;
+    return `<span class="eyebrow">Fix drill · ${esc(c.drill)}</span><h1 tabindex="-1">${esc(c.q)}</h1>${choiceView(c, "fix")}
+      ${c.say ? `<button class="btn" type="button" data-act="l-say" data-v="${esc(c.say)}">${icon("mic", "ic sm")} Hear: ${esc(c.say)}</button>` : ""}`;
+  },
+  wrap(L){
+    const m = metricVals(L), up = improved(L), mast = up ? 0.45 : 0.3, ses = sessions(), F = L.fb;
+    const nextDay = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][ses.days[1 % ses.days.length]];
+    const fmt = v => v == null ? "–" : L.metric.fmt(v);
+    return `<span class="eyebrow">Wrap-up</span><h1 tabindex="-1">Session 1 done</h1>
+      <div class="ba"><div><span class="eyebrow">Attempt 1</span><b class="mono">${fmt(m.a1)}</b></div><span class="arrow">→</span><div class="${up ? "up" : ""}"><span class="eyebrow">Attempt 2</span><b class="mono">${fmt(m.a2)}</b></div></div>
+      <p class="sub" style="margin-top:-8px">${esc(L.metric.name)}${up ? "" : ". Not there yet, so it's first up next session."}</p>
+      <div class="mastery">${ring(mast, 52)}<div><b>${esc(L.focus)}</b><span>${Math.round(mast * 100)}% mastered${S.sess.disputed ? " · 1 correction disputed" : ""}</span></div></div>
+      <ul class="checks">
+        <li>${icon("repeat")}<span>3 review cards added for ${nextDay}.</span></li>
+        <li>${icon("clock")}<span>Next: session 2 on ${nextDay}, ${ses.len} min${up ? "" : `, starting with ${esc(lc1(F.fix))}`}.</span></li>
+      </ul>`;
+  }
+};
+
+/* ---- Today and Progress ---- */
+function appState(){ return S.app || (S.app = {view:"today", checkin:null}); }
+function todayView(L){
+  const A = appState(), ses = sessions(), m = S.milestone, up = S.sess ? improved(L) : false;
+  const nodeM = i => i < L.fi ? 0.85 : i === L.fi ? (up ? 0.45 : 0.3) : 0.05;
+  const pct = Math.round(L.nodes.reduce((t, _, i) => t + nodeM(i), 0) / L.nodes.length * 100);
+  const D = ["M","T","W","T","F","S","S"];
+  const inj = S.injuries[0];
+  const q = inj ? `How do your ${inj.toLowerCase()} feel after session 1?` : "How did session 1 feel?";
+  const opts = inj ? ["Fine", "A bit sore", "Painful"] : ["Too easy", "About right", "Too hard"];
+  const resp = {Painful:`Session 2 is lighter: no hard pulls on your ${(inj || "").toLowerCase()}. If it still hurts in a week, see a physio.`, "A bit sore":"Normal. Session 2 keeps the same load.", Fine:"Great. Session 2 adds one harder drill.",
+    "Too easy":"Session 2 starts one level higher.", "About right":"Session 2 keeps the same level.", "Too hard":"Session 2 starts one level lower and adds a longer warm-up."};
+  const nextFocus = up ? L.nodes[Math.min(L.fi + 1, L.nodes.length - 1)] : L.focus;
+  return `<h1 tabindex="-1">Today</h1>
+    <section class="next"><span class="eyebrow">Next session · ${ses.len} min</span><b>Session 2: ${esc(nextFocus)}</b>
+      <span class="hint" style="margin:0">${up ? `${esc(L.focus)} is improving. Moving on, with a quick check of it.` : `Picked because ${esc(lc1(L.fb.fix))} on your last attempt.`}</span>
+      ${A.checkin && resp[A.checkin] ? `<span class="pill ${A.checkin === "Painful" || A.checkin === "Too hard" ? "warn" : "info"}" style="align-self:flex-start">${esc(resp[A.checkin])}</span>` : ""}</section>
+    ${A.checkin ? "" : `<section class="panel"><span class="eyebrow">Check-in</span><b>${esc(q)}</b><div class="chips">${opts.map(o => chip(o, false, `data-act="l-checkin" data-v="${o}"`)).join("")}</div></section>`}
+    <button class="cardbtn" type="button" data-act="l-reviews">${icon("repeat")}<span><b>3 reviews due</b><small>About 1 minute</small></span></button>
+    <section class="panel"><span class="eyebrow">Milestone</span><b>${esc(m.title)}</b>
+      <div class="meter"><i style="width:${pct}%"></i></div><div class="row"><span class="mono">${pct}% of the skills</span><span class="mono">proof ~${fmtDate(weeksTo(m.rung))}</span></div></section>
+    <section class="panel"><span class="eyebrow">This week</span>
+      <div class="weekdots">${D.map((d, i) => { const k = ses.days.indexOf(i); return `<div><i class="${k === 0 ? "done" : k > 0 ? "plan" : ""}"></i><span>${d}</span></div>`; }).join("")}</div>
+      <span class="hint" style="margin:0">Weekly review on Sunday, 5 minutes with your coach.</span></section>`;
+}
+function progressView(L){
+  const up = S.sess ? improved(L) : false, m = metricVals(L);
+  const nodeM = i => i < L.fi ? 0.85 : i === L.fi ? (up ? 0.45 : 0.3) : 0.05;
+  const mix = focusMix();
+  return `<h1 tabindex="-1">Progress</h1>
+    <h2>Your route</h2>${route()}
+    <h2>Skills for this milestone</h2>
+    <div class="nodes">${L.nodes.map((n, i) => `<div>${ring(nodeM(i), 36)}<span>${esc(n)}</span></div>`).join("")}</div>
+    <h2>${esc(L.metric.name)}</h2>
+    <div class="ba"><div><span class="eyebrow">First attempt</span><b class="mono">${m.a1 == null ? "–" : L.metric.fmt(m.a1)}</b></div><span class="arrow">→</span><div class="${up ? "up" : ""}"><span class="eyebrow">Latest</span><b class="mono">${m.a2 == null ? "–" : L.metric.fmt(m.a2)}</b></div></div>
+    <h2>Practice mix <small>· planned</small></h2>
+    <div class="mix">${mix.f.map((x, i) => `<i style="width:${x.v}%;background:var(--seg${i + 1})"></i>`).join("")}</div>
+    <div class="legend">${mix.f.map((x, i) => `<span><i style="background:var(--seg${i + 1})"></i>${esc(x.k)} <b>${x.v}%</b></span>`).join("")}</div>
+    <h2>Proof check</h2>
+    <div class="proofbox"><div class="proof">${icon(EVAL[S.milestone.ev].i)}<span><b>${esc(S.milestone.proof)}</b><br>Opens when your skills for this step reach 80%.</span></div></div>`;
+}
+
+/* ---- render + events for the loop ---- */
+function renderLoop(dir){
+  const L = loopContent(), main = $("#screen");
+  $("#ribbon").innerHTML = "";
+  if (S.mode === "session"){
+    const steps = sessSteps(); if (S.sess.i >= steps.length) S.sess.i = steps.length - 1;
+    const st = steps[S.sess.i], present = BLOCKS.map((_, b) => steps.filter(x => x.b === b)).map((items, b) => ({b, items})).filter(x => x.items.length);
+    const bars = present.map(({b, items}) => { const pos = items.indexOf(st); const fill = b < st.b ? 1 : b > st.b ? 0 : (pos + 1) / items.length; return `<span><i style="transform:scaleX(${fill})"></i></span>`; }).join("");
+    $("#bar").innerHTML = `<button class="iconbtn" type="button" aria-label="Back" data-act="l-back" ${S.sess.i === 0 ? "disabled" : ""}>${icon("back")}</button>
+      <div class="progress" aria-hidden="true">${bars}</div><button class="secname linkbtn" type="button" data-act="l-exit">Exit</button>`;
+    main.innerHTML = SVIEWS[st.id](L, st);
+    loopCTA(L, st);
+    if (st.id === "analyze") runPipe(L, st);
+  } else {
+    const A = appState();
+    $("#bar").innerHTML = `<span class="rib">${icon(pack().icon)}${esc(pack().name)}</span>
+      <div class="tabs" role="tablist">${["today", "progress"].map(v => `<button type="button" role="tab" aria-selected="${A.view === v}" data-act="l-tab" data-v="${v}">${v === "today" ? "Today" : "Progress"}</button>`).join("")}</div><span></span>`;
+    main.innerHTML = A.view === "today" ? todayView(L) : progressView(L);
+    loopCTA(L, null);
+  }
+  save();
+  if (dir){
+    main.classList.remove("enter", "back"); void main.offsetWidth;
+    main.classList.add("enter"); if (dir < 0) main.classList.add("back");
+    window.scrollTo(0, 0);
+    const h = main.querySelector("h1"); if (h) h.focus({preventScroll:true});
+  }
+}
+function loopCTA(L, st){
+  const btn = $("#next"); let label = "Continue", ok = true, alt = "";
+  if (!st){
+    label = "Start session 2";
+    alt = `<button class="linkbtn" type="button" data-act="l-replay">Replay session 1</button> · <button class="linkbtn" type="button" data-act="restart">Start over</button>`;
+  } else {
+    const a = S.sess.ans;
+    if (st.id === "warmup"){ ok = S.sess.ticks.length === L.warmup.length; label = ok ? "Warm-up done" : "Tick each one off"; }
+    else if (st.id === "learn"){ const c = L.learn[st.n]; if (c.type === "predict") ok = a["l" + st.n] != null; }
+    else if (st.id === "practice") ok = a["p" + st.n] != null;
+    else if (st.id === "fix"){ ok = a.fix != null; label = ok ? "Try again" : "Continue"; }
+    else if (st.id === "capture"){ ok = L.perform.ev === "code" ? !!S.sess["run" + st.a] : !!S.sess.cap[st.a]; label = ok ? "Check it" : L.perform.ev === "code" ? "Run the tests first" : "Record first"; }
+    else if (st.id === "analyze"){ ok = false; label = "Checking…"; }
+    else if (st.id === "feedback") label = "Try the fix drill";
+    else if (st.id === "wrap") label = "Done";
+  }
+  btn.disabled = !ok; btn.textContent = label; $("#alt").innerHTML = alt;
+}
+let pipeTimers = [];
+function runPipe(L, st){
+  pipeTimers.forEach(clearTimeout); pipeTimers = [];
+  const n = L.perform.steps.length;
+  for (let k = 0; k < n; k++) pipeTimers.push(setTimeout(() => { const li = $("#pipe" + k); if (li) li.classList.add("done"); }, 450 * (k + 1)));
+  pipeTimers.push(setTimeout(() => { if (S.mode === "session" && sessSteps()[S.sess.i] === undefined) return; sessGo(1); }, 450 * n + 450));
+}
+function sessGo(d){
+  pipeTimers.forEach(clearTimeout); clearInterval(strumTimer);
+  const steps = sessSteps(); let i = S.sess.i + d;
+  while (steps[i] && steps[i].id === "analyze" && d < 0) i += d;
+  if (i < 0) return;
+  if (i >= steps.length){ S.mode = "app"; const A = appState(); A.view = "today"; A.done = true; A.checkin = null; render(1); return; }
+  S.sess.i = i; render(d);
+}
+function loopClick(act, v, el){
+  const L = loopContent();
+  switch (act){
+    case "next":
+      if (S.mode === "app"){ toast("Session 2 isn't in this prototype. Session 1 shows the whole loop."); return; }
+      sessGo(1); return;
+    case "l-back": sessGo(-1); return;
+    case "l-exit": pipeTimers.forEach(clearTimeout); clearInterval(strumTimer); S.mode = S.app && S.app.done ? "app" : "onboard"; render(-1); return;
+    case "l-replay": startSession(); return;
+    case "restart": stopRhythm(); S = clone(DEFAULT); render(-1); return;
+    case "l-tab": appState().view = v; render(); return;
+  }
+  switch (act){
+    case "l-pick": S.sess.ans[el.dataset.k] = +v; break;
+    case "l-tick": S.sess.ticks = S.sess.ticks.includes(+v) ? S.sess.ticks.filter(x => x !== +v) : S.sess.ticks.concat(+v); break;
+    case "l-strum": actx(); playStrum(); return;
+    case "l-say": speak(v); return;
+    case "l-txt": S.sess.ans[v + "-txt"] = true; break;
+    case "l-ord": S.sess.ord = +v; speak(`Quisiera ${["un café", "una tostada", "agua", "la cuenta"][+v]}, por favor`); break;
+    case "l-step": S.sess.tr = (S.sess.tr + 1) % TRACE.length; $("#trace").innerHTML = traceView(S.sess.tr); return;
+    case "l-rec": {
+      const a = sessSteps()[S.sess.i].a, b = $(".recbtn");
+      if (b){ b.disabled = true; let t = 3; b.textContent = `Recording… ${t}`; const iv = setInterval(() => { t--; if (t > 0) b.textContent = `Recording… ${t}`; else { clearInterval(iv); S.sess.cap[a] = L.perform.ev === "coach" ? "Sample photo" : `Attempt ${a} · 0:${a === 1 ? "48" : "44"}`; render(); } }, 700); }
+      return;
+    }
+    case "l-run": { const a = sessSteps()[S.sess.i].a, ta = $("#l-code"); if (ta) S.sess.code = ta.value; S.sess["run" + a] = runTests(S.sess.code); break; }
+    case "l-why": S.sess.whyOpen = true; break;
+    case "l-dispute": S.sess.disputed = true; break;
+    case "l-checkin": appState().checkin = v; break;
+    case "l-reviews": toast("Reviews open at the start of session 2 in this prototype."); return;
+    default: return;
+  }
+  render();
+}
+
+function loopInput(t){
+  if (t.id === "l-sim"){ S.sess.sim = +t.value; $("#simwrap").innerHTML = leanSim(S.sess.sim); }
+  else if (t.id === "l-gap"){ S.sess.gap = +t.value; $("#simwrap").innerHTML = spacingSim(S.sess.gap); }
+  else if (t.id === "l-code"){ S.sess.code = t.value; }
+  save();
+}
+
 /* ---------- events ---------- */
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]");
   if (!el || el.disabled) return;
-  const act = el.dataset.act, v = el.dataset.v, scr = cur();
+  const act = el.dataset.act, v = el.dataset.v;
+  if (S.mode !== "onboard"){ loopClick(act, v, el); return; }
+  const scr = cur();
   switch (act){
     case "back": goTo(S.idx - 1, -1); return;
     case "next":
-      if (scr.id === "plan"){ toast("Session 1 is where this prototype ends."); return; }
+      if (scr.id === "plan"){ startSession(); return; }
       next(); return;
     case "jump": goTo(screens().findIndex(x => x.sec === +v), -1); return;
     case "restart": stopRhythm(); S = clone(DEFAULT); render(-1); return;
@@ -1172,6 +1769,7 @@ document.addEventListener("keydown", e => { if (RT && (e.code === "Space" || e.k
 
 document.addEventListener("input", e => {
   const t = e.target;
+  if (S.mode !== "onboard"){ loopInput(t); return; }
   if (t.id === "skill-input"){
     setSkill(t.value);
     $("#skill-note").textContent = S.skillId ? pack().blurb : "Every skill gets its own ladder of goals.";
@@ -1192,6 +1790,9 @@ document.addEventListener("input", e => {
 });
 
 document.addEventListener("change", e => {
+  if (e.target.id === "l-file" && e.target.files && e.target.files[0]){
+    const st = sessSteps()[S.sess.i]; S.sess.cap[st.a] = e.target.files[0].name; render(); return;
+  }
   if (e.target.id === "clip" && e.target.files && e.target.files[0]){
     const f = e.target.files[0];
     S.diag.clip = `${f.name} · ${(f.size / 1048576).toFixed(1)} MB`;
