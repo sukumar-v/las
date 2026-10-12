@@ -2,6 +2,14 @@
 
 Status: draft · Prototype: [`prototypes/onboarding/index.html`](../prototypes/onboarding/index.html)
 
+| Doc | Covers |
+|---|---|
+| **This overview** | Principles, prior art, architecture, onboarding, run modes, open-source policy, build plan |
+| [Learning loop](design/learning-loop.md) | Today screen, what happens in a session, session planner, teaching cards, drills, feedback, check-ins, re-planning, progress, proof checks |
+| [Evaluation](design/evaluation.md) | Evaluator contract, analysis pipeline, the video coach, mistake library, proof standards, confidence |
+| [MCP and data](design/mcp-and-data.md) | Tool contracts, resources, prompts, agent rules, events, data model, sync, security |
+| [Skill packs](design/skill-packs.md) | Pack layout, ladder and skill graph, lessons, drills, validation, packs drafted for new skills, content licensing |
+
 LAS is an open-source MCP server and agent skill that coach someone through learning any skill, such as guitar, bouldering, Spanish or Python. It does four things:
 
 - sets a goal the learner cares about;
@@ -68,14 +76,14 @@ las-agents (npm)  →  npx las-agents setup
 
 | Group | Tools |
 |---|---|
-| `onboard` | `start_intake`, `rank_pictures`, `run_probe`, `place_learner`, `suggest_milestones`, `check_feasibility`, `set_milestone` |
-| `plan` | `build_route`, `next_session`, `reschedule` |
-| `teach` | `render_lesson`, `render_mechanism` (anatomy), `render_diagram`, `render_notation` |
-| `practice` | `start_drill`, `quiz`, `review_cards` (FSRS) |
-| `evaluate` | `grade_code`, `analyze_audio`, `analyze_speech`, `analyze_movement` |
-| `track` | `log_session`, `progress_map`, `schedule_checkin`, `revisit_why` |
+| `onboard` | `start_intake`, `record_answer`, `place_learner`, `suggest_milestones`, `check_feasibility`, `set_milestone` |
+| `plan` | `get_today`, `next_session`, `reschedule`, `replan` |
+| `teach` | `render_lesson`, `render_mechanism` (anatomy), `render_diagram`, `explain_mistake` |
+| `practice` | `start_drill`, `review_cards` (FSRS) |
+| `evaluate` | `request_capture`, `get_analysis`, `run_proof_check` |
+| `track` | `get_progress`, `get_session_summary`, `log_external`, `report_pain`, `revisit_why`, `export_data`, `delete_data` |
 
-Lesson tools take **structured specs** (`{type: "diagram" | "sim" | "quiz" | "video", …}`) and return visuals. The tool shapes leave no room for an essay.
+Lesson tools take **structured specs** and reject text over budget, so the tool shapes leave no room for an essay. Inputs, outputs, agent rules and events: [MCP and data](design/mcp-and-data.md).
 
 ## 5. Onboarding
 
@@ -157,7 +165,7 @@ In the prototype these are rules over pack data. In the product the agent can al
 
 ## 6. Skill packs
 
-A pack is data. Each one fills the same slots:
+A pack is data. Each one fills the same slots. The full layout (skill graph, lessons, drills, mistakes, proofs, validation, packs drafted for new skills) is in [Skill packs](design/skill-packs.md).
 
 ```ts
 interface SkillPack {
@@ -201,11 +209,15 @@ Video stays on the device. Only body-position data and a few annotated key frame
 
 **Single-camera limits:** a phone camera is good for big movements (climbing, squats, a golf swing) and weak for fine finger work. Hand tracking helps with guitar, but camera angle matters. The video coach is never the authority on safety.
 
+Details (pipeline, video coach, mistake library, proof standards): [Evaluation](design/evaluation.md).
+
 ## 9. Learner model and follow-ups
 
 - **Mastery:** Bayesian Knowledge Tracing over the skill's ladder and concept graph. We'll implement it in TypeScript; pyBKT (MIT) is the reference.
 - **Reviews:** FSRS spaced repetition via ts-fsrs.
 - **Follow-ups:** an MCP server can't start a conversation, so LAS stores a schedule of check-ins. Something else has to trigger them: the client's scheduler, studio notifications (Web Push), or a cron job when hosted. Each check-in looks at what was done since the last one and moves the plan forward or reschedules it.
+
+Sessions, the planner, feedback, check-ins and re-planning: [Learning loop](design/learning-loop.md).
 
 ## 10. Where it runs
 
@@ -259,6 +271,7 @@ Verified from each project's LICENSE file or model card on 2026-10-12. ⚠ means
 | Code | Pyodide | MPL-2.0 |
 | | CodeMirror 6, Monaco | MIT |
 | Learner model | ts-fsrs, py-fsrs, pyBKT | MIT |
+| Pack tooling | yaml (YAML parser) | ISC |
 | Storage and sync | SQLite | Public domain |
 | | libSQL, PocketBase | MIT |
 | | ElectricSQL, Supabase (self-hosted) | Apache-2.0 |
