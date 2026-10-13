@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "name": "Folio",
+  "source": {
+    "kind": "description",
+    "note": "Monochrome editorial serif, like a printed book: black ink on warm paper, no color beyond grays, flat cards, underline buttons, timeline route."
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "tokens": {
+    "color": {
+      "bg": "#F7F3EA",
+      "surface": "#FFFDF7",
+      "ink": "#22201C",
+      "muted": "#555555",
+      "line": "#BBBBBB",
+      "accent": "#111111",
+      "on_accent": "#FFFFFF",
+      "good": "#2E6B3A",
+      "warn": "#8A5A00",
+      "bad": "#9B1C1C",
+      "focus": "#111111",
+      "data": [
+        "#111111",
+        "#505050",
+        "#7A7A7A",
+        "#A0A0A0",
+        "#333333"
+      ]
+    },
+    "type": {
+      "display": {
+        "family": "Fraunces",
+        "fallback": "Georgia, serif",
+        "weight": 600,
+        "license": "OFL-1.1",
+        "source": "https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&display=swap"
+      },
+      "body": {
+        "family": "Literata",
+        "fallback": "Georgia, serif",
+        "license": "OFL-1.1",
+        "source": "https://fonts.googleapis.com/css2?family=Literata:wght@400;700&display=swap"
+      },
+      "mono": {
+        "family": "ui-monospace",
+        "fallback": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "license": "system"
+      },
+      "scale": [
+        13,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "line_height": 1.45
+    },
+    "space": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "radius": {
+      "sm": 2,
+      "md": 4,
+      "lg": 6,
+      "pill": 999
+    },
+    "border": {
+      "width": 1.5,
+      "style": "solid"
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "2px 2px 0 #22201C"
+    },
+    "density": "comfortable"
+  },
+  "dark": {
+    "color": {
+      "bg": "#111113",
+      "surface": "#1C1C20",
+      "ink": "#F4F4F5",
+      "muted": "#B4B4BC",
+      "line": "#3F3F46",
+      "accent": "#93B4FF",
+      "on_accent": "#0B1020",
+      "good": "#4ADE80",
+      "warn": "#FBBF24",
+      "bad": "#F87171",
+      "focus": "#93B4FF",
+      "data": [
+        "#93B4FF",
+        "#FDBA74",
+        "#2DD4BF",
+        "#F9A8D4",
+        "#A1A1AA"
+      ]
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 2px 8px rgba(0,0,0,0.5)"
+    }
+  },
+  "components": {
+    "card": "flat",
+    "button": "underline",
+    "chip": "outlined",
+    "tile": "flat",
+    "progress": "steps",
+    "route": "timeline",
+    "meter": "ticks"
+  },
+  "motion": {
+    "personality": "subtle",
+    "duration_ms": 160,
+    "easing": "ease-out"
+  },
+  "figures": {
+    "stroke": 2,
+    "corner": "round",
+    "fill": "flat",
+    "overlay": {
+      "good": "good",
+      "attention": "warn",
+      "reference": "data.0",
+      "neutral": "muted"
+    }
+  },
+  "texture": {
+    "kind": "grain",
+    "strength": 0.04
+  },
+  "voice": "plain",
+  "id": "monochrome-serif"
+}

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "name": "Arcade",
+  "source": {
+    "kind": "description",
+    "note": "Dark neon arcade: near-black background, a glowing green accent, square buttons, snappy motion and a terminal feel."
+  },
+  "modes": [
+    "dark"
+  ],
+  "tokens": {
+    "color": {
+      "bg": "#0A0C0A",
+      "surface": "#111511",
+      "ink": "#D7FFD9",
+      "muted": "#8FBF95",
+      "line": "#2D4A31",
+      "accent": "#5CFF7F",
+      "on_accent": "#04130A",
+      "good": "#5CFF7F",
+      "warn": "#FFD75C",
+      "bad": "#FF6B6B",
+      "focus": "#5CFF7F",
+      "data": [
+        "#5CFF7F",
+        "#FFD75C",
+        "#5CD9FF",
+        "#FF8BD1",
+        "#2DD4BF"
+      ]
+    },
+    "type": {
+      "display": {
+        "family": "IBM Plex Mono",
+        "fallback": "ui-monospace, monospace",
+        "weight": 600,
+        "license": "OFL-1.1",
+        "source": "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap"
+      },
+      "body": {
+        "family": "IBM Plex Mono",
+        "fallback": "ui-monospace, monospace",
+        "license": "OFL-1.1",
+        "source": "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap"
+      },
+      "mono": {
+        "family": "ui-monospace",
+        "fallback": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "license": "system"
+      },
+      "scale": [
+        13,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "line_height": 1.45
+    },
+    "space": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "radius": {
+      "sm": 0,
+      "md": 2,
+      "lg": 4,
+      "pill": 999
+    },
+    "border": {
+      "width": 1,
+      "style": "solid"
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 0 18px rgba(57,255,136,0.35)"
+    },
+    "density": "comfortable"
+  },
+  "components": {
+    "card": "outlined",
+    "button": "square",
+    "chip": "tag",
+    "tile": "outlined",
+    "progress": "steps",
+    "route": "timeline",
+    "meter": "ticks"
+  },
+  "motion": {
+    "personality": "snappy",
+    "duration_ms": 120,
+    "easing": "ease-out"
+  },
+  "figures": {
+    "stroke": 2,
+    "corner": "round",
+    "fill": "flat",
+    "overlay": {
+      "good": "good",
+      "attention": "warn",
+      "reference": "data.0",
+      "neutral": "muted"
+    }
+  },
+  "texture": {
+    "kind": "none",
+    "strength": 0
+  },
+  "voice": "plain",
+  "id": "dark-neon"
+}

@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "name": "Bounce",
+  "source": {
+    "kind": "description",
+    "note": "Playful and rounded, friendly like a kids' app: big pill buttons, a purple accent, springy motion, raised cards and ring meters."
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "tokens": {
+    "color": {
+      "bg": "#F4F4F5",
+      "surface": "#FFFFFF",
+      "ink": "#18181B",
+      "muted": "#52525B",
+      "line": "#C4C4CC",
+      "accent": "#6D28D9",
+      "on_accent": "#FFFFFF",
+      "good": "#15803D",
+      "warn": "#B45309",
+      "bad": "#B91C1C",
+      "focus": "#6D28D9",
+      "data": [
+        "#7C3AED",
+        "#F59E0B",
+        "#10B981",
+        "#EC4899",
+        "#B45309"
+      ]
+    },
+    "type": {
+      "display": {
+        "family": "system-ui",
+        "fallback": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "weight": 700,
+        "license": "system"
+      },
+      "body": {
+        "family": "system-ui",
+        "fallback": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "license": "system"
+      },
+      "mono": {
+        "family": "ui-monospace",
+        "fallback": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "license": "system"
+      },
+      "scale": [
+        13,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "line_height": 1.45
+    },
+    "space": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "radius": {
+      "sm": 10,
+      "md": 16,
+      "lg": 24,
+      "pill": 999
+    },
+    "border": {
+      "width": 1,
+      "style": "solid"
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 2px 8px rgba(0,0,0,0.12)"
+    },
+    "density": "comfortable"
+  },
+  "dark": {
+    "color": {
+      "bg": "#111113",
+      "surface": "#1C1C20",
+      "ink": "#F4F4F5",
+      "muted": "#B4B4BC",
+      "line": "#3F3F46",
+      "accent": "#93B4FF",
+      "on_accent": "#0B1020",
+      "good": "#4ADE80",
+      "warn": "#FBBF24",
+      "bad": "#F87171",
+      "focus": "#93B4FF",
+      "data": [
+        "#93B4FF",
+        "#FDBA74",
+        "#2DD4BF",
+        "#F9A8D4",
+        "#A1A1AA"
+      ]
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 2px 8px rgba(0,0,0,0.5)"
+    }
+  },
+  "components": {
+    "card": "raised",
+    "button": "pill",
+    "chip": "filled",
+    "tile": "raised",
+    "progress": "dots",
+    "route": "path",
+    "meter": "ring"
+  },
+  "motion": {
+    "personality": "springy",
+    "duration_ms": 260,
+    "easing": "cubic-bezier(.34,1.56,.64,1)"
+  },
+  "figures": {
+    "stroke": 2,
+    "corner": "round",
+    "fill": "flat",
+    "overlay": {
+      "good": "good",
+      "attention": "warn",
+      "reference": "data.0",
+      "neutral": "muted"
+    }
+  },
+  "texture": {
+    "kind": "none",
+    "strength": 0
+  },
+  "voice": "plain",
+  "id": "playful-rounded"
+}

@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "name": "Clear",
+  "source": {
+    "kind": "description",
+    "note": "High contrast and accessible for low vision: pure black text on white, thick borders, bigger text, steps progress, no animation."
+  },
+  "modes": [
+    "light"
+  ],
+  "tokens": {
+    "color": {
+      "bg": "#FFFFFF",
+      "surface": "#FFFFFF",
+      "ink": "#000000",
+      "muted": "#1F1F1F",
+      "line": "#000000",
+      "accent": "#0000D6",
+      "on_accent": "#FFFFFF",
+      "good": "#006B2E",
+      "warn": "#8A4B00",
+      "bad": "#B00020",
+      "focus": "#D60000",
+      "data": [
+        "#0000D6",
+        "#B00020",
+        "#006B2E",
+        "#5B2C8F",
+        "#000000"
+      ]
+    },
+    "type": {
+      "display": {
+        "family": "system-ui",
+        "fallback": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "weight": 700,
+        "license": "system"
+      },
+      "body": {
+        "family": "system-ui",
+        "fallback": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "license": "system"
+      },
+      "mono": {
+        "family": "ui-monospace",
+        "fallback": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "license": "system"
+      },
+      "scale": [
+        15,
+        18,
+        20,
+        24,
+        30,
+        36
+      ],
+      "line_height": 1.45
+    },
+    "space": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "radius": {
+      "sm": 4,
+      "md": 8,
+      "lg": 12,
+      "pill": 999
+    },
+    "border": {
+      "width": 2,
+      "style": "solid"
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 2px 8px rgba(0,0,0,0.12)"
+    },
+    "density": "comfortable"
+  },
+  "dark": {
+    "color": {
+      "bg": "#111113",
+      "surface": "#1C1C20",
+      "ink": "#F4F4F5",
+      "muted": "#B4B4BC",
+      "line": "#3F3F46",
+      "accent": "#93B4FF",
+      "on_accent": "#0B1020",
+      "good": "#4ADE80",
+      "warn": "#FBBF24",
+      "bad": "#F87171",
+      "focus": "#93B4FF",
+      "data": [
+        "#93B4FF",
+        "#FDBA74",
+        "#2DD4BF",
+        "#F9A8D4",
+        "#A1A1AA"
+      ]
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 2px 8px rgba(0,0,0,0.5)"
+    }
+  },
+  "components": {
+    "card": "outlined",
+    "button": "square",
+    "chip": "outlined",
+    "tile": "outlined",
+    "progress": "steps",
+    "route": "ladder",
+    "meter": "ticks"
+  },
+  "motion": {
+    "personality": "none",
+    "duration_ms": 0,
+    "easing": "ease-out"
+  },
+  "figures": {
+    "stroke": 2,
+    "corner": "round",
+    "fill": "flat",
+    "overlay": {
+      "good": "good",
+      "attention": "warn",
+      "reference": "data.0",
+      "neutral": "muted"
+    }
+  },
+  "texture": {
+    "kind": "none",
+    "strength": 0
+  },
+  "voice": "plain",
+  "id": "high-contrast"
+}

@@ -1,4 +1,15 @@
-{ "name": "@las/ui", "version": "0.1.0", "private": true, "type": "module", "license": "MIT",
-  "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" } },
+{
+  "name": "@las/ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Themeable components and screens for Learn Any Skill: every color, font, radius, shadow and motion value comes from the learner's theme",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./base.css": "./src/styles/base.css"
+  },
   "scripts": { "build": "echo ok", "test": "vitest run" },
-  "dependencies": { "@las/schema": "workspace:*" }, "devDependencies": { "vitest": "^4.1.0" } }
+  "dependencies": { "@las/schema": "workspace:*", "preact": "^10.29.0" },
+  "devDependencies": { "preact-render-to-string": "^6.6.0", "vitest": "^4.1.0" }
+}
