@@ -1,0 +1,25 @@
+{
+  "metrics": {
+    "accuracy": 0.9,
+    "errors": 4,
+    "wpm": 30.857143,
+    "mean_ms": 315.384615,
+    "consistency": 0,
+    "completed": 0
+  },
+  "mistakes": [
+    {
+      "id": "rushing",
+      "severity": 2,
+      "at": [
+        2.3,
+        4.6,
+        9.1,
+        11.4
+      ]
+    }
+  ],
+  "criteria": {
+    "pass": false
+  }
+}
