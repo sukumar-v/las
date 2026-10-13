@@ -21,41 +21,52 @@ Do this unprompted the moment someone names a skill. Never wait for instructions
 5. **Write the model.** Follow [reference/skill-model.md](reference/skill-model.md). Ladder of 5–8 steps with hour ranges, the skill graph, why options, pictures, level checks, lessons, drills, specs, mistakes, proofs, and safety fields for anything physical. Specs are written in the spec languages: [reference/spec-languages.md](reference/spec-languages.md). Write the fallback content too (lessons, practice items, mistake headlines and explanations): the studio uses it whenever you're not in the loop.
 6. **Validate.** Call `validate_skill_model`. Fix every error and call again until `ok` is true. It stores the model and returns its id. Warnings are fine; errors are not.
 7. **Onboard.** `start_intake` with the model id, then `record_answer` for each screen, `place_learner`, `suggest_milestones`, `check_feasibility`, `set_milestone`. Each step returns the themed screen as a widget or a studio link; the learner answers there or in the chat.
-8. **Session: the coach loop.** `get_today`, then `coach_start(sk, minutes?, location?, clientSessionId?)` and share the studio link. Then loop until the session ends:
+8. **Session: the coach loop.** `get_today`, then `coach_start(sk, minutes?, location?)` and share the studio link once. Then loop until the session ends:
    `coach_wait(sk)` → read the events, the state and the planner's suggestion → `coach_show(sk, screen)` → `coach_wait(sk)` again.
-   Finish with `coach_end(sk)` and a few words in the chat. The loop and its rules are below. If your client can't hold a tool call for about a minute, or the server has no `coach_start` tool yet (it arrives in LAS v0.2), use the older flow: `next_session` → `render_lesson`, `render_sim`, `start_drill`, `request_capture`, `get_analysis` → `get_session_summary`.
-9. **Follow up.** Check-ins live in the server (`get_today` shows what's due). `las checkin` or the client's scheduler fires them; when you see one, offer its options and call `replan` or `reschedule` with the learner's choice. If `las coach --watch` wakes you for a check-in, word it for this learner as a `plan` screen with its `checkinId`.
+   Finish with `coach_end(sk)` and a few words in the chat. The loop and its rules are below. `/las-session` still names the older flow; use the loop whenever `coach_start` exists. If your client can't hold a tool call for about a minute, or the server has no `coach_start` tool, use the older flow: `next_session` → `render_lesson`, `render_sim`, `start_drill`, `request_capture`, `get_analysis` → `get_session_summary`.
+9. **Follow up.** Check-ins live in the server (`get_today` shows what's due). `las checkin` or the client's scheduler fires them; when you see one, offer its options and call `replan` or `reschedule` with the learner's choice. During a live session you may word an open check-in for this learner as a `plan` screen with its `checkinId`.
 
 ## The coach loop
 
-`coach_wait` returns `{events, state, suggestion, instruction}`. Events: `screen.viewed`, `card.answered`, `drill.answered`, `attempt.analyzed` (the `Analysis`, never media), `learner.asked`, `learner.hesitated`, `pain.reported`, `session.paused`, `session.resumed`, `session.left`, or a `heartbeat`. The state says the block, step, minutes used and mastery changes so far. The suggestion is the planner's next item and its reason.
+Every coach result ends with an `instruction`. Do what it says.
 
-`coach_show` takes one screen. Each one is checked like the skill model, and rejected if it's over budget or unsafe:
+`coach_wait(sk, timeoutS?, ack?)` returns `{events, state, suggestion, instruction}`, or `heartbeat: true` with no events. Events, in id order: `screen.viewed`, `card.answered`, `drill.answered`, `attempt.analyzed` (the `Analysis`, key frames by reference, the server's top-mistake pick; never media), `learner.asked`, `learner.hesitated`, `pain.reported`, `session.paused`, `session.resumed`, `session.left`, `plan.chosen` (the learner tapped a plan option; the server already applied it and says what changed). The state has the block, step, minutes, current and queued screen, mastery changes, mistakes, the intensity cap and injuries. The suggestion is the planner's next item and its reason.
+
+**`state.waiting` means the learner is waiting:** they finished a screen and nothing is queued. Show a screen now, before `state.waiting.until`, or the fallback shows.
+
+`coach_show(sk, screen)` takes one screen. Each is checked like the skill model:
 
 | Screen | You write | Budget |
 |---|---|---|
-| `lesson` | 1–5 cards of the usual types, aimed at what the learner just did | 25 words per card |
-| `drill` | A standard drill type. Knowledge drills may carry new items; performance drills name a drill or spec from the model | prompt 25, items 40 |
-| `capture` | Which drill or proof to attempt, and how | prompt 25 |
-| `feedback` | Headline from the analysis, its evidence, the fix drill, optional Why (a figure or one card), praise | headline 8, praise 8 |
-| `message` | An answer to a question, or a nudge | 25 words |
-| `plan` | A proposed change with 2–4 options the learner taps | question 25 |
-| `wrapup` | Praise, the one fix, the next session | as above |
+| `lesson` | `title, nodes`, 1–5 cards of the usual types, aimed at what the learner just did | 25 words per card |
+| `drill` | `drillId` from the model, or a knowledge drill of your own: `type` (choice, match, order, hotspot, predict-output, fill), `nodes, items`. Optional `prompt`, `difficulty` (a level of that drill) | prompt 25, items 40 |
+| `capture` | `drillId` (a performance drill) or `milestoneId`; optional `prompt, how` | 25 each |
+| `feedback` | `attemptId, headline, evidence` (`{kind: "mistake", mistakeId}`, `{kind: "marker", index}` or `{kind: "metric", metricId}`), optional `fixDrillId, why {figure or card}, praise` | headline 8, praise 8 |
+| `message` | `text`, optional `figure, replyTo` (the event id), `leaving` | 25 words |
+| `plan` | `question`, `reason`, 2–4 `options` the learner taps (`{id, label, action}`: `replan`, `reschedule`, `checkin` or `none`), optional `checkinId` | question 25 |
+| `wrapup` | `praise, oneFix, nextNote` | 8, 8, 25 |
 
-`coach_show(sk, "suggested")` shows the planner's suggestion as written. Warm-up and recall come from the model; add a `message` if it helps. Message screens show at once; others show when the learner finishes the current screen. Write the next screen while the learner works on this one.
+- **`coach_show(sk, "suggested")`** shows the planner's suggestion as written. If it has no pre-written content (a lesson with no cards), write it yourself.
+- **A `reason`** is needed on a `lesson`, `drill`, `capture` or `wrapup` that differs from the suggestion. `feedback`, `message` and `plan` never need one as an override (a `plan` has its own `reason`, which the learner sees).
+- **Rejected means nothing was shown.** You get every error as `path: message`. Fix them all and call `coach_show` again; the learner keeps the current screen, and the fallback shows after the 8 s deadline.
+- **Rejected for:** over budget; an unknown card, drill or figure type; a spec, metric or detector written live; an unknown node, drill, attempt, milestone, check-in or event; evidence not in that analysis, below its confidence floor or disputed; a failed quality check (that's a re-record); a fix drill that doesn't fix that mistake; a drill without a validated spec; above the intensity cap, equipment the learner doesn't have here, an injury conflict, or a supervised-only activity.
+- **When it shows:** a `message` shows at once over the current screen. Anything else shows at once if the learner is waiting, or else waits as the next screen and replaces the one you queued before. Write the next screen while the learner works on this one.
+- **Warm-up and recall** are shown by the server before your screens. Add a `message` if it helps.
 
 **Loop rules**
 
 1. **Stay in the loop.** Keep your turn open for the whole session. Don't stop to chat; the learner is in the studio.
 2. **A heartbeat means call `coach_wait` again.** Nothing else.
-3. **Write within budget.** Same card types, drill types and word budgets as the model. Feedback comes from the `Analysis` only, citing its evidence.
-4. **Never leave silently.** If you must stop, `coach_show` a `message` with `leaving: true` that says so. The session goes on with the fallback content.
-5. **Override the planner only with a reason.** Follow the suggestion, or put a `reason` on a different screen. Plan changes are `plan` screens the learner taps.
-6. **Answer questions short.** `learner.asked` gets a `message` (and a visual if needed), then back to practice.
-7. **Silence is fine.** On `learner.hesitated`, at most one short nudge per screen, never during a recording.
-8. **Pain means stop, here too.** On `pain.reported` the server has already lowered intensity (don't call `report_pain` again). Show a `message`, then an easier screen or `coach_end`; suggest a professional if it continues.
-9. **Pass your session id** to `coach_start` as `clientSessionId` when you know it, so `las coach --watch` can bring you back to this conversation.
-10. **If woken by the watcher**, call `coach_wait` first: it hands you everything that happened while you were away.
+3. **Events come at least once.** Skip ids you've handled. After a failed or timed-out call, pass `ack` (the last event id you handled) and the rest come again.
+4. **Write within budget.** Same card types, drill types and word budgets as the model. Feedback comes from the `Analysis` only, citing its evidence.
+5. **Never leave silently.** If you must stop, `coach_show` a `message` with `leaving: true` that says so. The session goes on with the fallback content.
+6. **Override the planner only with a reason.** Plan changes are `plan` screens the learner taps; `plan.chosen` tells you what changed.
+7. **Answer questions short.** `learner.asked` gets a `message` with `replyTo` (and a visual if needed), then back to practice.
+8. **Silence is fine.** On `learner.hesitated`, at most one short nudge per screen.
+9. **Pain means stop, here too.** On `pain.reported` the server has already lowered intensity (don't call `report_pain` again). Show a `message`, then an easier screen or `coach_end`; suggest a professional if it continues.
+10. **Your session id is optional.** On Claude Code a hook records it. Elsewhere pass `clientSessionId` to `coach_start` when you know it, so `las coach --watch` can bring you back to this conversation.
+11. **Woken by the watcher** ("Call coach_wait with sk ... now")? Call `coach_wait` first: it hands you everything that happened while you were away. Use LAS tools only.
+12. **Another coach took over?** Stop the loop and tell the learner in a few words. Session ended? Call `coach_end`.
 
 ## Rules
 
@@ -97,4 +108,4 @@ When something is missing: never block. Fall back, say the check is less precise
 
 ## Prompts
 
-`/las-start`, `/las-session` (starts the coach loop), `/las-weekly-review`, `/las-stuck` are shortcuts for the flow above.
+`/las-start`, `/las-session` (today's session: run it as the coach loop), `/las-weekly-review`, `/las-stuck` are shortcuts for the flow above.

@@ -37,10 +37,14 @@ The skill ([skill/SKILL.md](skill/SKILL.md)) makes the agent do this on its own 
 2. **Capabilities.** `get_capabilities` lists the engines, code runners, devices, external tools and local models that exist on your machine right now.
 3. **Skill model.** The agent decides which kinds of evidence your skill needs (movement, audio, speech, code, images, answers, sensors, a game), calls `draft_skill_model`, writes the model and calls `validate_skill_model` until it passes.
 4. **Onboarding.** `start_intake`, then one screen at a time: why, what you want to be doing in six months, a few level checks, time, equipment and injuries, your first milestone with a proof.
-5. **Sessions.** `get_today`, `next_session`, then lessons, simulations, drills and recordings. Feedback is one fix plus one thing done well, quoted from measurements, never from the agent's impression of a video.
+5. **Sessions.** `get_today`, then the agent coaches live: `coach_start`, then `coach_wait` and `coach_show` in a loop until `coach_end`. Lessons, simulations, drills and recordings, each written for what you just did. Feedback is one fix plus one thing done well, quoted from measurements, never from the agent's impression of a video. Clients that can't hold a long tool call use `next_session` instead.
 6. **Follow-up.** Check-ins are stored and fire from a scheduler. You choose every plan change (`replan`, `reschedule`); nothing changes silently.
 
 Every tool returns a widget in clients that render MCP Apps, and a studio link otherwise.
+
+## Live coach
+
+During practice the agent stays in a loop and writes each next screen in the studio for what you just did, with the same card types and word budgets as the skill model. The studio shows "coach here" or "coach away" and has an ask-the-coach box. With no coach, the session goes on with the content the agent wrote ahead. `las coach --watch` (or `las coach --once` from cron) brings the coach back: on Claude Code it resumes the same conversation headlessly, limited to LAS tools; otherwise it sends a notification. Design: [docs/design/live-coach.md](docs/design/live-coach.md); setup details: packages/cli.
 
 ## The studio
 
@@ -134,11 +138,11 @@ Then `draft_theme` -> `validate_theme` (contrast, color-blind-safe charts, focus
 |---|---|
 | `packages/schema` | Skill model, theme, spec languages, analyses, events, with validators |
 | `packages/store` | SQLite storage and migrations |
-| `packages/server` | MCP server (39 tools, resources, prompts) and the studio's local JSON API |
+| `packages/server` | MCP server (43 tools, resources, prompts), the live coach's session director, and the studio's local JSON API |
 | `packages/engines`, `packages/runners` | Measurement engines; code runners for 22 languages |
 | `packages/ui` | Themeable components and screens |
 | `packages/studio` | The PWA and the widget (see packages/studio) |
-| `packages/cli` | `las-agents`: setup, serve, doctor, studio, checkin, engines test, model validate |
+| `packages/cli` | `las-agents`: setup, serve, doctor, studio, checkin, coach --watch / --once, engines test, model validate |
 | `skill/` | The `learn-any-skill` skill and its references |
 | `evals/` | Theme fixtures and agent evals |
 | `tools/` | License check, style check, ESLint plugin, Inspector smoke test |
@@ -159,7 +163,7 @@ Then `draft_theme` -> `validate_theme` (contrast, color-blind-safe charts, focus
 
 ## Status
 
-v0.1: everything in [DESIGN §13](docs/DESIGN.md#13-build-plan) for v0.1, running locally. There are no curated packs; every skill model is written by the agent. Real-agent eval runs and real recordings are manual checks, not CI. Hosted mode (remote MCP, sync) is v0.2.
+v0.2: everything in [DESIGN §13](docs/DESIGN.md#13-build-plan) for v0.1 and v0.2, running locally: the v0.1 learning loop and the live coach (what is left of v0.2 is listed there). There are no curated packs; every skill model is written by the agent. Real-agent eval runs and real recordings are manual checks, not CI. Hosted mode (remote MCP, sync) is v0.3.
 
 ## License
 

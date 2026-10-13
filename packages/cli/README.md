@@ -32,7 +32,9 @@ Codex and Goose get a per-server tool timeout (`tool_timeout_sec = 300`, `timeou
 
 - **Claude Code:** `claude -p --resume <id> --allowedTools "mcp__las__*" --output-format json`. The summary goes on stdin. It names the skill, the session and the event types, and never includes the learner's words.
 - **While the coach's client is still open, or the client can't be resumed:** it sends a notification instead ("Your coach is waiting in Claude Code"). It tries studio Web Push first, then the OS notifier.
-- **Limits:** one wake in flight per session, at most one every 2 minutes, and 5 per session (`coach.wakeMinIntervalS`, `coach.wakeMaxPerSession`).
+- **Only for learner actions:** answers, views, recordings, questions, pain, resuming and plan choices. Never for hesitation, pausing or leaving, and never while a coach is present (a `coach_wait` open or returned in the last 60 s).
+- **Limits:** one wake in flight per session (also across watcher processes), at most one every 2 minutes, and 5 per session (`coach.wakeMinIntervalS`, `coach.wakeMaxPerSession`). A notification counts as a wake.
+- **Other clients:** the Codex, OpenCode and Goose rows are not verified yet. Claude Desktop, Cursor, Continue and Cline have no headless mode and get an OS notification (`notify-send` on Linux, `osascript` on macOS; none on Windows yet).
 - **Coach left on purpose:** no wake until the learner asks for the coach.
 
 While the studio port is free, `--watch` also serves the studio. It retries every few seconds when another LAS process holds the port. Log lines go to stderr.

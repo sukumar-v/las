@@ -9,7 +9,8 @@ Start from `draft_skill_model` (skeleton, available engines, any previous or cur
 From v0.2 you coach live ([live coach](../../docs/design/live-coach.md)): during a session you write each lesson, drill, feedback headline and message for this learner, now. The skill model is then two things:
 
 - **The scaffold** (required): the ladder and proofs, the skill graph with its BKT and review cards, drills with their types, specs, needs, success, difficulty and intensity, engine specs, mistakes with detectors and fix drills, warm-ups, safety, access, injuries, focus, key metrics, and the onboarding data (why, pictures, probes, placement). Onboarding, the planner, the engines and the safety rules run on it, and your live screens must reference it (`coach_show` can't invent a metric spec or a drill type mid-session).
-- **The fallback content** (optional in the schema, but write all of it): lesson cards, practice-only knowledge items and drill prompts, mistake `headline` and `explain`. The studio shows it only when no coach is present, or when you miss the screen deadline. `validate_skill_model` warns about each gap and names what the studio will skip; with no fallback it never invents text (it skips to the next screen the scaffold can build and uses the mistake's `name` as a headline). A session must never block on a model, so the evals require full fallback content.
+- **The fallback content** (optional in the schema, but write all of it): lesson cards, practice-only knowledge items and drill prompts, mistake `headline` and `explain`. The studio shows it only when no coach is present, or when you miss the screen deadline. `validate_skill_model` passes the model and warns once per gap, naming what the studio does without you; with no fallback it never invents text (it skips to the next screen the scaffold can build and uses the mistake's `name` as a headline). A session must never block on a model, so the evals require full fallback content.
+- **Defaults when left out:** a lesson's `cards` is `[]` (the lesson still needs its id, title and nodes: nodes name it), an items spec's `items` is `[]`, a mistake's `headline` is `""`, which means none (not a blank headline), and `explain` and a drill's `prompt` are absent. An items spec that a level check or a proof reads must have its items: that's an error.
 
 ## Conventions
 
@@ -294,7 +295,7 @@ The mistake library: detector, a visual explanation, and a fix drill. The detect
 ]
 ```
 
-- `headline` is 8 words or fewer.
+- `headline` is 8 words or fewer. `""` (the default) means none: the fallback feedback uses `name`, with a warning.
 - `detector.metric` is a metric the engine's spec produces. `when` is an expression over metrics; use `learner.baseline.*` to be relative to the learner's own body or first attempts. `min_confidence` defaults to 0.7: below that a correction is never shown.
 - `explain` is `{lesson, card}` (a lesson id and a card index) or `{figure}`. A figure explains with a picture, not text.
 - `severity` 1–3. `resolved_after` is the number of attempts in a row without it (default 3).
@@ -365,7 +366,7 @@ Errors block storing. Warnings don't. The `check` label is in each result.
 | `capabilities` | When `get_capabilities` is known: a proof whose engine isn't available here and has no available fallback (`self-report` always counts). |
 | `assets` | A `media.path` starting with `http`. |
 
-Warnings: no placement rules; step 0 hours other than `[0, 0]`; a prerequisite that appears at a later step; `hard_focus` not in `focus`; physical skill with no `injuries`.
+Warnings: no placement rules; step 0 hours other than `[0, 0]`; a prerequisite that appears at a later step; `hard_focus` not in `focus`; physical skill with no `injuries`; a proof engine that isn't available here (its fallback is used). Fallback gaps (check `fallback`), one warning each: a lesson with no cards, an items spec with no items, a drill with no prompt, a mistake with headline `""`, a mistake with no `explain` or one pointing at a lesson with no cards.
 
 ### Passes validation, still wrong
 

@@ -41,7 +41,8 @@ It ends with a table (skill, engines, theme, milestone, studio link).
 ## What to look at in the studio
 
 - **Three looks.** Open the three Today links side by side. The screens and the components are the same and only the theme changes: neon on near-black with square buttons, thick borders and hard shadows with a red accent, serif type on warm paper with underline buttons.
-- **A session.** The Session link walks the planned blocks in that skill's look. Salsa starts with a knee-friendly warm-up, because the learner said "knees" during onboarding.
+- **A live session.** Start on a Today page opens a live session with the coach away: the screens come from the content the demo's agent wrote ahead, with "coach away", the ask-the-coach box and Pause. No agent is in the loop in the demo.
+- **A session.** The Session link walks the planned blocks (the v0.1 runner) in that skill's look. Salsa starts with a knee-friendly warm-up, because the learner said "knees" during onboarding.
 - **The framing guide.** In the salsa session, the perform block opens the recording screen. The framing guide checks that your body is in frame, the light and that the camera is steady before it lets you record (the camera and the analysis stay in the browser). To see it in each look without a camera, use the Screens link with `screen=recording-movement`.
 - **A lesson sim.** `screen=lesson` shows a lesson with a sim: drag the slider and watch the readout. Among the demo's models, drawing's light-and-shadow lesson has a sim of its own.
 - **A feedback card.** `screen=feedback` (the Screens link) shows one fix and one thing done well, quoted from the measurements, on a replay. You get a real one after recording a perform block.

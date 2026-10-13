@@ -49,12 +49,12 @@ The weekly dots replace a daily streak. Missing a day never resets anything.
 
 A session's length comes from the plan (10–60 min). It's built from blocks with fixed roles.
 
-**Who writes the content.** The live coach writes each block's screens during the session, for what this learner just did ([live coach §7](live-coach.md#7-screen-catalogue)). When no coach is present, the studio shows "coach away" and serves the skill model's pre-written content instead (the **fallback**). Warm-up and recall always come from the scaffold.
+**Who writes the content.** The live coach writes each block's screens during the session, for what this learner just did ([live coach §7](live-coach.md#7-screen-catalogue)). When no coach is present, the studio shows "coach away" and serves the skill model's pre-written content instead (the **fallback**). Warm-up and recall always come from the scaffold: the session director shows them itself, before any screen the coach has queued, and the planner's suggestion to the coach starts after them.
 
 | Block | Job | Share of time | Live (coach present) | Fallback (coach away) |
 |---|---|---|---|---|
-| Warm-up | Physical skills only. Required when an injury is flagged | 10–15% | The model's routine; the coach may add a short message | Routine from the skill model |
-| Recall | Bring back items due for review | 10–15% | Due FSRS cards (quiz cards, play from memory, name the move); the coach may add a message | The same due cards |
+| Warm-up | Physical skills only. Required when an injury is flagged | 10–15% | The model's routine, shown by the director; the coach may add a short message | Routine from the skill model |
+| Recall | Bring back items due for review | 10–15% | Due FSRS cards (quiz cards, play from memory, name the move), shown by the director; the coach may add a message | The same due cards |
 | Learn | **One** new idea, shown visually | 15–20% | Teaching cards written for this learner (§4) | The node's lesson |
 | Practice | Guided repetitions with instant feedback | 35–45% | Drills of the standard types, aimed at what just happened (§5) | The model's drills and items |
 | Perform | One real attempt, analyzed | 15–20% | The coach picks the attempt; the engine measures it | The planner's pick |
@@ -96,7 +96,7 @@ The planner is deterministic and can explain itself. Every block carries a reaso
 4. **Choose drills** that fit the location and equipment. Set the starting difficulty from mastery.
 5. **Perform:** usually the practiced skill's assessment. It becomes a **proof rehearsal** once every skill the milestone depends on is at 80% mastery or more.
 
-The weights are starting values, and every planner decision is logged so they can be tuned later. Coach overrides are logged as `{suggested, chosen, reason, by: "coach"}`.
+The weights are starting values, and every planner decision is logged so they can be tuned later. Coach overrides (a lesson, drill, capture or wrap-up that differs from the suggestion, with its `reason`) are logged as `{at, by: "coach", suggested, chosen, reason}`.
 
 ## 4. Teaching cards (Learn)
 
@@ -114,7 +114,7 @@ A lesson is 1–5 cards. **Each card has at most 25 words.** The server rejects 
 
 The agent can call `render_lesson` for questions that come up in chat ("why do my forearms burn?"). The same card types and word budget apply.
 
-**Live vs fallback.** The live coach writes the lesson during the session (`coach_show` with a `lesson` screen), using what the learner just did: a wrong prediction, a slow card, a question they typed. The server checks the same card types and budget. The node's lesson in the skill model is the fallback.
+**Live vs fallback.** The live coach writes the lesson during the session (`coach_show` with a `lesson` screen), using what the learner just did: a wrong prediction, a slow card, a question they typed. The server checks the same card types and budget. The node's lesson cards in the skill model are the fallback. A lesson with no cards is skipped when no coach is present; with a coach, the planner suggests it with "No pre-written cards: write them."
 
 ## 5. Drills (Practice)
 
@@ -137,7 +137,7 @@ Every drill type reports the same kind of result: `{nodes, success, score, metri
 
 Performance drills show live meters while the learner works: a pitch needle, beat dots, a pose overlay, or a test list that turns green as tests pass.
 
-**Live vs fallback.** The live coach picks the next drill and its difficulty from each `drill.answered` event, and can write fresh items for knowledge drills (`choice`, `match`, `order`, `hotspot`, `predict-output`, `fill`). Performance drills always use a validated spec from the skill model: the coach can change the prompt and difficulty, never the measurement. The in-session difficulty rule above stays the default. The model's drills and items are the fallback.
+**Live vs fallback.** The live coach picks the next drill and its difficulty from each `drill.answered` event, and can write fresh items for knowledge drills (`choice`, `match`, `order`, `hotspot`, `predict-output`, `fill`). Performance drills always use a validated spec from the skill model: the coach can change the prompt and difficulty, never the measurement. The in-session difficulty rule above stays the default. The model's drills and items are the fallback; with no coach, a knowledge drill whose items spec has no items is skipped, and a drill with no `prompt` shows its title.
 
 ## 6. Feedback and correction
 
@@ -150,7 +150,7 @@ Performance drills show live meters while the learner works: a pitch needle, bea
 
 **A feedback card:** a headline of 8 words or fewer, the evidence visual, a **Try this** button that opens the fix drill, and an optional **Why?** that shows a visual explanation, not text.
 
-**Who writes it.** The live coach writes the headline, the praise and the Why from the `Analysis` it gets in `attempt.analyzed`, and cites the analysis's evidence. The numbers and the mistake come only from the engine; the server rejects evidence that isn't in the analysis or is below the confidence floor. The rules above still apply: one fix, evidence always, unsure means ask. When the coach is away, the mistake's pre-written `headline` and `explain` from the skill model are used.
+**Who writes it.** The live coach writes the headline, the praise and the Why from the `Analysis` it gets in `attempt.analyzed`, and cites the analysis's evidence. The numbers and the mistake come only from the engine; the server rejects evidence that isn't in the analysis or is below the confidence floor. The rules above still apply: one fix, evidence always, unsure means ask. When the coach is away, the mistake's pre-written `headline` and `explain` from the skill model are used. An empty `headline` (`""`, the default) means none: the card uses the mistake's `name`. No `explain` means no Why button.
 
 **How a mistake progresses:** detected → coached → improving → resolved (absent in 3 attempts in a row). If it comes back later, it's reopened as resurfaced.
 
@@ -178,7 +178,7 @@ Performance drills show live meters while the learner works: a pitch needle, bea
 2. Web Push from the studio;
 3. optional email from a self-hosted mail server.
 
-**Live check-ins (v0.2).** When the watcher (`las coach --watch`) can re-wake the coach, a due check-in goes to the coach first. The coach words it for this learner as a `plan` screen, shown on Today and in the notification, with the same options and limits. When no coach can be woken, the server's own wording goes out as before ([live coach §10](live-coach.md#10-the-planner-as-adviser)). In a session, the coach proposes re-plans the same way: a `plan` screen the learner taps.
+**Live check-ins (designed, not built in v0.2).** When the watcher (`las coach --watch`) can re-wake the coach, a due check-in goes to the coach first. The coach words it for this learner as a `plan` screen, shown on Today and in the notification, with the same options and limits. When no coach can be woken, the server's own wording goes out as before ([live coach §10](live-coach.md#10-the-planner-as-adviser)). In v0.2 check-ins still go out with the server's own wording. In a live session, the coach proposes re-plans as a `plan` screen the learner taps (it may carry an open check-in's `checkinId`); the server applies the tapped option and logs it.
 
 **Limits:** quiet hours, at most 1 nudge a day and 4 a week, and one-tap pause.
 
