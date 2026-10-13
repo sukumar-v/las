@@ -1,0 +1,62 @@
+{
+  "spec": {
+    "language": "python",
+    "entry": "words.py",
+    "tests": [
+      {
+        "call": "count_words(\"a b c\")",
+        "expect": "3"
+      },
+      {
+        "call": "count_words(\"\")",
+        "expect": "0",
+        "hidden": true
+      },
+      {
+        "call": "count_words(\"a  b\")",
+        "expect": "2",
+        "hidden": true
+      }
+    ],
+    "limits": {
+      "time_s": 5
+    }
+  },
+  "evidence": {
+    "result": {
+      "runner": "local",
+      "language": "python",
+      "compiled": {
+        "ok": true,
+        "output": ""
+      },
+      "tests": [
+        {
+          "label": "count_words(\"a b c\")",
+          "hidden": false,
+          "pass": true,
+          "expected": "3",
+          "got": "3"
+        },
+        {
+          "label": "hidden test 2",
+          "hidden": true,
+          "pass": false,
+          "expected": "0",
+          "got": "1"
+        },
+        {
+          "label": "hidden test 3",
+          "hidden": true,
+          "pass": false,
+          "expected": "2",
+          "got": "3"
+        }
+      ],
+      "timeMs": 40
+    },
+    "files": {
+      "words.py": "def count_words(s):\n    return len(s.split(' '))\n\n\ndef first_word(s):\n    return s.split()[0]\n"
+    }
+  }
+}

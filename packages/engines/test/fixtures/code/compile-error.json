@@ -1,0 +1,50 @@
+{
+  "spec": {
+    "language": "python",
+    "entry": "words.py",
+    "tests": [
+      {
+        "call": "count_words(\"a b c\")",
+        "expect": "3"
+      },
+      {
+        "call": "count_words(\"\")",
+        "expect": "0",
+        "hidden": true
+      }
+    ],
+    "limits": {
+      "time_s": 5
+    }
+  },
+  "evidence": {
+    "result": {
+      "runner": "local",
+      "language": "python",
+      "compiled": {
+        "ok": false,
+        "output": "SyntaxError: expected ':' (words.py, line 1)"
+      },
+      "tests": [
+        {
+          "label": "count_words(\"a b c\")",
+          "hidden": false,
+          "pass": false,
+          "expected": "3",
+          "error": "compile: SyntaxError: expected ':' (words.py, line 1)"
+        },
+        {
+          "label": "hidden test 2",
+          "hidden": true,
+          "pass": false,
+          "expected": "0",
+          "error": "compile: SyntaxError: expected ':' (words.py, line 1)"
+        }
+      ],
+      "timeMs": 40
+    },
+    "files": {
+      "words.py": "def count_words(s)\n    return len(s.split())\n"
+    }
+  }
+}
