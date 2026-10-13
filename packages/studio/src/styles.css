@@ -1,0 +1,34 @@
+/* Studio-only structure. Every color, font, radius, shadow and motion value is a theme token (var(--las-*)). */
+
+#app { min-height: 100vh; }
+.las-studio-nav { position: sticky; bottom: 0; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--las-space-1); padding-block: var(--las-space-2); background: var(--las-color-bg); border-top: var(--las-border-width) var(--las-border-style) var(--las-color-line); }
+.las-studio-nav .las-btn { width: 100%; }
+.las-studio-nav .las-btn[aria-current="page"] { border-color: var(--las-color-accent); color: var(--las-color-accent); }
+.las-center { display: grid; place-items: center; min-height: 50vh; text-align: center; }
+
+/* tap points on a photo */
+.las-tapimg { position: relative; display: block; padding: 0; border: var(--las-border-width) var(--las-border-style) var(--las-color-line); border-radius: var(--las-radius-md); overflow: hidden; background: var(--las-color-surface); cursor: crosshair; width: 100%; }
+.las-tapimg img { display: block; width: 100%; height: auto; }
+.las-tapdot { position: absolute; width: var(--las-space-3); height: var(--las-space-3); transform: translate(-50%, -50%); border-radius: var(--las-radius-pill); background: var(--las-color-accent); border: var(--las-border-width) var(--las-border-style) var(--las-color-on-accent); }
+
+/* pairing QR: modules in the darker of ink and surface so any phone camera reads it */
+.las-qr { width: min(100%, calc(var(--las-tap) * 6)); margin-inline: auto; padding: var(--las-space-3); background: var(--las-color-surface); border: var(--las-border-width) var(--las-border-style) var(--las-color-line); border-radius: var(--las-radius-md); }
+.las-qr svg { width: 100%; height: auto; }
+.las-qr .bg { fill: var(--las-color-surface); }
+.las-qr .m { fill: var(--las-color-ink); }
+.las-qr[data-inverted] { background: var(--las-color-ink); }
+.las-qr[data-inverted] .bg { fill: var(--las-color-ink); }
+.las-qr[data-inverted] .m { fill: var(--las-color-surface); }
+.las-url { font-family: var(--las-font-mono); font-size: var(--las-text-0); overflow-wrap: anywhere; }
+
+/* review grades */
+.las-grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--las-space-1); }
+.las-grades .las-btn { padding-inline: var(--las-space-1); }
+
+/* settings */
+.las-section { display: flex; flex-direction: column; gap: var(--las-space-2); }
+.las-themes { display: flex; flex-direction: column; gap: var(--las-space-1); }
+.las-dialog { border-color: var(--las-color-warn); }
+
+/* snapshots: a frame per screen, nothing else on the page */
+.las-snap { min-height: 100vh; }

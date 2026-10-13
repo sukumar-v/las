@@ -13,6 +13,7 @@ import { readiness } from "./proof.js";
 import { REPLAN_OPTIONS, replan, velocity } from "./replan.js";
 import { loopSettings } from "./settings.js";
 import { pictureOf } from "./route.js";
+import { pushDeliverer } from "./push.js";
 
 export type CheckinKind =
   | "session-reminder"
@@ -237,6 +238,8 @@ export async function runCheckins(ctx: LasContext, now = new Date(), opts: { del
   }
   due.sort((a, b) => rank(a.c.kind) - rank(b.c.kind) || a.c.dueAt.localeCompare(b.c.dueAt));
   const delivered: string[] = [];
+  // Web Push is automatic once the learner opted in on a device (studio settings); a caller's own deliver wins
+  const deliver = opts.deliver ?? pushDeliverer(ctx);
   const tz = (() => {
     try {
       new Intl.DateTimeFormat("en-US", { timeZone: learner.timezone });
@@ -255,7 +258,7 @@ export async function runCheckins(ctx: LasContext, now = new Date(), opts: { del
       delivered.push(d.c.id);
       budget--;
       ctx.emit("checkin.due", d.view);
-      if (opts.deliver) await opts.deliver(d.view);
+      if (deliver) await deliver(d.view);
     }
   }
   return { due: due.map((d) => d.view), delivered };
