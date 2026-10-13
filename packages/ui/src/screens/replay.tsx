@@ -7,13 +7,13 @@ import { AnalysisSummary } from "./session.js";
 import type { Voice } from "../copy.js";
 
 /** The replay screen: the learner's clip with overlays and mistake markers, compare toggles, then one fix and one praise. */
-export function Replay({ analysis, feedback, media, landmarks, reference, marks, t, onScrub, onMarker, compare, onCompare, onTry, onDispute, onReRecord, voice }: { analysis: Analysis; feedback: FeedbackView; media?: ComponentChildren; landmarks?: Record<string, [number, number, number?]>; reference?: Record<string, [number, number, number?]>; marks?: OverlayMark[]; t?: number; onScrub?: (t: number) => void; onMarker?: (t: number) => void; compare?: "none" | "reference" | "previous"; onCompare?: (c: "none" | "reference" | "previous") => void; onTry?: () => void; onDispute?: () => void; onReRecord?: () => void; voice?: Voice }) {
+export function Replay({ analysis, feedback, media, landmarks, reference, marks, t, onScrub, onMarker, compare, onCompare, onTry, onDispute, onReRecord, voice, aspect }: { analysis: Analysis; feedback: FeedbackView; media?: ComponentChildren; landmarks?: Record<string, [number, number, number?]>; reference?: Record<string, [number, number, number?]>; marks?: OverlayMark[]; t?: number; onScrub?: (t: number) => void; onMarker?: (t: number) => void; compare?: "none" | "reference" | "previous"; onCompare?: (c: "none" | "reference" | "previous") => void; onTry?: () => void; onDispute?: () => void; onReRecord?: () => void; voice?: Voice; /** width / height of the clip (videoWidth / videoHeight); the media box and overlay take this shape. Default 3/4. */ aspect?: number }) {
   const duration = analysis.segments?.length ? Math.max(...analysis.segments.map((s) => s[1])) : Math.max(1, ...analysis.markers.map((m) => m.t), ...analysis.mistakes.flatMap((m) => m.at));
   const visual = analysis.engine === "movement" || analysis.engine === "visual";
   return (
     <div class="las-stack" data-engine={analysis.engine}>
       {visual ? (
-        <div class="las-media" aria-label="Replay">
+        <div class="las-media" aria-label="Replay" style={aspect && aspect > 0 ? { "--las-media-aspect": String(aspect) } : undefined}>
           {media}
           <PoseOverlay landmarks={landmarks} reference={compare === "reference" ? reference : undefined} marks={marks ?? []} label="Replay overlay" />
         </div>

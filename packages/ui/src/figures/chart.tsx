@@ -5,10 +5,12 @@ export function Chart({ type, series, labels, height = 50, label }: { type: "bar
   const min = Math.min(0, ...all);
   const span = max - min || 1;
   const n = Math.max(...series.map((s) => s.values.length), 1);
+  const labelSize = height * 0.07; // 3.5 units at the default height, always in viewBox units
+  const base = height - 6;
   const y = (v: number) => height - 6 - ((v - min) / span) * (height - 12);
   return (
     <svg class="las-fig las-chart" viewBox={`0 0 100 ${height}`} role="img" aria-label={label ?? series.map((s) => `${s.label}: ${s.values.join(", ")}`).join("; ")}>
-      <line class="axis" x1="4" y1={height - 6} x2="96" y2={height - 6} />
+      <line class="axis" x1="4" y1={base} x2="96" y2={base} />
       {series.map((s, si) =>
         type === "line" ? (
           <path key={si} class={`line s${si % 5}`} d={s.values.map((v, i) => `${i === 0 ? "M" : "L"}${4 + (i / Math.max(n - 1, 1)) * 92} ${y(v)}`).join(" ")} />
@@ -23,13 +25,14 @@ export function Chart({ type, series, labels, height = 50, label }: { type: "bar
             {s.values.map((v, i) => {
               const bw = 92 / n;
               const w = bw / series.length - 1;
-              return <rect key={i} class={`bar s${si % 5}`} x={4 + i * bw + si * (w + 1)} y={y(v)} width={Math.max(w, 1)} height={Math.max(0, height - 6 - y(v))} rx="0.6" />;
+              const h = Math.max(1, base - y(v)); // at least 1 unit so all-zero data still shows bars
+              return <rect key={i} class={`bar s${si % 5}`} x={4 + i * bw + si * (w + 1)} y={base - h} width={Math.max(w, 1)} height={h} rx="0.6" />;
             })}
           </g>
         )
       )}
       {labels?.map((l, i) => (
-        <text key={i} class="label" x={4 + (i / Math.max(n - 1, 1)) * 92} y={height - 1} text-anchor="middle" font-size="3.5">
+        <text key={i} class="label" x={4 + (i / Math.max(n - 1, 1)) * 92} y={height - 1} text-anchor="middle" font-size={labelSize}>
           {l}
         </text>
       ))}

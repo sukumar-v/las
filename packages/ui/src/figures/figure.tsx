@@ -58,7 +58,7 @@ export function StickFigure({ points, segments, marks = [], label }: { points: R
         return (
           <g key={i}>
             <circle class={`${m.role}`} cx={p[0]} cy={p[1]} r="6" />
-            <text class="label" x={p[0] + 8} y={p[1] + 3}>
+            <text class="label" x={p[0] + 8} y={p[1] + 3} font-size="4">
               {m.label}
             </text>
           </g>
