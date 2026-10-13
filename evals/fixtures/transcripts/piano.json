@@ -1,0 +1,126 @@
+{
+  "scenario": "piano",
+  "skill": "piano",
+  "expect": {
+    "engines": [
+      "audio",
+      "movement"
+    ],
+    "main": "audio",
+    "fallback": "self-report",
+    "physical": false,
+    "supervisedOnly": []
+  },
+  "runs": {
+    "real": {
+      "mode": "real",
+      "unavailable": [],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "piano",
+            "notes": "Has a digital piano and the sheet music for a simple minuet as a MusicXML file. Reads a little treble clef."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/piano.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [],
+        "summary": {
+          "nodes": 6,
+          "lessons": 6,
+          "drills": 6,
+          "mistakes": 3,
+          "specs": 6,
+          "ladderSteps": 6,
+          "words": 232
+        },
+        "stored": "<id>"
+      }
+    },
+    "fallback": {
+      "mode": "fallback",
+      "unavailable": [
+        {
+          "engine": "audio",
+          "reason": "no microphone reported by the studio"
+        }
+      ],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "piano",
+            "notes": "Has a digital piano and the sheet music for a simple minuet as a MusicXML file. Reads a little treble clef."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/piano.fallback.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [
+          "capabilities ladder[2].proof: \"audio\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[3].proof: \"audio\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[4].proof: \"audio\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[5].proof: \"audio\" is not available now; the self-report fallback will be used and the check is less precise"
+        ],
+        "summary": {
+          "nodes": 6,
+          "lessons": 6,
+          "drills": 6,
+          "mistakes": 3,
+          "specs": 6,
+          "ladderSteps": 6,
+          "words": 232
+        },
+        "stored": "<id>"
+      }
+    }
+  }
+}

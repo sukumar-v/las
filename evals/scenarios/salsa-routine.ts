@@ -1,0 +1,160 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/** Salsa (on1) up to a short solo routine: movement on the beat, shape against the learner's own reference clip. */
+export const salsaRoutine: Scenario = {
+  id: "salsa-routine",
+  skill: "salsa",
+  notes: "Wants to dance at a social night and learn a short solo routine from a class video they recorded.",
+  expect: { engines: ["movement", "audio"], main: "movement", fallback: "self-report", physical: true, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "salsa",
+    name: "Salsa",
+    noun: "salsa",
+    source: "generated",
+    physical: true,
+    engines: ["movement", "audio", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { movement: "self-report", audio: "self-report" }),
+    why: [
+      { id: "social", label: "Dance at socials" },
+      { id: "fun", label: "For fun" },
+      { id: "fit", label: "Move more" },
+      { id: "show", label: "Perform a routine" }
+    ],
+    pictures: [
+      { id: "social-night", label: "Dancing at a social night", why: ["social", "fun"], ladderStep: 3, milestone: "Basics and turns on the beat", proof: "One song of basics and right turns, on the beat", focus: { Fundamentals: 40, Timing: 40, Styling: 20 }, access: ["A social dance night"] },
+      { id: "routine", label: "Performing a short routine", why: ["show", "fun"], ladderStep: 5, milestone: "32 counts that match your clip", proof: "32 counts filmed, close to your reference", focus: { Fundamentals: 25, Timing: 30, Styling: 45 }, access: ["A reference clip of the routine"] },
+      { id: "cardio", label: "A weekly dance workout", why: ["fit"], ladderStep: 2, milestone: "Two songs of basics without stopping", proof: "Basics on the beat for a full song", focus: { Fundamentals: 50, Timing: 40, Styling: 10 } }
+    ],
+    probes: [
+      { id: "level", type: "scale", question: "How much salsa have you danced?", options: [{ value: 0, label: "Never" }, { value: 1, label: "A class or two" }, { value: 2, label: "Monthly socials" }, { value: 3, label: "Years" }] },
+      { id: "known", type: "multi", question: "Which can you already do?", max: 4, optional: true, options: [{ value: "basic", label: "Basic step" }, { value: "turn", label: "Right turn" }, { value: "shine", label: "Suzie Q shine" }] },
+      { id: "theory", type: "quiz", question: "Three quick questions about counting.", spec: "count-quiz" }
+    ],
+    placement: [
+      { when: "!fresh && level >= 2 && contains(known, 'turn')", step: 3, evidence: "Dances socials and turns" },
+      { when: "level >= 1 && contains(known, 'basic')", step: 2, evidence: "Knows the basic step" },
+      { when: "level >= 1 || quiz.correct >= 2", step: 1 }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new", hours: [0, 0] },
+      { id: "hear-one", label: "Hear the 1 and count", hours: [2, 4], nodes: ["count"],
+        proof: { engine: "audio", spec: "count-clap", label: "Clap 1-2-3, 5-6-7 for eight bars", criteria: [{ id: "on_time", label: "Claps on time", check: "onset_share_on_time >= 0.8" }], fallback: "self-report" } },
+      { id: "basic", label: "Basic step on the beat", hours: [4, 8], nodes: ["basic"],
+        proof: { engine: "movement", spec: "basic-timing", label: "One minute of basics, most steps on the beat", criteria: [{ id: "timing", label: "80% on the beat", check: "timing >= 0.8" }, { id: "offset", label: "Not rushing", check: "abs(step_offset_ms) <= 80" }], capture: { angle: "front", fps: 30, duration_s: 60 }, fallback: "self-report" } },
+      { id: "turn", label: "Add a clean right turn", hours: [6, 12], nodes: ["turn"],
+        proof: { engine: "movement", spec: "turn-check", label: "Four right turns, each landing on 3", criteria: [{ id: "landing", label: "Turns land on time", check: "turn_timing >= 0.75" }, { id: "level_head", label: "Head stays level", check: "head_bob <= 0.05" }], capture: { angle: "front", fps: 60, duration_s: 45 }, fallback: "self-report" } },
+      { id: "shine", label: "Shines in a phrase", hours: [8, 15], nodes: ["shine"],
+        proof: { engine: "movement", spec: "basic-timing", label: "Two phrases of Suzie Q on the beat", criteria: [{ id: "timing", label: "On the beat", check: "timing >= 0.8" }, { id: "even", label: "Both sides even", check: "feet_symmetry >= 0.7" }], capture: { angle: "front", fps: 30, duration_s: 40 }, fallback: "self-report" } },
+      { id: "routine", label: "A 32-count routine", hours: [15, 30], nodes: ["routine"],
+        proof: { engine: "movement", spec: "routine-shape", label: "32 counts filmed, close to your reference clip", criteria: [{ id: "shape", label: "Shape matches", check: "shape >= 0.7" }, { id: "timing", label: "On the beat", check: "timing >= 0.8" }], capture: { angle: "front", fps: 60, duration_s: 30 }, fallback: "self-report" } }
+    ],
+    nodes: [
+      { id: "count", name: "Counting the music", lesson: "count-lesson", drills: ["count-drill", "count-clap-drill"], review: { prompt: "Which counts have no step?", kind: "choice", options: ["4 and 8", "1 and 5"], answer: 0 }, focus: "Timing" },
+      { id: "basic", name: "Basic step", requires: ["count"], lesson: "basic-lesson", drills: ["slow-basic"], mistakes: ["rushing"], review: { prompt: "On which count do you break forward?", kind: "choice", options: ["1", "3"], answer: 0 }, focus: "Fundamentals" },
+      { id: "turn", name: "Right turn", requires: ["basic"], lesson: "turn-lesson", drills: ["turn-prep"], mistakes: ["late-turn"], review: { prompt: "Where do your eyes go in a turn?", kind: "choice", options: ["A fixed spot", "The floor"], answer: 0 }, focus: "Fundamentals" },
+      { id: "shine", name: "Suzie Q shine", requires: ["basic"], lesson: "shine-lesson", drills: ["shine-reps"], review: { prompt: "Which foot crosses first?", kind: "recall" }, focus: "Styling" },
+      { id: "routine", name: "Routine phrases", requires: ["turn", "shine"], lesson: "routine-lesson", drills: ["phrase-ghost"], mistakes: ["off-shape"], review: { prompt: "What does the ghost show?", kind: "choice", options: ["Your reference", "Your last try"], answer: 0 }, focus: "Styling" }
+    ],
+    lessons: [
+      { id: "count-lesson", title: "Counting to eight", nodes: ["count"], cards: [
+        { type: "predict", text: "Salsa steps on how many of eight counts?", options: ["Six", "Eight"], answer: 0, reveal: "Counts 4 and 8 are pauses." },
+        { type: "diagram", text: "Steps on 1-2-3, pause, 5-6-7, pause.", figure: { kind: "rhythm", pattern: "xxx.xxx.", subdivisions: 8, highlight: [0, 4] } },
+        { type: "try-it", text: "Tap the steps with the track.", action: "tap-rhythm", pattern: "xxx.xxx." }
+      ] },
+      { id: "basic-lesson", title: "The basic step", nodes: ["basic"], cards: [
+        { type: "predict", text: "On 1, which foot steps forward?", options: ["Left", "Right"], answer: 0, reveal: "Leaders and solo dancers start left." },
+        { type: "demo", text: "Forward on 1, back to center on 3.", figure: { kind: "figure", points: { left: [40, 80], right: [60, 80], front: [40, 60], back: [60, 95] }, segments: [["left", "front"], ["right", "back"]], marks: [{ at: "front", label: "1", role: "good" }, { at: "back", label: "5", role: "reference" }] }, playback: "steps" },
+        { type: "compare", text: "Same basic, two timings. Tap the rushed one.", left: { kind: "rhythm", pattern: "xxx.xxx.", subdivisions: 8 }, right: { kind: "rhythm", pattern: "xx.x.xx.", subdivisions: 8 }, leftLabel: "On time", rightLabel: "Rushed", answer: "right" }
+      ] },
+      { id: "turn-lesson", title: "Right turn", nodes: ["turn"], cards: [
+        { type: "predict", text: "Why look at one spot while turning?", options: ["Less dizziness", "Looks cooler"], answer: 0, reveal: "Spotting keeps your balance." },
+        { type: "mechanism", text: "Prep on 1, turn on 2-3, land facing front.", concept: "spotting during a turn" },
+        { type: "compare", text: "Tap the turn that lands late.", left: { kind: "rhythm", pattern: "xxx.xxx.", subdivisions: 8 }, right: { kind: "rhythm", pattern: "xx..xxx.", subdivisions: 8 }, answer: "right" }
+      ] },
+      { id: "shine-lesson", title: "Suzie Q", nodes: ["shine"], cards: [
+        { type: "predict", text: "In a Suzie Q, do your hips swing?", options: ["Yes, side to side", "No, they stay still"], answer: 0 },
+        { type: "demo", text: "Cross, heel, step. Then the other side.", figure: { kind: "rhythm", pattern: "xxx.xxx.", subdivisions: 8, highlight: [0, 1, 2] }, playback: "loop" }
+      ] },
+      { id: "routine-lesson", title: "Dancing with a reference", nodes: ["routine"], cards: [
+        { type: "predict", text: "Is copying shape or timing harder at first?", options: ["Shape", "Timing"], answer: 0, reveal: "Timing comes from counting; shape takes reps." },
+        { type: "compare", text: "Your pose against the reference ghost.", left: { kind: "media", ref: "learner-media/salsa-routine-reference.mp4", type: "video", ghost: true }, right: { kind: "mechanism", concept: "arms dropped below the reference line" }, hotspot: "arms", answer: "right" }
+      ] }
+    ],
+    drills: [
+      { id: "count-drill", type: "choice", title: "Find the 1", prompt: "Pick the count you hear.", nodes: ["count"], spec: "count-quiz", minutes: 3, intensity: 1, focus: "Timing" },
+      { id: "count-clap-drill", type: "play-along", title: "Clap the counts", prompt: "Clap 1-2-3, 5-6-7 along with the click.", nodes: ["count"], spec: "count-clap", success: "onset_share_on_time >= 0.8", difficulty: { param: "tempo", levels: [140, 160, 180] }, minutes: 4, intensity: 1, focus: "Timing" },
+      { id: "slow-basic", type: "move", title: "Slow basics", prompt: "Film one minute of basics facing the camera.", nodes: ["basic"], spec: "basic-timing", capture: { angle: "front", fps: 30, duration_s: 60 }, needs: ["A clear floor"], success: "timing >= 0.8", difficulty: { param: "tempo", levels: ["slow track", "medium track", "full speed"] }, minutes: 6, intensity: 2, focus: "Fundamentals", fixes: ["rushing"] },
+      { id: "turn-prep", type: "move", title: "Spot and turn", prompt: "Four right turns. Pick a spot and land on 3.", nodes: ["turn"], spec: "turn-check", capture: { angle: "front", fps: 60, duration_s: 45 }, needs: ["A clear floor"], success: "turn_timing >= 0.75", difficulty: { param: "reps", levels: [2, 4, 8] }, minutes: 6, intensity: 2, focus: "Fundamentals", fixes: ["late-turn"] },
+      { id: "shine-reps", type: "move", title: "Suzie Q phrases", prompt: "Two phrases of Suzie Q, both sides.", nodes: ["shine"], spec: "basic-timing", capture: { angle: "front", fps: 30, duration_s: 40 }, needs: ["A clear floor"], success: "timing >= 0.8 && feet_symmetry >= 0.7", difficulty: { param: "tempo", levels: ["slow track", "full speed"] }, minutes: 6, intensity: 2, focus: "Styling" },
+      { id: "phrase-ghost", type: "move", title: "Phrase with the ghost", prompt: "Dance one 8-count phrase with your reference ghost on screen.", nodes: ["routine"], spec: "routine-shape", capture: { angle: "front", fps: 60, duration_s: 30 }, needs: ["A clear floor", "A reference clip of the routine"], success: "shape >= 0.7", difficulty: { param: "length", levels: ["8 counts", "16 counts", "32 counts"] }, minutes: 8, intensity: 3, focus: "Styling", fixes: ["off-shape"] }
+    ],
+    specs: {
+      "count-clap": { kind: "audio", reference: { pattern: "xxx.", beats_per_bar: 4, bars: 8 }, tempo: 160, tolerance: { onset_ms: 70 }, grade: ["onsets", "rhythm"], playback: "backing", pass: "onset_share_on_time >= 0.8", mistakes: [{ id: "clap-early", when: "early_share >= 0.4", severity: 1, show: "beat_timeline", fix_drill: "count-clap-drill" }] },
+      "basic-timing": {
+        kind: "metric",
+        capture: { angle: "front", fps: 30, guide: "Whole body in frame, facing the camera" },
+        segment: { by: "phrases", beats: 8, beat_source: "audio_track" },
+        metrics: { timing: "on_beat(left_ankle, right_ankle)", step_offset_ms: "step_offset_ms(left_ankle, right_ankle)", feet_symmetry: "symmetry(left_ankle, right_ankle)", hip_range: "range(mid_hip.x)" },
+        units: { step_offset_ms: "ms" },
+        mistakes: [{ id: "rushing", when: "mean(step_offset_ms) < -80", show: "beat_timeline", fix_drill: "slow-basic" }],
+        requires_visible: ["left_ankle", "right_ankle", "left_hip", "right_hip"]
+      },
+      "turn-check": {
+        kind: "metric",
+        capture: { angle: "front", fps: 60, guide: "Spins blur at 30 fps: use 60 if your phone can" },
+        segment: { by: "moves", beats: 4, beat_source: "audio_track" },
+        metrics: { turn_timing: "on_beat(left_ankle, right_ankle) per move", head_bob: "std(nose.y)", stance_width: "mean(distance(left_ankle, right_ankle))" },
+        mistakes: [{ id: "late-turn", when: "mean(turn_timing) < 0.6", show: "beat_timeline", fix_drill: "turn-prep" }],
+        requires_visible: ["nose", "left_ankle", "right_ankle"]
+      },
+      "routine-shape": {
+        kind: "metric",
+        capture: { angle: "front", fps: 60, guide: "Same framing as your reference clip" },
+        reference: "learner-media/salsa-routine-reference.mp4",
+        segment: { by: "phrases", beats: 8, beat_source: "audio_track" },
+        metrics: { timing: "on_beat(left_ankle, right_ankle)", shape: "pose_similarity(reference, joints: [legs, hips, arms], align: dtw)" },
+        mistakes: [{ id: "off-shape", when: "shape < 0.6", show: "ghost", fix_drill: "phrase-ghost" }]
+      },
+      "count-quiz": {
+        kind: "items",
+        stop_after_wrong: 2,
+        items: [
+          { type: "choice", id: "c1", prompt: "How many counts in one salsa phrase?", options: ["Eight", "Four", "Six"], answer: 0, difficulty: 1, nodes: ["count"] },
+          { type: "choice", id: "c2", prompt: "On which counts do you pause?", options: ["4 and 8", "1 and 5", "2 and 6"], answer: 0, difficulty: 2, nodes: ["count"] },
+          { type: "order", id: "c3", prompt: "Put the basic step in order.", items: ["Forward on 1", "Replace on 2", "Center on 3", "Pause on 4"], difficulty: 3, nodes: ["basic"] },
+          { type: "choice", id: "c4", prompt: "Dancing on1, where is the forward break?", options: ["Count 1", "Count 2", "Count 5"], answer: 0, difficulty: 4, nodes: ["basic"] }
+        ],
+        pass: "accuracy >= 0.75"
+      }
+    },
+    mistakes: [
+      { id: "rushing", name: "Rushing the steps", nodes: ["basic"], engine: "movement", detector: { metric: "step_offset_ms", when: "mean(step_offset_ms) < -80", min_confidence: 0.7 }, severity: 2, explain: { lesson: "basic-lesson", card: 2 }, fix_drill: "slow-basic", headline: "Steps land before the beat" },
+      { id: "late-turn", name: "Late turn", nodes: ["turn"], engine: "movement", detector: { metric: "turn_timing", when: "mean(turn_timing) < 0.6" }, severity: 2, explain: { lesson: "turn-lesson", card: 2 }, fix_drill: "turn-prep", headline: "The turn finishes after count 3" },
+      { id: "off-shape", name: "Off the reference shape", nodes: ["routine"], engine: "movement", detector: { metric: "shape", when: "shape < 0.6" }, severity: 1, explain: { lesson: "routine-lesson", card: 1 }, fix_drill: "phrase-ghost", headline: "Arms drift from your reference" }
+    ],
+    warmups: [
+      { id: "dance-warmup", title: "Loosen up", steps: ["One minute of marching on the spot", "Ten hip circles each way", "Ten ankle rolls each side", "One song of easy basics"], minutes: 5 },
+      { id: "knee-warmup", title: "Easy on the knees", steps: ["Two minutes of marching", "Ten slow heel raises", "Basics with small steps only"], minutes: 5, for_injuries: ["Knees"] }
+    ],
+    safety: {
+      warmup: "dance-warmup",
+      injury_questions: ["Any knee, ankle or hip pain right now?", "Do turns make you dizzy?"],
+      beginner_caps: { max_intensity: 3, max_minutes: 40, sessions_per_week: 4 },
+      stop_criteria: ["Sharp pain in a knee or ankle", "Dizziness that doesn't pass"],
+      see_professional: ["Knee or ankle pain lasting more than a week", "Dizziness during every turn"],
+      supervised_only: []
+    },
+    access: ["A clear floor", "A phone to film with", "Headphones or a speaker"],
+    injuries: { Knees: "Skip turns for two weeks; keep basics small and on soft-soled shoes", Ankles: "Basics only, no turns or shines, until two pain-free sessions" },
+    focus: { Fundamentals: 40, Timing: 35, Styling: 25 },
+    hard_focus: ["Styling"],
+    key_metrics: [
+      { id: "on-beat", label: "Steps on the beat", engine: "movement", metric: "timing", unit: "%", better: "higher", format: "percent" },
+      { id: "offset", label: "Step timing", engine: "movement", metric: "step_offset_ms", unit: "ms", better: "lower", format: "ms" },
+      { id: "shape", label: "Match to reference", engine: "movement", metric: "shape", unit: "%", better: "higher", format: "percent" }
+    ],
+    media: [{ id: "routine-ref", path: "learner-media/salsa-routine-reference.mp4", license: "learner", note: "The learner's own clip from class" }],
+    copy: { placeholder: "salsa, bachata, a routine", blurb: "Basics, turns and a routine, on the beat" },
+    notes: "Engines: movement for timing and shape, audio for clapping the counts (the beat). The shape check needs the learner's own reference clip; without one the routine step keeps timing only. Spins blur at 30 fps, so turn and routine captures ask for 60. Hours are estimates from general beginner class progressions, shown as ranges."
+  })
+};

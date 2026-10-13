@@ -1,0 +1,165 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/**
+ * American Sign Language basics. Handshapes and movement are compared with the learner's reference clips (movement,
+ * hands); understanding signs is checked with quizzes, because the engine can compare shapes but can't read meaning.
+ */
+export const asl: Scenario = {
+  id: "asl",
+  skill: "American Sign Language",
+  notes: "A Deaf coworker joined the team. Wants to fingerspell and hold basic conversations. Has clips from an online class.",
+  expect: { engines: ["movement"], main: "movement", fallback: "self-report", physical: true, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "American Sign Language",
+    name: "ASL",
+    noun: "ASL",
+    source: "generated",
+    physical: true,
+    engines: ["movement", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { movement: "self-report" }),
+    why: [
+      { id: "coworker", label: "Talk with a coworker" },
+      { id: "family", label: "A Deaf family member" },
+      { id: "community", label: "Join the Deaf community" },
+      { id: "language", label: "Love of languages" }
+    ],
+    pictures: [
+      { id: "name", label: "Fingerspelling my name", why: ["coworker", "community"], ladderStep: 2, milestone: "Fingerspell your name, clear shapes", proof: "A clip of your name, each shape close to the reference", focus: { Fundamentals: 60, Vocabulary: 20, Conversation: 20 } },
+      { id: "chat", label: "A short chat at work", why: ["coworker", "language"], ladderStep: 5, milestone: "Sign five everyday questions", proof: "A clip of five questions matching your references", focus: { Fundamentals: 25, Vocabulary: 35, Conversation: 40 } },
+      { id: "home", label: "Signs for daily life at home", why: ["family"], ladderStep: 4, milestone: "Twenty daily signs from memory", proof: "A sign quiz at 85% and clips of five signs", focus: { Fundamentals: 30, Vocabulary: 50, Conversation: 20 } }
+    ],
+    probes: [
+      { id: "level", type: "scale", question: "How much ASL do you know?", options: [{ value: 0, label: "None" }, { value: 1, label: "A few signs" }, { value: 2, label: "The alphabet" }, { value: 3, label: "Basic conversations" }] },
+      { id: "theory", type: "quiz", question: "Recognize a few handshapes.", spec: "sign-quiz" }
+    ],
+    placement: [
+      { when: "!fresh && level >= 3 && quiz.correct >= 3", step: 3, evidence: "Signs basic conversations" },
+      { when: "level >= 2", step: 2, evidence: "Knows the alphabet" },
+      { when: "level >= 1 || quiz.correct >= 2", step: 1 }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new", hours: [0, 0] },
+      { id: "alphabet", label: "Recognize the alphabet", hours: [2, 5], nodes: ["alphabet"],
+        proof: { engine: "knowledge", spec: "sign-quiz", label: "Name 20 handshapes from pictures, 85% right", criteria: [{ id: "acc", label: "85% right", check: "accuracy >= 0.85" }] } },
+      { id: "spell", label: "Fingerspell clearly", hours: [4, 10], nodes: ["fingerspelling"],
+        proof: { engine: "movement", spec: "handshape", label: "Fingerspell your name; shapes close to your reference clip", criteria: [{ id: "shape", label: "Shapes match", check: "shape >= 0.7" }, { id: "steady", label: "Hand stays in place", check: "hand_drift <= 0.08" }], capture: { angle: "front", fps: 30, duration_s: 20 }, fallback: "self-report" } },
+      { id: "signs", label: "Twenty everyday signs", hours: [6, 14], nodes: ["vocabulary"],
+        proof: { engine: "movement", spec: "sign-motion", label: "Five daily signs, each close to its reference clip", criteria: [{ id: "shape", label: "Shape and motion match", check: "similarity >= 0.7" }], capture: { angle: "front", fps: 30, duration_s: 40 }, fallback: "self-report" } },
+      { id: "faces", label: "Questions with facial grammar", hours: [6, 14], nodes: ["facial-grammar"],
+        proof: { engine: "movement", spec: "question-face", label: "Three WH-questions with brows down", criteria: [{ id: "brows", label: "Brows down", check: "brow_share >= 0.6" }], capture: { angle: "front", fps: 30, duration_s: 30 }, fallback: "self-report" } },
+      { id: "chat", label: "Five everyday questions", hours: [12, 30], nodes: ["questions"],
+        proof: { engine: "movement", spec: "sign-motion", label: "Sign five questions, close to your references", criteria: [{ id: "shape", label: "Shape and motion match", check: "similarity >= 0.7" }], capture: { angle: "front", fps: 30, duration_s: 60 }, fallback: "self-report" } }
+    ],
+    nodes: [
+      { id: "alphabet", name: "Alphabet handshapes", lesson: "alphabet-lesson", drills: ["alphabet-quiz"], review: { prompt: "Which letter is a closed fist, thumb at the side?", kind: "choice", options: ["A", "S"], answer: 0 }, focus: "Fundamentals" },
+      { id: "fingerspelling", name: "Fingerspelling", requires: ["alphabet"], lesson: "spell-lesson", drills: ["spell-drill"], mistakes: ["bouncing"], review: { prompt: "Should your hand bounce between letters?", kind: "choice", options: ["No, keep it steady", "Yes"], answer: 0 }, focus: "Fundamentals" },
+      { id: "vocabulary", name: "Everyday signs", requires: ["fingerspelling"], lesson: "vocab-lesson", drills: ["vocab-quiz", "sign-drill"], mistakes: ["off-shape"], review: { prompt: "Sign THANK-YOU starts at the...", kind: "choice", options: ["Chin", "Chest"], answer: 0 }, focus: "Vocabulary" },
+      { id: "facial-grammar", name: "Facial grammar", requires: ["vocabulary"], lesson: "face-lesson", drills: ["face-drill"], mistakes: ["flat-face"], review: { prompt: "WH-questions: brows up or down?", kind: "choice", options: ["Down", "Up"], answer: 0 }, focus: "Conversation" },
+      { id: "questions", name: "Everyday questions", requires: ["facial-grammar"], lesson: "face-lesson", drills: ["sign-drill"], review: { prompt: "Sign: What's your name?", kind: "recall" }, focus: "Conversation" }
+    ],
+    lessons: [
+      { id: "alphabet-lesson", title: "The alphabet", nodes: ["alphabet"], cards: [
+        { type: "predict", text: "How many ASL letters use one hand?", options: ["All 26", "Only vowels"], answer: 0 },
+        { type: "compare", text: "Same fist, two letters. Which is S?", left: { kind: "mechanism", concept: "ASL letter A: thumb beside the fist" }, right: { kind: "mechanism", concept: "ASL letter S: thumb across the fingers" }, answer: "right" }
+      ] },
+      { id: "spell-lesson", title: "Fingerspelling", nodes: ["fingerspelling"], cards: [
+        { type: "predict", text: "Where does your hand stay while spelling?", options: ["By your shoulder, steady", "Moving with each letter"], answer: 0 },
+        { type: "compare", text: "Tap the bouncing hand.", left: { kind: "chart", type: "line", series: [{ label: "Hand height", values: [50, 50, 51, 50, 50] }] }, right: { kind: "chart", type: "line", series: [{ label: "Hand height", values: [50, 40, 55, 42, 56] }] }, answer: "right" }
+      ] },
+      { id: "vocab-lesson", title: "Everyday signs", nodes: ["vocabulary"], cards: [
+        { type: "predict", text: "Signs have a shape, a place, a movement and...", options: ["A palm direction", "A sound"], answer: 0 },
+        { type: "compare", text: "Your THANK-YOU against the reference ghost.", left: { kind: "media", ref: "learner-media/asl-thank-you.mp4", type: "video", ghost: true }, right: { kind: "mechanism", concept: "hand starting at the cheek instead of the chin" }, hotspot: "start position", answer: "right" }
+      ] },
+      { id: "face-lesson", title: "Facial grammar", nodes: ["facial-grammar", "questions"], cards: [
+        { type: "predict", text: "In ASL, your eyebrows can mark...", options: ["A question", "Nothing"], answer: 0, reveal: "Brows down for WH-questions." },
+        { type: "compare", text: "Tap the face asking WHERE?", left: { kind: "mechanism", concept: "neutral face" }, right: { kind: "mechanism", concept: "brows lowered for a WH-question" }, answer: "right" }
+      ] }
+    ],
+    drills: [
+      { id: "alphabet-quiz", type: "match", title: "Name the shape", prompt: "Match each handshape to its letter.", nodes: ["alphabet"], spec: "sign-quiz", minutes: 4, intensity: 1, focus: "Fundamentals" },
+      { id: "spell-drill", type: "move", title: "Spell it", prompt: "Fingerspell the word on screen, hand by your shoulder.", nodes: ["fingerspelling"], spec: "handshape", capture: { angle: "front", fps: 30, duration_s: 20 }, success: "shape >= 0.7 && hand_drift <= 0.1", difficulty: { param: "length", levels: ["3 letters", "5 letters", "your name"] }, minutes: 5, intensity: 1, focus: "Fundamentals", fixes: ["bouncing"] },
+      { id: "vocab-quiz", type: "choice", title: "What does it mean?", prompt: "Pick the meaning of the sign shown.", nodes: ["vocabulary"], spec: "sign-quiz", minutes: 4, intensity: 1, focus: "Vocabulary" },
+      { id: "sign-drill", type: "move", title: "Sign with the ghost", prompt: "Sign along with your reference clip on screen.", nodes: ["vocabulary", "questions"], spec: "sign-motion", capture: { angle: "front", fps: 30, duration_s: 40 }, success: "similarity >= 0.7", difficulty: { param: "signs", levels: [3, 5, 10] }, minutes: 6, intensity: 1, focus: "Vocabulary", fixes: ["off-shape"] },
+      { id: "face-drill", type: "move", title: "Questions with your face", prompt: "Sign WHERE, WHO and WHAT with brows down.", nodes: ["facial-grammar"], spec: "question-face", capture: { angle: "front", fps: 30, duration_s: 30 }, success: "brow_share >= 0.6", difficulty: { param: "questions", levels: [1, 3, 5] }, minutes: 5, intensity: 1, focus: "Conversation", fixes: ["flat-face"] }
+    ],
+    specs: {
+      handshape: {
+        kind: "metric",
+        capture: { angle: "front", fps: 30, track: ["hands", "pose"], guide: "Upper body and dominant hand in frame, plain background" },
+        reference: "learner-media/asl-fingerspelling.mp4",
+        segment: { by: "moves", min_duration_s: 0.2 },
+        metrics: {
+          index_curl: "mean(angle(right_hand.index_mcp, right_hand.index_pip, right_hand.index_tip)) per move",
+          thumb_gap: "mean(distance(right_hand.thumb_tip, right_hand.index_mcp)) per move",
+          shape: "pose_similarity(reference, joints: [arms], align: dtw)",
+          hand_drift: "std(right_hand.wrist.y)"
+        },
+        mistakes: [{ id: "bouncing", when: "hand_drift > 0.1", show: "overlay(right_hand.wrist.y)", fix_drill: "spell-drill" }],
+        requires_visible: ["right_hand.wrist", "right_hand.index_tip", "right_hand.thumb_tip"]
+      },
+      "sign-motion": {
+        kind: "metric",
+        capture: { angle: "front", fps: 30, track: ["hands", "pose", "face"], guide: "Head to waist in frame" },
+        reference: "learner-media/asl-everyday-signs.mp4",
+        segment: { by: "moves", min_duration_s: 0.3 },
+        metrics: {
+          similarity: "pose_similarity(reference, joints: [arms, head], align: dtw)",
+          start_height: "first(right_hand.wrist.y) per move",
+          path_len: "sum(speed(right_hand.wrist)) per move"
+        },
+        mistakes: [{ id: "off-shape", when: "similarity < 0.6", show: "ghost", fix_drill: "sign-drill" }]
+      },
+      "question-face": {
+        kind: "metric",
+        capture: { angle: "front", fps: 30, track: ["face", "hands"], guide: "Face and hands in frame, good light on your face" },
+        segment: { by: "moves", min_duration_s: 0.3 },
+        metrics: {
+          brow_gap: "distance(face_forehead, face_nose_tip)",
+          brow_share: "share(brow_gap < baseline.brow_gap * 0.95)"
+        },
+        mistakes: [{ id: "flat-face", when: "brow_share < 0.3", show: "overlay(distance(face_forehead, face_nose_tip))", fix_drill: "face-drill" }]
+      },
+      "sign-quiz": {
+        kind: "items",
+        stop_after_wrong: 2,
+        items: [
+          { type: "match", id: "a1", prompt: "Match each description to its letter.", pairs: [["Fist, thumb beside", "A"], ["Flat hand, thumb across palm", "B"], ["Curved hand", "C"]], difficulty: 1, nodes: ["alphabet"] },
+          { type: "choice", id: "a2", prompt: "Index and middle fingers up, together. Which letter?", options: ["U", "V", "N"], answer: 0, difficulty: 2, nodes: ["alphabet"] },
+          { type: "choice", id: "a3", prompt: "Flat hand from chin moving forward means...", options: ["Thank you", "Hello", "Sorry"], answer: 0, difficulty: 3, nodes: ["vocabulary"] },
+          { type: "choice", id: "a4", prompt: "Brows down with WHERE means...", options: ["A WH-question", "A yes-no question"], answer: 0, difficulty: 4, nodes: ["facial-grammar"] }
+        ],
+        pass: "accuracy >= 0.85"
+      }
+    },
+    mistakes: [
+      { id: "bouncing", name: "Bouncing hand", nodes: ["fingerspelling"], engine: "movement", detector: { metric: "hand_drift", when: "hand_drift > 0.1" }, severity: 1, explain: { lesson: "spell-lesson", card: 1 }, fix_drill: "spell-drill", headline: "Hand bounces between letters" },
+      { id: "off-shape", name: "Off the reference", nodes: ["vocabulary"], engine: "movement", detector: { metric: "similarity", when: "similarity < 0.6" }, severity: 2, explain: { lesson: "vocab-lesson", card: 1 }, fix_drill: "sign-drill", headline: "Sign starts in the wrong place" },
+      { id: "flat-face", name: "No question face", nodes: ["facial-grammar"], engine: "movement", detector: { metric: "brow_share", when: "brow_share < 0.3" }, severity: 1, explain: { lesson: "face-lesson", card: 1 }, fix_drill: "face-drill", headline: "Brows stay neutral on questions" }
+    ],
+    warmups: [
+      { id: "hand-warmup", title: "Hands and wrists", steps: ["Ten wrist circles each way", "Open and close both hands ten times", "Gentle finger stretches", "Shake out the hands"], minutes: 3 }
+    ],
+    safety: {
+      warmup: "hand-warmup",
+      injury_questions: ["Any wrist, hand or shoulder pain right now?"],
+      beginner_caps: { max_intensity: 2, max_minutes: 30, sessions_per_week: 6 },
+      stop_criteria: ["Wrist or finger pain", "Tingling or numbness in the hand"],
+      see_professional: ["Wrist pain or tingling lasting more than a week"],
+      supervised_only: []
+    },
+    access: ["A phone to film with", "Your reference clips"],
+    injuries: { Wrists: "Sessions of ten minutes with breaks; vocabulary quizzes instead of long signing for a week" },
+    focus: { Fundamentals: 35, Vocabulary: 35, Conversation: 30 },
+    hard_focus: ["Conversation"],
+    key_metrics: [
+      { id: "match", label: "Match to reference", engine: "movement", metric: "similarity", unit: "%", better: "higher", format: "percent" },
+      { id: "quiz", label: "Sign quiz", engine: "knowledge", metric: "accuracy", unit: "%", better: "higher", format: "percent" }
+    ],
+    media: [
+      { id: "spelling-ref", path: "learner-media/asl-fingerspelling.mp4", license: "learner", note: "The learner's own clip from class" },
+      { id: "signs-ref", path: "learner-media/asl-everyday-signs.mp4", license: "learner", note: "The learner's own clip from class" }
+    ],
+    copy: { placeholder: "ASL, BSL, fingerspelling", blurb: "Clear shapes, the right place, the right face" },
+    notes: "Engines: movement with hand and face tracking, compared with the learner's own reference clips; knowledge for recognizing letters and signs. The engine compares handshapes and motion; it can't understand signing, so meaning is checked with quizzes and a Deaf signer's feedback stays the real test. Hours are estimates from general beginner course guidance, shown as ranges."
+  })
+};

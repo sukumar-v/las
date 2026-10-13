@@ -1,0 +1,1057 @@
+{
+  "schemaVersion": 1,
+  "skill": "Java",
+  "name": "Java",
+  "noun": "Java",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "code",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "code": "knowledge"
+  },
+  "why": [
+    {
+      "id": "exam",
+      "label": "Pass my course exam"
+    },
+    {
+      "id": "android",
+      "label": "Build Android apps"
+    },
+    {
+      "id": "job",
+      "label": "Get an internship"
+    },
+    {
+      "id": "logic",
+      "label": "Think like a programmer"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "exam",
+      "label": "Passing the course exam",
+      "why": [
+        "exam",
+        "logic"
+      ],
+      "ladderStep": 4,
+      "milestone": "Collections and exceptions without notes",
+      "proof": "Exam-style tests pass, hidden ones included",
+      "focus": {
+        "Fundamentals": 40,
+        "Writing": 35,
+        "Reading": 25
+      }
+    },
+    {
+      "id": "project",
+      "label": "A small project with classes",
+      "why": [
+        "job",
+        "android"
+      ],
+      "ladderStep": 5,
+      "milestone": "A class hierarchy behind an interface",
+      "proof": "Interface tests pass for two implementations",
+      "focus": {
+        "Fundamentals": 25,
+        "Writing": 55,
+        "Reading": 20
+      }
+    },
+    {
+      "id": "loops",
+      "label": "Writing loops without panic",
+      "why": [
+        "logic",
+        "exam"
+      ],
+      "ladderStep": 1,
+      "milestone": "Methods with loops pass their tests",
+      "proof": "Loop tests pass",
+      "focus": {
+        "Fundamentals": 60,
+        "Writing": 25,
+        "Reading": 15
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How much programming have you done?",
+      "options": [
+        {
+          "value": 0,
+          "label": "None"
+        },
+        {
+          "value": 1,
+          "label": "A few tutorials"
+        },
+        {
+          "value": 2,
+          "label": "Some Java or Python"
+        },
+        {
+          "value": 3,
+          "label": "Projects of my own"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "basics",
+      "type": "quiz",
+      "question": "What does this Java print?",
+      "spec": "java-predict",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 3 && quiz.correct >= 3",
+      "step": 2,
+      "evidence": "Writes code already"
+    },
+    {
+      "when": "level >= 2 || quiz.correct >= 2",
+      "step": 1,
+      "evidence": "Some programming"
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "loops",
+      "label": "Methods, loops and arrays",
+      "hours": [
+        4,
+        8
+      ],
+      "nodes": [
+        "methods"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "max-of",
+        "label": "maxOf passes every test, empty array included",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1 && compiled"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "java-predict"
+      }
+    },
+    {
+      "id": "classes",
+      "label": "Your own classes",
+      "hours": [
+        5,
+        10
+      ],
+      "nodes": [
+        "classes"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "bank-account",
+        "label": "A BankAccount class that passes its tests",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "java-predict"
+      }
+    },
+    {
+      "id": "collections",
+      "label": "Lists and maps",
+      "hours": [
+        5,
+        10
+      ],
+      "nodes": [
+        "collections"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "grade-book",
+        "label": "GradeBook averages with ArrayList and HashMap",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          },
+          {
+            "id": "hidden",
+            "label": "Hidden tests pass",
+            "check": "hidden_passed >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "java-predict"
+      }
+    },
+    {
+      "id": "exceptions",
+      "label": "Exceptions",
+      "hours": [
+        4,
+        8
+      ],
+      "nodes": [
+        "exceptions"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "withdraw-tests",
+        "label": "Withdraw throws on overdraft; tests pass",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "java-predict"
+      }
+    },
+    {
+      "id": "interfaces",
+      "label": "Interfaces and polymorphism",
+      "hours": [
+        8,
+        16
+      ],
+      "nodes": [
+        "interfaces"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "shapes",
+        "label": "Two Shape classes behind one interface pass the tests",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "java-predict"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "methods",
+      "name": "Methods and loops",
+      "requires": [],
+      "lesson": "methods-lesson",
+      "drills": [
+        "loop-predict",
+        "max-build"
+      ],
+      "mistakes": [
+        "off-by-one"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Last index of an array of length n?",
+        "kind": "choice",
+        "options": [
+          "n - 1",
+          "n"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "classes",
+      "name": "Classes and objects",
+      "requires": [
+        "methods"
+      ],
+      "lesson": "classes-lesson",
+      "drills": [
+        "account-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What does a constructor do?",
+        "kind": "choice",
+        "options": [
+          "Sets up a new object",
+          "Deletes one"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "collections",
+      "name": "Collections",
+      "requires": [
+        "classes"
+      ],
+      "lesson": "collections-lesson",
+      "drills": [
+        "collections-predict",
+        "gradebook-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which keeps key-value pairs?",
+        "kind": "choice",
+        "options": [
+          "HashMap",
+          "ArrayList"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "exceptions",
+      "name": "Exceptions",
+      "requires": [
+        "classes"
+      ],
+      "lesson": "exceptions-lesson",
+      "drills": [
+        "withdraw-build"
+      ],
+      "mistakes": [
+        "swallowed"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What does throw do?",
+        "kind": "choice",
+        "options": [
+          "Stops and signals an error",
+          "Prints a warning"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "interfaces",
+      "name": "Interfaces",
+      "requires": [
+        "collections",
+        "exceptions"
+      ],
+      "lesson": "interfaces-lesson",
+      "drills": [
+        "shapes-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Can a class implement two interfaces?",
+        "kind": "choice",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "methods-lesson",
+      "title": "Loops",
+      "nodes": [
+        "methods"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "for (int i = 0; i < 3; i++): how many runs?",
+          "options": [
+            "3",
+            "4"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Watch i and best change.",
+          "figure": {
+            "kind": "code",
+            "language": "java",
+            "source": "int best = xs[0];\nfor (int i = 1; i < xs.length; i++) {\n    if (xs[i] > best) best = xs[i];\n}",
+            "trace": [
+              {
+                "line": 1,
+                "vars": {
+                  "i": "-",
+                  "best": "4"
+                }
+              },
+              {
+                "line": 3,
+                "vars": {
+                  "i": "1",
+                  "best": "9"
+                }
+              },
+              {
+                "line": 3,
+                "vars": {
+                  "i": "2",
+                  "best": "9"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "classes-lesson",
+      "title": "Classes",
+      "nodes": [
+        "classes"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Two new BankAccount() objects share a balance?",
+          "options": [
+            "No, each has its own",
+            "Yes"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "A class is the plan; objects are built from it.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "c",
+                "label": "class BankAccount"
+              },
+              {
+                "id": "a",
+                "label": "alice: 50"
+              },
+              {
+                "id": "b",
+                "label": "bob: 20"
+              }
+            ],
+            "edges": [
+              [
+                "c",
+                "a"
+              ],
+              [
+                "c",
+                "b"
+              ]
+            ],
+            "direction": "LR"
+          }
+        }
+      ]
+    },
+    {
+      "id": "collections-lesson",
+      "title": "Lists and maps",
+      "nodes": [
+        "collections"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "list.add(5) on an ArrayList puts 5...",
+          "options": [
+            "At the end",
+            "At the start"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "compare",
+          "text": "Tap the one keyed by name.",
+          "left": {
+            "kind": "code",
+            "language": "java",
+            "source": "List<Integer> scores = new ArrayList<>();"
+          },
+          "right": {
+            "kind": "code",
+            "language": "java",
+            "source": "Map<String, Integer> scores = new HashMap<>();"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "exceptions-lesson",
+      "title": "Exceptions",
+      "nodes": [
+        "exceptions"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Overdraft: return -1 or throw?",
+          "options": [
+            "Throw an exception",
+            "Return -1"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "compare",
+          "text": "Tap the catch that hides the problem.",
+          "left": {
+            "kind": "code",
+            "language": "java",
+            "source": "catch (IllegalStateException e) {\n    show(e.getMessage());\n}"
+          },
+          "right": {
+            "kind": "code",
+            "language": "java",
+            "source": "catch (Exception e) { }"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "interfaces-lesson",
+      "title": "Interfaces",
+      "nodes": [
+        "interfaces"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "A List<Shape> can hold circles and squares?",
+          "options": [
+            "Yes, both are Shapes",
+            "No"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "One interface, many classes.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "s",
+                "label": "interface Shape"
+              },
+              {
+                "id": "c",
+                "label": "Circle"
+              },
+              {
+                "id": "q",
+                "label": "Square"
+              }
+            ],
+            "edges": [
+              [
+                "c",
+                "s"
+              ],
+              [
+                "q",
+                "s"
+              ]
+            ],
+            "direction": "TB"
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "loop-predict",
+      "type": "predict-output",
+      "title": "Loop output",
+      "prompt": "Pick what prints.",
+      "nodes": [
+        "methods"
+      ],
+      "spec": "java-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "max-build",
+      "type": "build",
+      "title": "maxOf",
+      "prompt": "Return the largest value; throw on an empty array.",
+      "nodes": [
+        "methods"
+      ],
+      "spec": "max-of",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "difficulty": {
+        "param": "tests",
+        "levels": [
+          "basic",
+          "negatives",
+          "hidden"
+        ],
+        "start": 0
+      },
+      "minutes": 8,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "off-by-one"
+      ]
+    },
+    {
+      "id": "account-build",
+      "type": "build",
+      "title": "BankAccount",
+      "prompt": "Write BankAccount with deposit and getBalance.",
+      "nodes": [
+        "classes"
+      ],
+      "spec": "bank-account",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 10,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "collections-predict",
+      "type": "predict-output",
+      "title": "Collections output",
+      "prompt": "Pick what prints.",
+      "nodes": [
+        "collections"
+      ],
+      "spec": "java-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "gradebook-build",
+      "type": "build",
+      "title": "GradeBook",
+      "prompt": "Store grades per student and return each average.",
+      "nodes": [
+        "collections"
+      ],
+      "spec": "grade-book",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 15,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "withdraw-build",
+      "type": "build",
+      "title": "Withdraw safely",
+      "prompt": "Throw IllegalStateException when a withdrawal would overdraw.",
+      "nodes": [
+        "exceptions"
+      ],
+      "spec": "withdraw-tests",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 10,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "swallowed"
+      ]
+    },
+    {
+      "id": "shapes-build",
+      "type": "build",
+      "title": "Shapes",
+      "prompt": "Implement Shape for Circle and Square; area() for both.",
+      "nodes": [
+        "interfaces"
+      ],
+      "spec": "shapes",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 15,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "max-of": {
+      "kind": "test",
+      "language": "java",
+      "entry": "Main.java",
+      "tests": [
+        {
+          "call": "Main.maxOf(new int[]{4, 9, 2})",
+          "expect": "9",
+          "hidden": false
+        },
+        {
+          "call": "Main.maxOf(new int[]{-3, -1})",
+          "expect": "-1",
+          "hidden": false
+        },
+        {
+          "native": "MaxOfTest.java",
+          "hidden": true,
+          "label": "Empty array throws"
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 20,
+        "memory_mb": 512,
+        "network": false
+      },
+      "starter": {
+        "Main.java": "public class Main {\n    static int maxOf(int[] xs) {\n        return 0;\n    }\n}\n"
+      }
+    },
+    "bank-account": {
+      "kind": "test",
+      "language": "java",
+      "entry": "BankAccount.java",
+      "tests": [
+        {
+          "call": "new BankAccount(10).getBalance()",
+          "expect": "10",
+          "hidden": false
+        },
+        {
+          "native": "BankAccountTest.java",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 20,
+        "memory_mb": 512,
+        "network": false
+      }
+    },
+    "grade-book": {
+      "kind": "test",
+      "language": "java",
+      "entry": "GradeBook.java",
+      "tests": [
+        {
+          "stdin": "ana 80\nana 100\nben 70\n",
+          "stdout": "ana 90.0\nben 70.0\n",
+          "hidden": false
+        },
+        {
+          "native": "GradeBookTest.java",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 20,
+        "memory_mb": 512,
+        "network": false
+      }
+    },
+    "withdraw-tests": {
+      "kind": "test",
+      "language": "java",
+      "entry": "BankAccount.java",
+      "tests": [
+        {
+          "native": "WithdrawTest.java",
+          "hidden": false,
+          "label": "Overdraft throws"
+        },
+        {
+          "call": "new BankAccount(10).withdraw(4)",
+          "expect": "6",
+          "hidden": false
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 20,
+        "memory_mb": 512,
+        "network": false
+      }
+    },
+    "shapes": {
+      "kind": "test",
+      "language": "java",
+      "entry": "Shapes.java",
+      "tests": [
+        {
+          "call": "new Square(3).area()",
+          "expect": "9.0",
+          "hidden": false
+        },
+        {
+          "call": "Math.round(new Circle(1).area() * 100)",
+          "expect": "314",
+          "hidden": false
+        },
+        {
+          "native": "ShapesTest.java",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 20,
+        "memory_mb": 512,
+        "network": false
+      }
+    },
+    "java-predict": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "predict-output",
+          "id": "j1",
+          "prompt": "What prints?",
+          "code": "int t = 0;\nfor (int i = 0; i < 3; i++) t += i;\nSystem.out.println(t);",
+          "language": "java",
+          "options": [
+            "3",
+            "6",
+            "0"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "methods"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "j2",
+          "prompt": "What prints?",
+          "code": "String a = \"hi\";\nString b = a + \"!\";\nSystem.out.println(a);",
+          "language": "java",
+          "options": [
+            "hi",
+            "hi!"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "classes"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "j3",
+          "prompt": "What prints?",
+          "code": "List<Integer> xs = new ArrayList<>(List.of(1, 2));\nxs.add(3);\nSystem.out.println(xs.size());",
+          "language": "java",
+          "options": [
+            "3",
+            "2"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "collections"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "j4",
+          "prompt": "What prints?",
+          "code": "try {\n    throw new IllegalStateException(\"no\");\n} catch (IllegalStateException e) {\n    System.out.println(e.getMessage());\n}",
+          "language": "java",
+          "options": [
+            "no",
+            "Nothing; it crashes"
+          ],
+          "answer": 0,
+          "difficulty": 4,
+          "nodes": [
+            "exceptions"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.75"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "off-by-one",
+      "name": "Off by one",
+      "nodes": [
+        "methods"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "pass_rate",
+        "when": "pass_rate < 1 && compiled",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "methods-lesson",
+        "card": 1
+      },
+      "fix_drill": "max-build",
+      "resolved_after": 3,
+      "headline": "The loop misses the last element"
+    },
+    {
+      "id": "swallowed",
+      "name": "Swallowed exception",
+      "nodes": [
+        "exceptions"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "hidden_passed",
+        "when": "hidden_passed < 1",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "exceptions-lesson",
+        "card": 1
+      },
+      "fix_drill": "withdraw-build",
+      "resolved_after": 3,
+      "headline": "The error is caught and hidden"
+    }
+  ],
+  "access": [
+    "A computer",
+    "A JDK or a container runtime"
+  ],
+  "focus": {
+    "Fundamentals": 40,
+    "Writing": 40,
+    "Reading": 20
+  },
+  "key_metrics": [
+    {
+      "id": "pass",
+      "label": "Tests passing",
+      "engine": "code",
+      "metric": "pass_rate",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "predict",
+      "label": "Code reading",
+      "engine": "knowledge",
+      "metric": "accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    }
+  ],
+  "copy": {
+    "placeholder": "Java, C#, Kotlin",
+    "blurb": "Loops to interfaces, exam-ready"
+  },
+  "notes": "Engines: code runs javac and the tests locally (JDK detected) or in a container; Java has no browser runner here. If no runner exists, each proof falls back to predict-output items in Java. Hours follow a typical first-semester pace and are estimates, shown as ranges."
+}

@@ -1,0 +1,126 @@
+{
+  "scenario": "salsa-routine",
+  "skill": "salsa",
+  "expect": {
+    "engines": [
+      "movement",
+      "audio"
+    ],
+    "main": "movement",
+    "fallback": "self-report",
+    "physical": true,
+    "supervisedOnly": []
+  },
+  "runs": {
+    "real": {
+      "mode": "real",
+      "unavailable": [],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "salsa",
+            "notes": "Wants to dance at a social night and learn a short solo routine from a class video they recorded."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/salsa-routine.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [],
+        "summary": {
+          "nodes": 5,
+          "lessons": 5,
+          "drills": 6,
+          "mistakes": 3,
+          "specs": 5,
+          "ladderSteps": 6,
+          "words": 223
+        },
+        "stored": "<id>"
+      }
+    },
+    "fallback": {
+      "mode": "fallback",
+      "unavailable": [
+        {
+          "engine": "movement",
+          "reason": "no camera reported and the pose models could not load"
+        }
+      ],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "salsa",
+            "notes": "Wants to dance at a social night and learn a short solo routine from a class video they recorded."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/salsa-routine.fallback.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [
+          "capabilities ladder[2].proof: \"movement\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[3].proof: \"movement\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[4].proof: \"movement\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[5].proof: \"movement\" is not available now; the self-report fallback will be used and the check is less precise"
+        ],
+        "summary": {
+          "nodes": 5,
+          "lessons": 5,
+          "drills": 6,
+          "mistakes": 3,
+          "specs": 5,
+          "ladderSteps": 6,
+          "words": 223
+        },
+        "stored": "<id>"
+      }
+    }
+  }
+}

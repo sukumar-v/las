@@ -1,0 +1,144 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/** Indoor bouldering: technique from one camera behind the climber (no depth), grades by self-report. */
+export const bouldering: Scenario = {
+  id: "bouldering",
+  skill: "bouldering",
+  notes: "Climbs at an indoor gym once a week, stuck on V2. Forearms get pumped fast.",
+  expect: { engines: ["movement"], main: "movement", fallback: "self-report", physical: true, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "bouldering",
+    name: "Bouldering",
+    noun: "bouldering",
+    source: "generated",
+    physical: true,
+    engines: ["movement", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { movement: "self-report" }),
+    why: [
+      { id: "problem", label: "Solve harder problems" },
+      { id: "strong", label: "Get strong" },
+      { id: "social", label: "Climb with friends" },
+      { id: "head", label: "Clear my head" }
+    ],
+    pictures: [
+      { id: "v3", label: "Sending V3 at my gym", why: ["problem", "strong"], ladderStep: 4, milestone: "Three V3 problems topped", proof: "A log of three topped V3s, each in one go", focus: { Fundamentals: 35, Technique: 45, Strength: 20 }, access: ["A bouldering gym"] },
+      { id: "smooth", label: "Climbing smooth and quiet", why: ["head", "social"], ladderStep: 2, milestone: "Quiet feet on a V1", proof: "A clip of a V1 with quiet foot placements", focus: { Fundamentals: 50, Technique: 40, Strength: 10 } },
+      { id: "endurance", label: "Less forearm pump", why: ["strong", "social"], ladderStep: 3, milestone: "Straight arms on rests", proof: "A clip with arms straight on most holds", focus: { Fundamentals: 40, Technique: 35, Strength: 25 } }
+    ],
+    probes: [
+      { id: "grade", type: "scale", question: "What's the hardest grade you've topped?", options: [{ value: 0, label: "Never climbed" }, { value: 1, label: "V0" }, { value: 2, label: "V1 to V2" }, { value: 3, label: "V3 or harder" }] },
+      { id: "theory", type: "quiz", question: "Three quick questions on technique.", spec: "climb-quiz" }
+    ],
+    placement: [
+      { when: "!fresh && grade >= 3", step: 4, evidence: "Tops V3 already" },
+      { when: "grade >= 2 && quiz.correct >= 2", step: 2, evidence: "Climbs V1 to V2" },
+      { when: "grade >= 1", step: 1 }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new", hours: [0, 0] },
+      { id: "falls", label: "Safe falls and down-climbing", hours: [1, 3], nodes: ["falling"],
+        proof: { engine: "self-report", spec: "session-log", label: "Three planned falls onto the mat, landing on both feet", criteria: [{ id: "falls", label: "Three planned falls", check: "count >= 3 && pain == 0" }] } },
+      { id: "quiet-feet", label: "Quiet, precise feet", hours: [4, 10], nodes: ["footwork"],
+        proof: { engine: "movement", spec: "climb-moves", label: "One V0 to V1 problem filmed from behind, feet placed once", criteria: [{ id: "quiet", label: "Few foot readjustments", check: "foot_resets <= 2" }], capture: { angle: "back", fps: 30, duration_s: 90 }, fallback: "self-report" } },
+      { id: "straight-arms", label: "Straight arms and hips in", hours: [6, 15], nodes: ["straight-arms"],
+        proof: { engine: "movement", spec: "climb-moves", label: "A V1 to V2 problem with arms mostly straight", criteria: [{ id: "arms", label: "Straight arms", check: "straight_share >= 0.6" }], capture: { angle: "back", fps: 30, duration_s: 120 }, fallback: "self-report" } },
+      { id: "v3", label: "Topping V3 problems", hours: [15, 40], nodes: ["reading", "straight-arms"],
+        proof: { engine: "self-report", spec: "session-log", label: "Top three different V3 problems", criteria: [{ id: "sends", label: "Three V3 sends", check: "count >= 3" }] } },
+      { id: "smooth", label: "Smooth on harder problems", hours: [20, 50], nodes: ["flow"],
+        proof: { engine: "movement", spec: "climb-moves", label: "A V3 filmed from behind: steady hips, few pauses", criteria: [{ id: "smooth", label: "Smooth hips", check: "hip_jerk <= baseline_jerk" }, { id: "arms", label: "Straight arms", check: "straight_share >= 0.6" }], capture: { angle: "back", fps: 30, duration_s: 180 }, fallback: "self-report" } }
+    ],
+    nodes: [
+      { id: "falling", name: "Falling and down-climbing", lesson: "falling-lesson", drills: ["fall-quiz"], review: { prompt: "How do you land on the mat?", kind: "choice", options: ["Both feet, then roll back", "Arms out"], answer: 0 }, focus: "Fundamentals" },
+      { id: "footwork", name: "Quiet feet", requires: ["falling"], lesson: "feet-lesson", drills: ["silent-feet"], mistakes: ["foot-shuffle"], review: { prompt: "Which part of the shoe goes on small holds?", kind: "choice", options: ["The big toe edge", "The arch"], answer: 0 }, focus: "Technique" },
+      { id: "straight-arms", name: "Straight arms", requires: ["footwork"], lesson: "arms-lesson", drills: ["straight-arm-traverse"], mistakes: ["bent-arms"], review: { prompt: "Bent or straight arms on a rest?", kind: "choice", options: ["Straight", "Bent"], answer: 0 }, focus: "Technique" },
+      { id: "reading", name: "Reading a problem", requires: ["footwork"], lesson: "reading-lesson", drills: ["beta-order"], review: { prompt: "What do you plan before starting?", kind: "recall" }, focus: "Fundamentals" },
+      { id: "flow", name: "Flowing between moves", requires: ["straight-arms", "reading"], lesson: "flow-lesson", drills: ["flow-climb"], mistakes: ["jerky-hips"], review: { prompt: "Where does the push come from?", kind: "choice", options: ["The legs", "The arms"], answer: 0 }, focus: "Technique" }
+    ],
+    lessons: [
+      { id: "falling-lesson", title: "Falling well", nodes: ["falling"], cards: [
+        { type: "predict", text: "From the top, jump off or climb down?", options: ["Climb down most of the way", "Jump straight off"], answer: 0 },
+        { type: "demo", text: "Land on both feet, bend, roll back.", figure: { kind: "graph", nodes: [{ id: "a", label: "Both feet" }, { id: "b", label: "Bend knees" }, { id: "c", label: "Roll back" }], edges: [["a", "b"], ["b", "c"]] }, playback: "steps" }
+      ] },
+      { id: "feet-lesson", title: "Quiet feet", nodes: ["footwork"], cards: [
+        { type: "predict", text: "Loud foot placements usually mean...", options: ["You didn't look", "Strong legs"], answer: 0 },
+        { type: "compare", text: "Tap the foot on the right part of the shoe.", left: { kind: "mechanism", concept: "big-toe edge on a small hold" }, right: { kind: "mechanism", concept: "arch on a small hold" }, answer: "right" }
+      ] },
+      { id: "arms-lesson", title: "Straight arms", nodes: ["straight-arms"], cards: [
+        { type: "predict", text: "Hanging on bent arms pumps your forearms...", options: ["Faster", "Slower"], answer: 0 },
+        { type: "compare", text: "Tap the climber wasting strength.", left: { kind: "figure", points: { hand: [50, 10], elbow: [50, 30], shoulder: [50, 45], hip: [50, 70] }, segments: [["hand", "elbow"], ["elbow", "shoulder"], ["shoulder", "hip"]] }, right: { kind: "figure", points: { hand: [50, 10], elbow: [38, 25], shoulder: [50, 35], hip: [50, 60] }, segments: [["hand", "elbow"], ["elbow", "shoulder"], ["shoulder", "hip"]], marks: [{ at: "elbow", label: "bent", role: "attention" }] }, answer: "right" }
+      ] },
+      { id: "reading-lesson", title: "Reading a problem", nodes: ["reading"], cards: [
+        { type: "predict", text: "Planning moves from the ground saves...", options: ["Strength", "Nothing"], answer: 0 },
+        { type: "diagram", text: "Trace hands and feet before you start.", figure: { kind: "graph", nodes: [{ id: "s", label: "Start holds" }, { id: "f", label: "Feet up" }, { id: "r", label: "Reach" }, { id: "t", label: "Top" }], edges: [["s", "f"], ["f", "r"], ["r", "t"]], direction: "TB" } }
+      ] },
+      { id: "flow-lesson", title: "Flow", nodes: ["flow"], cards: [
+        { type: "predict", text: "Push with legs or pull with arms first?", options: ["Push with legs", "Pull with arms"], answer: 0 },
+        { type: "diagram", text: "Hip path: smooth beats jerky.", figure: { kind: "chart", type: "line", series: [{ label: "Smooth", values: [0, 2, 4, 6, 8, 10] }, { label: "Jerky", values: [0, 5, 4, 9, 7, 10] }] } }
+      ] }
+    ],
+    drills: [
+      { id: "fall-quiz", type: "order", title: "Falling steps", prompt: "Put the landing in order.", nodes: ["falling"], spec: "climb-quiz", minutes: 2, intensity: 1, focus: "Fundamentals" },
+      { id: "silent-feet", type: "move", title: "Silent feet", prompt: "Climb an easy problem placing each foot once, silently. Film from behind.", nodes: ["footwork"], spec: "climb-moves", capture: { angle: "back", fps: 30, duration_s: 90 }, needs: ["A bouldering gym"], success: "foot_resets <= 2", difficulty: { param: "grade", levels: ["V0", "V1", "V2"] }, minutes: 10, intensity: 2, focus: "Technique", fixes: ["foot-shuffle"] },
+      { id: "straight-arm-traverse", type: "move", title: "Straight-arm traverse", prompt: "Traverse low on big holds keeping arms straight. Film from behind.", nodes: ["straight-arms"], spec: "climb-moves", capture: { angle: "back", fps: 30, duration_s: 120 }, needs: ["A bouldering gym"], success: "straight_share >= 0.6", difficulty: { param: "hold size", levels: ["jugs", "medium", "small"] }, minutes: 10, intensity: 3, focus: "Technique", fixes: ["bent-arms"] },
+      { id: "beta-order", type: "order", title: "Plan the moves", prompt: "Put the moves in order.", nodes: ["reading"], spec: "climb-quiz", minutes: 3, intensity: 1, focus: "Fundamentals" },
+      { id: "flow-climb", type: "move", title: "Flow climb", prompt: "Climb a problem you know at an even pace. Film from behind.", nodes: ["flow"], spec: "climb-moves", capture: { angle: "back", fps: 30, duration_s: 180 }, needs: ["A bouldering gym"], success: "hip_jerk <= baseline_jerk", difficulty: { param: "grade", levels: ["V1", "V2", "V3"] }, minutes: 15, intensity: 3, focus: "Technique", fixes: ["jerky-hips"] }
+    ],
+    specs: {
+      "climb-moves": {
+        kind: "metric",
+        capture: { angle: "back", fps: 30, guide: "Behind the climber, whole problem in frame; depth isn't measured from one camera" },
+        segment: { by: "moves", min_duration_s: 0.5 },
+        metrics: {
+          straight_share: "share(angle(left_shoulder, left_elbow, left_wrist) >= 150 && angle(right_shoulder, right_elbow, right_wrist) >= 150)",
+          foot_peak: "max(speed(left_foot_index)) per move",
+          foot_resets: "count(where(foot_peak, foot_peak > 0.5))",
+          hip_jerk: "mean(jerk(mid_hip))",
+          baseline_jerk: "baseline.hip_jerk"
+        },
+        mistakes: [
+          { id: "bent-arms", when: "straight_share < 0.4", show: "overlay(angle(left_shoulder, left_elbow, left_wrist))", fix_drill: "straight-arm-traverse" },
+          { id: "foot-shuffle", when: "foot_resets > 4", show: "overlay(speed(left_foot_index))", fix_drill: "silent-feet" },
+          { id: "jerky-hips", when: "hip_jerk > baseline.hip_jerk * 1.3", show: "skeleton", fix_drill: "flow-climb" }
+        ],
+        requires_visible: ["left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_hip", "right_hip"]
+      },
+      "climb-quiz": {
+        kind: "items",
+        items: [
+          { type: "order", id: "b1", prompt: "Order a safe landing.", items: ["Down-climb", "Drop onto both feet", "Bend knees", "Roll back"], difficulty: 1, nodes: ["falling"] },
+          { type: "choice", id: "b2", prompt: "On a small foothold, which part of the shoe?", options: ["Big-toe edge", "Arch", "Heel"], answer: 0, difficulty: 2, nodes: ["footwork"] },
+          { type: "choice", id: "b3", prompt: "Resting between moves, arms should be...", options: ["Straight", "Bent"], answer: 0, difficulty: 2, nodes: ["straight-arms"] },
+          { type: "order", id: "b4", prompt: "Order these moves for a ladder of holds.", items: ["Both hands on start", "Right foot up", "Left hand reach", "Match on top"], difficulty: 3, nodes: ["reading"] }
+        ]
+      },
+      "session-log": { kind: "self-report", fields: ["done", "count", "effort", "pain", "note"], criterion: "Counted the problems topped (or the planned falls) in one session", pass: "done && pain == 0" }
+    },
+    mistakes: [
+      { id: "bent-arms", name: "Hanging on bent arms", nodes: ["straight-arms"], engine: "movement", detector: { metric: "straight_share", when: "straight_share < 0.4" }, severity: 2, explain: { lesson: "arms-lesson", card: 1 }, fix_drill: "straight-arm-traverse", headline: "Arms stay bent between moves" },
+      { id: "foot-shuffle", name: "Shuffling feet", nodes: ["footwork"], engine: "movement", detector: { metric: "foot_resets", when: "foot_resets > 4" }, severity: 1, explain: { lesson: "feet-lesson", card: 1 }, fix_drill: "silent-feet", headline: "Feet re-placed many times" },
+      { id: "jerky-hips", name: "Jerky movement", nodes: ["flow"], engine: "movement", detector: { metric: "hip_jerk", when: "hip_jerk > learner.baseline.hip_jerk * 1.3" }, severity: 1, explain: { lesson: "flow-lesson", card: 1 }, fix_drill: "flow-climb", headline: "Hips jerk between holds" }
+    ],
+    warmups: [
+      { id: "climb-warmup", title: "Fingers and shoulders", steps: ["Three minutes of easy cardio", "Ten arm circles each way", "Ten finger opens and closes", "Two easy problems, well below your grade"], minutes: 8 },
+      { id: "finger-warmup", title: "Gentle on fingers", steps: ["Three minutes of easy cardio", "Ten slow finger flexes", "Big holds only for ten minutes"], minutes: 8, for_injuries: ["Fingers"] }
+    ],
+    safety: {
+      warmup: "climb-warmup",
+      injury_questions: ["Any finger, shoulder or ankle pain right now?", "Any past ankle sprain?"],
+      beginner_caps: { max_intensity: 3, max_minutes: 60, sessions_per_week: 3 },
+      stop_criteria: ["A pop or sharp pain in a finger", "Shoulder pain on a reach", "Ankle pain after a landing"],
+      see_professional: ["Finger pain lasting more than a week", "Swelling after a fall"],
+      supervised_only: []
+    },
+    access: ["A bouldering gym", "Climbing shoes", "A phone to film with"],
+    injuries: { Fingers: "Big holds only, no small crimps, for three weeks", Shoulders: "No big reaches or overhangs for two weeks; vertical walls only", Ankles: "Down-climb every problem; no drops from the top" },
+    focus: { Fundamentals: 40, Technique: 45, Strength: 15 },
+    hard_focus: ["Strength"],
+    key_metrics: [
+      { id: "straight", label: "Straight-arm share", engine: "movement", metric: "straight_share", unit: "%", better: "higher", format: "percent" },
+      { id: "feet", label: "Foot re-placements", engine: "movement", metric: "foot_resets", better: "lower", format: "count" }
+    ],
+    copy: { placeholder: "bouldering, climbing", blurb: "Quiet feet, straight arms, smooth hips" },
+    notes: "Engines: movement from one camera behind the climber. One camera gives no depth, so metrics avoid distance from the wall and use joint angles, foot speed and hip smoothness in the image plane. Grades and sends are self-reported because the camera can't judge a top-out. Bouldering only: no ropes. Hours are estimates from general indoor progressions, shown as ranges."
+  })
+};

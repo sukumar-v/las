@@ -1,0 +1,1269 @@
+{
+  "schemaVersion": 1,
+  "skill": "Spanish",
+  "name": "Spanish",
+  "noun": "Spanish",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "speech",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "speech": "self-report"
+  },
+  "why": [
+    {
+      "id": "move",
+      "label": "Living in Spain"
+    },
+    {
+      "id": "work",
+      "label": "Work meetings"
+    },
+    {
+      "id": "friends",
+      "label": "Make local friends"
+    },
+    {
+      "id": "travel",
+      "label": "Travel in Latin America"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "errands",
+      "label": "Running errands in Spanish",
+      "why": [
+        "move",
+        "travel"
+      ],
+      "ladderStep": 3,
+      "milestone": "Ask for what you need, understood",
+      "proof": "A spoken request at a shop, understood",
+      "focus": {
+        "Fundamentals": 30,
+        "Speaking": 45,
+        "Grammar": 25
+      }
+    },
+    {
+      "id": "chat",
+      "label": "Chatting with neighbors",
+      "why": [
+        "friends",
+        "move"
+      ],
+      "ladderStep": 5,
+      "milestone": "Talk about last weekend for a minute",
+      "proof": "A one-minute answer in the past tense",
+      "focus": {
+        "Fundamentals": 20,
+        "Speaking": 50,
+        "Grammar": 30
+      }
+    },
+    {
+      "id": "meeting",
+      "label": "Introducing myself at work",
+      "why": [
+        "work"
+      ],
+      "ladderStep": 4,
+      "milestone": "A clear one-minute introduction",
+      "proof": "A one-minute introduction at a steady pace",
+      "focus": {
+        "Fundamentals": 25,
+        "Speaking": 50,
+        "Grammar": 25
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How much Spanish do you have?",
+      "options": [
+        {
+          "value": 0,
+          "label": "None"
+        },
+        {
+          "value": 1,
+          "label": "Some words"
+        },
+        {
+          "value": 2,
+          "label": "School Spanish"
+        },
+        {
+          "value": 3,
+          "label": "Simple conversations"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "grammar",
+      "type": "quiz",
+      "question": "A few quick questions.",
+      "spec": "grammar-quiz",
+      "optional": false
+    },
+    {
+      "id": "say",
+      "type": "record",
+      "question": "Read one sentence aloud. Optional.",
+      "spec": "present-say",
+      "optional": true
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 3 && quiz.correct >= 4",
+      "step": 3,
+      "evidence": "Holds simple conversations"
+    },
+    {
+      "when": "level >= 2 && quiz.correct >= 2",
+      "step": 2,
+      "evidence": "School Spanish comes back"
+    },
+    {
+      "when": "level >= 1",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "sounds",
+      "label": "Clear vowels and greetings",
+      "hours": [
+        2,
+        4
+      ],
+      "nodes": [
+        "vowels"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "vowel-say",
+        "label": "Read five greetings aloud, each understood",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.8"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "present",
+      "label": "Present tense sentences",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "present"
+      ],
+      "proof": {
+        "engine": "knowledge",
+        "spec": "grammar-quiz",
+        "label": "Present-tense quiz, 80% right",
+        "criteria": [
+          {
+            "id": "acc",
+            "label": "80% right",
+            "check": "accuracy >= 0.8"
+          }
+        ],
+        "single_take": true
+      }
+    },
+    {
+      "id": "requests",
+      "label": "Ask for things",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "requests"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "shop-open",
+        "label": "Answer the shopkeeper with a full request, understood",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.75"
+          },
+          {
+            "id": "fillers",
+            "label": "Few fillers",
+            "check": "filler_count <= 3"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "intro",
+      "label": "A one-minute introduction",
+      "hours": [
+        8,
+        15
+      ],
+      "nodes": [
+        "ser-estar",
+        "intro"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "intro-open",
+        "label": "One minute about yourself at a steady pace",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.75"
+          },
+          {
+            "id": "pace",
+            "label": "Steady pace",
+            "check": "words_per_minute >= 80"
+          },
+          {
+            "id": "length",
+            "label": "About a minute",
+            "check": "duration_s >= 50"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "past",
+      "label": "Talk about last weekend",
+      "hours": [
+        15,
+        30
+      ],
+      "nodes": [
+        "past"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "weekend-open",
+        "label": "One minute on last weekend, in the past tense",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.7"
+          },
+          {
+            "id": "length",
+            "label": "About a minute",
+            "check": "duration_s >= 50"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "vowels",
+      "name": "Five pure vowels",
+      "requires": [],
+      "lesson": "vowel-lesson",
+      "drills": [
+        "vowel-drill"
+      ],
+      "mistakes": [
+        "unclear"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "How many vowel sounds does Spanish have?",
+        "kind": "choice",
+        "options": [
+          "Five",
+          "Twelve"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "present",
+      "name": "Present tense",
+      "requires": [
+        "vowels"
+      ],
+      "lesson": "present-lesson",
+      "drills": [
+        "present-fill",
+        "present-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Yo (hablar)...",
+        "kind": "fill",
+        "answer": "hablo"
+      },
+      "focus": "Grammar"
+    },
+    {
+      "id": "requests",
+      "name": "Requests",
+      "requires": [
+        "present"
+      ],
+      "lesson": "request-lesson",
+      "drills": [
+        "shop-drill"
+      ],
+      "mistakes": [
+        "fillers"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "I'd like a coffee?",
+        "kind": "say",
+        "answer": "Quisiera un café"
+      },
+      "focus": "Speaking"
+    },
+    {
+      "id": "ser-estar",
+      "name": "Ser and estar",
+      "requires": [
+        "present"
+      ],
+      "lesson": "ser-lesson",
+      "drills": [
+        "ser-choice"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Estoy cansado or soy cansado?",
+        "kind": "choice",
+        "options": [
+          "Estoy cansado",
+          "Soy cansado"
+        ],
+        "answer": 0
+      },
+      "focus": "Grammar"
+    },
+    {
+      "id": "intro",
+      "name": "Introducing yourself",
+      "requires": [
+        "ser-estar",
+        "requests"
+      ],
+      "lesson": "intro-lesson",
+      "drills": [
+        "intro-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Say where you're from.",
+        "kind": "say"
+      },
+      "focus": "Speaking"
+    },
+    {
+      "id": "past",
+      "name": "Past tense stories",
+      "requires": [
+        "intro"
+      ],
+      "lesson": "past-lesson",
+      "drills": [
+        "past-fill",
+        "weekend-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Ayer yo (comer)...",
+        "kind": "fill",
+        "answer": "comí"
+      },
+      "focus": "Grammar"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "vowel-lesson",
+      "title": "Five vowels",
+      "nodes": [
+        "vowels"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Does Spanish 'e' change with the word?",
+          "options": [
+            "No, always the same",
+            "Yes, like English"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Five vowels, five fixed spots.",
+          "figure": {
+            "kind": "space",
+            "axes": [
+              "front to back",
+              "high to low"
+            ],
+            "points": [
+              {
+                "label": "i",
+                "x": 0.1,
+                "y": 0.1,
+                "role": "neutral"
+              },
+              {
+                "label": "e",
+                "x": 0.2,
+                "y": 0.45,
+                "role": "neutral"
+              },
+              {
+                "label": "a",
+                "x": 0.5,
+                "y": 0.9,
+                "role": "neutral"
+              },
+              {
+                "label": "o",
+                "x": 0.8,
+                "y": 0.45,
+                "role": "neutral"
+              },
+              {
+                "label": "u",
+                "x": 0.9,
+                "y": 0.1,
+                "role": "neutral"
+              }
+            ]
+          }
+        },
+        {
+          "type": "try-it",
+          "text": "Say: a, e, i, o, u.",
+          "action": "say-it",
+          "target": "a e i o u"
+        }
+      ]
+    },
+    {
+      "id": "present-lesson",
+      "title": "Present tense",
+      "nodes": [
+        "present"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "hablo, hablas, habla: what changes?",
+          "options": [
+            "The ending",
+            "The start"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Stem plus ending.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "s",
+                "label": "habl-"
+              },
+              {
+                "id": "o",
+                "label": "-o yo"
+              },
+              {
+                "id": "as",
+                "label": "-as tú"
+              },
+              {
+                "id": "a",
+                "label": "-a él"
+              }
+            ],
+            "edges": [
+              [
+                "s",
+                "o"
+              ],
+              [
+                "s",
+                "as"
+              ],
+              [
+                "s",
+                "a"
+              ]
+            ],
+            "direction": "LR"
+          }
+        }
+      ]
+    },
+    {
+      "id": "request-lesson",
+      "title": "Asking for things",
+      "nodes": [
+        "requests"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Most polite at a counter?",
+          "options": [
+            "Quisiera...",
+            "Dame..."
+          ],
+          "answer": 0
+        },
+        {
+          "type": "compare",
+          "text": "Tap the take full of fillers.",
+          "left": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Fillers",
+                "values": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ]
+          },
+          "right": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Fillers",
+                "values": [
+                  3,
+                  4,
+                  2
+                ]
+              }
+            ]
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "ser-lesson",
+      "title": "Ser and estar",
+      "nodes": [
+        "ser-estar"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Tired right now: ser or estar?",
+          "options": [
+            "Estar",
+            "Ser"
+          ],
+          "answer": 0,
+          "reveal": "States use estar."
+        },
+        {
+          "type": "diagram",
+          "text": "Ser: what it is. Estar: how or where it is.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "ser",
+                "label": "ser: soy de Leeds"
+              },
+              {
+                "id": "estar",
+                "label": "estar: estoy aquí"
+              }
+            ],
+            "edges": [],
+            "direction": "LR"
+          }
+        }
+      ]
+    },
+    {
+      "id": "intro-lesson",
+      "title": "Introducing yourself",
+      "nodes": [
+        "intro"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Which comes first in an introduction?",
+          "options": [
+            "Your name",
+            "Your hobbies"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "Name, from, work, why you're here.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "a",
+                "label": "Me llamo"
+              },
+              {
+                "id": "b",
+                "label": "Soy de"
+              },
+              {
+                "id": "c",
+                "label": "Trabajo en"
+              },
+              {
+                "id": "d",
+                "label": "Estoy aquí para"
+              }
+            ],
+            "edges": [
+              [
+                "a",
+                "b"
+              ],
+              [
+                "b",
+                "c"
+              ],
+              [
+                "c",
+                "d"
+              ]
+            ],
+            "direction": "LR"
+          },
+          "playback": "steps"
+        }
+      ]
+    },
+    {
+      "id": "past-lesson",
+      "title": "Last weekend",
+      "nodes": [
+        "past"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Ayer yo ___ paella.",
+          "options": [
+            "comí",
+            "como"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Finished actions: -é, -aste, -ó / -í, -iste, -ió.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "ar",
+                "label": "hablé"
+              },
+              {
+                "id": "er",
+                "label": "comí"
+              },
+              {
+                "id": "ir",
+                "label": "viví"
+              }
+            ],
+            "edges": [],
+            "direction": "LR"
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "vowel-drill",
+      "type": "say-it",
+      "title": "Greetings aloud",
+      "prompt": "Read each greeting aloud.",
+      "nodes": [
+        "vowels"
+      ],
+      "spec": "vowel-say",
+      "needs": [],
+      "success": "intelligibility >= 0.8",
+      "difficulty": {
+        "param": "speed",
+        "levels": [
+          "slow",
+          "natural"
+        ],
+        "start": 0
+      },
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": [
+        "unclear"
+      ]
+    },
+    {
+      "id": "present-fill",
+      "type": "fill",
+      "title": "Conjugate it",
+      "prompt": "Fill in the verb.",
+      "nodes": [
+        "present"
+      ],
+      "spec": "grammar-quiz",
+      "needs": [],
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Grammar",
+      "fixes": []
+    },
+    {
+      "id": "present-drill",
+      "type": "say-it",
+      "title": "Read it aloud",
+      "prompt": "Read the sentence aloud.",
+      "nodes": [
+        "present"
+      ],
+      "spec": "present-say",
+      "needs": [],
+      "success": "intelligibility >= 0.8",
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": []
+    },
+    {
+      "id": "shop-drill",
+      "type": "say-it",
+      "title": "At the shop",
+      "prompt": "The shopkeeper greets you. Ask for two things.",
+      "nodes": [
+        "requests"
+      ],
+      "spec": "shop-open",
+      "needs": [],
+      "success": "intelligibility >= 0.75",
+      "difficulty": {
+        "param": "items",
+        "levels": [
+          "one item",
+          "two items",
+          "two items and a question"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": [
+        "fillers"
+      ]
+    },
+    {
+      "id": "ser-choice",
+      "type": "choice",
+      "title": "Ser or estar",
+      "prompt": "Pick the right verb.",
+      "nodes": [
+        "ser-estar"
+      ],
+      "spec": "ser-quiz",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Grammar",
+      "fixes": []
+    },
+    {
+      "id": "intro-drill",
+      "type": "say-it",
+      "title": "Your introduction",
+      "prompt": "Introduce yourself for a minute.",
+      "nodes": [
+        "intro"
+      ],
+      "spec": "intro-open",
+      "needs": [],
+      "success": "intelligibility >= 0.75 && duration_s >= 40",
+      "difficulty": {
+        "param": "length",
+        "levels": [
+          "30 s",
+          "45 s",
+          "60 s"
+        ],
+        "start": 0
+      },
+      "minutes": 6,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": []
+    },
+    {
+      "id": "past-fill",
+      "type": "fill",
+      "title": "Past tense",
+      "prompt": "Fill in the past tense.",
+      "nodes": [
+        "past"
+      ],
+      "spec": "past-quiz",
+      "needs": [],
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Grammar",
+      "fixes": []
+    },
+    {
+      "id": "weekend-drill",
+      "type": "say-it",
+      "title": "Last weekend",
+      "prompt": "Tell me about last weekend for a minute.",
+      "nodes": [
+        "past"
+      ],
+      "spec": "weekend-open",
+      "needs": [],
+      "success": "intelligibility >= 0.7",
+      "difficulty": {
+        "param": "length",
+        "levels": [
+          "30 s",
+          "60 s"
+        ],
+        "start": 0
+      },
+      "minutes": 6,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "vowel-say": {
+      "kind": "speech",
+      "language": "es",
+      "target": "Hola. Buenos días. Buenas tardes. ¿Qué tal? Hasta luego.",
+      "tones": false,
+      "pass": "intelligibility >= 0.8",
+      "mistakes": [
+        {
+          "id": "unclear",
+          "when": "intelligibility < 0.6",
+          "severity": 2,
+          "fix_drill": "vowel-drill"
+        }
+      ]
+    },
+    "present-say": {
+      "kind": "speech",
+      "language": "es",
+      "target": "Hablo un poco de español y vivo en Valencia.",
+      "tones": false,
+      "pass": "intelligibility >= 0.8",
+      "mistakes": []
+    },
+    "shop-open": {
+      "kind": "speech",
+      "language": "es",
+      "prompt": "¡Buenos días! ¿Qué le pongo?",
+      "tones": false,
+      "pass": "intelligibility >= 0.75",
+      "mistakes": [
+        {
+          "id": "fillers",
+          "when": "filler_count > 4",
+          "severity": 1,
+          "fix_drill": "shop-drill"
+        }
+      ]
+    },
+    "intro-open": {
+      "kind": "speech",
+      "language": "es",
+      "prompt": "Preséntate: ¿cómo te llamas, de dónde eres y a qué te dedicas?",
+      "tones": false,
+      "rubric": {
+        "kind": "rubric",
+        "criteria": [
+          {
+            "id": "covers",
+            "label": "Covers the three questions",
+            "levels": {
+              "1": "One of the three",
+              "2": "Two of the three",
+              "3": "All three"
+            },
+            "weight": 1
+          }
+        ],
+        "must_cite": "timestamp",
+        "pass": "covers >= 2",
+        "safety_critical": false
+      },
+      "pass": "intelligibility >= 0.75 && words_per_minute >= 80",
+      "mistakes": []
+    },
+    "weekend-open": {
+      "kind": "speech",
+      "language": "es",
+      "prompt": "¿Qué hiciste el fin de semana pasado?",
+      "tones": false,
+      "rubric": {
+        "kind": "rubric",
+        "criteria": [
+          {
+            "id": "past_tense",
+            "label": "Uses the past tense",
+            "levels": {
+              "1": "Present tense only",
+              "2": "Some past tense",
+              "3": "Past tense throughout"
+            },
+            "weight": 1
+          }
+        ],
+        "must_cite": "timestamp",
+        "pass": "past_tense >= 2",
+        "safety_critical": false
+      },
+      "pass": "intelligibility >= 0.7 && duration_s >= 50",
+      "mistakes": []
+    },
+    "grammar-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "g1",
+          "prompt": "Yo ___ español.",
+          "options": [
+            "hablo",
+            "habla",
+            "hablas"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "present"
+          ]
+        },
+        {
+          "type": "fill",
+          "id": "g2",
+          "prompt": "Conjugate vivir for nosotros.",
+          "text": "Nosotros ___ en Valencia.",
+          "answers": [
+            "vivimos"
+          ],
+          "hints": [
+            "-ir verbs: -imos"
+          ],
+          "difficulty": 2,
+          "nodes": [
+            "present"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "g3",
+          "prompt": "Tú ___ café por la mañana.",
+          "options": [
+            "tomas",
+            "toma",
+            "tomo"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "present"
+          ]
+        },
+        {
+          "type": "fill",
+          "id": "g4",
+          "prompt": "Conjugate tener for yo.",
+          "text": "Yo ___ dos hermanos.",
+          "answers": [
+            "tengo"
+          ],
+          "hints": [
+            "Irregular yo form"
+          ],
+          "difficulty": 4,
+          "nodes": [
+            "present"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.8"
+    },
+    "ser-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "s1",
+          "prompt": "I'm from Leeds.",
+          "options": [
+            "Soy de Leeds",
+            "Estoy de Leeds"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "ser-estar"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "s2",
+          "prompt": "The café is closed.",
+          "options": [
+            "El café está cerrado",
+            "El café es cerrado"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "ser-estar"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    },
+    "past-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "fill",
+          "id": "pa1",
+          "prompt": "Past tense of comer, yo.",
+          "text": "Ayer ___ paella.",
+          "answers": [
+            "comí"
+          ],
+          "hints": [
+            "-er verbs: -í"
+          ],
+          "difficulty": 2,
+          "nodes": [
+            "past"
+          ]
+        },
+        {
+          "type": "fill",
+          "id": "pa2",
+          "prompt": "Past tense of ir, nosotros.",
+          "text": "El sábado ___ a la playa.",
+          "answers": [
+            "fuimos"
+          ],
+          "hints": [
+            "Irregular"
+          ],
+          "difficulty": 3,
+          "nodes": [
+            "past"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    },
+    "shadow-check": {
+      "kind": "self-report",
+      "fields": [
+        "done",
+        "count",
+        "felt",
+        "note"
+      ],
+      "criterion": "Played the reference recording, repeated each line three times, and rated how clear it sounded",
+      "pass": "done && count >= 3"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "unclear",
+      "name": "Hard to understand",
+      "nodes": [
+        "vowels"
+      ],
+      "engine": "speech",
+      "detector": {
+        "metric": "intelligibility",
+        "when": "intelligibility < 0.6",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "vowel-lesson",
+        "card": 1
+      },
+      "fix_drill": "vowel-drill",
+      "resolved_after": 3,
+      "headline": "Some words weren't recognized"
+    },
+    {
+      "id": "fillers",
+      "name": "Many fillers",
+      "nodes": [
+        "requests"
+      ],
+      "engine": "speech",
+      "detector": {
+        "metric": "filler_count",
+        "when": "filler_count > 4",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "request-lesson",
+        "card": 1
+      },
+      "fix_drill": "shop-drill",
+      "resolved_after": 3,
+      "headline": "Lots of 'eh' and 'um'"
+    }
+  ],
+  "access": [
+    "Headphones",
+    "A quiet room"
+  ],
+  "focus": {
+    "Fundamentals": 25,
+    "Speaking": 45,
+    "Grammar": 30
+  },
+  "key_metrics": [
+    {
+      "id": "clear",
+      "label": "Understood",
+      "engine": "speech",
+      "metric": "intelligibility",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "pace",
+      "label": "Speaking pace",
+      "engine": "speech",
+      "metric": "words_per_minute",
+      "unit": "wpm",
+      "better": "higher",
+      "format": "number"
+    },
+    {
+      "id": "grammar",
+      "label": "Grammar quiz",
+      "engine": "knowledge",
+      "metric": "accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    }
+  ],
+  "copy": {
+    "placeholder": "Spanish, Italian, Portuguese",
+    "blurb": "Be understood, then speak for a minute"
+  },
+  "notes": "Engines: speech for intelligibility, pace, fillers and length, with rubrics for open answers; knowledge for grammar. No per-sound model is listed for Spanish, so the rolled r and vowels are judged through intelligibility and self-comparison. Clarity is scored, never a native accent. If speech is missing, the learner shadows a reference recording and self-reports. Hours are estimates from general beginner course guidance, shown as ranges."
+}

@@ -1,0 +1,1228 @@
+{
+  "schemaVersion": 1,
+  "skill": "Japanese",
+  "name": "Japanese",
+  "noun": "Japanese",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "speech",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "speech": "self-report"
+  },
+  "why": [
+    {
+      "id": "trip",
+      "label": "A trip to Japan"
+    },
+    {
+      "id": "anime",
+      "label": "Shows without subtitles"
+    },
+    {
+      "id": "friends",
+      "label": "Talk with friends"
+    },
+    {
+      "id": "brain",
+      "label": "A new challenge"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "restaurant",
+      "label": "Ordering in a restaurant",
+      "why": [
+        "trip",
+        "friends"
+      ],
+      "ladderStep": 4,
+      "milestone": "Order a meal, clearly understood",
+      "proof": "A spoken order, recognized as you meant it",
+      "focus": {
+        "Fundamentals": 30,
+        "Speaking": 45,
+        "Reading": 25
+      }
+    },
+    {
+      "id": "signs",
+      "label": "Reading station signs",
+      "why": [
+        "trip",
+        "brain"
+      ],
+      "ladderStep": 2,
+      "milestone": "Read all hiragana",
+      "proof": "A hiragana quiz at 90%",
+      "focus": {
+        "Fundamentals": 40,
+        "Speaking": 10,
+        "Reading": 50
+      }
+    },
+    {
+      "id": "intro",
+      "label": "Introducing myself to friends",
+      "why": [
+        "friends",
+        "anime"
+      ],
+      "ladderStep": 3,
+      "milestone": "A clear self-introduction",
+      "proof": "A spoken introduction, clearly understood",
+      "focus": {
+        "Fundamentals": 35,
+        "Speaking": 50,
+        "Reading": 15
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How much Japanese do you know?",
+      "options": [
+        {
+          "value": 0,
+          "label": "None"
+        },
+        {
+          "value": 1,
+          "label": "A few words"
+        },
+        {
+          "value": 2,
+          "label": "I read hiragana"
+        },
+        {
+          "value": 3,
+          "label": "Simple conversations"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "kana",
+      "type": "quiz",
+      "question": "Read a few characters.",
+      "spec": "kana-quiz",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 3 && quiz.correct >= 4",
+      "step": 3,
+      "evidence": "Reads kana and holds simple talks"
+    },
+    {
+      "when": "level >= 2 && quiz.correct >= 3",
+      "step": 2,
+      "evidence": "Reads hiragana"
+    },
+    {
+      "when": "level >= 1",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "greetings",
+      "label": "Say the everyday greetings",
+      "hours": [
+        2,
+        4
+      ],
+      "nodes": [
+        "greetings"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "greet-say",
+        "label": "Five greetings, each recognized as the right phrase",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.8"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "hiragana",
+      "label": "Read all hiragana",
+      "hours": [
+        8,
+        15
+      ],
+      "nodes": [
+        "hiragana"
+      ],
+      "proof": {
+        "engine": "knowledge",
+        "spec": "kana-quiz",
+        "label": "Hiragana quiz, 90% right",
+        "criteria": [
+          {
+            "id": "acc",
+            "label": "90% right",
+            "check": "accuracy >= 0.9"
+          }
+        ],
+        "single_take": true
+      }
+    },
+    {
+      "id": "intro",
+      "label": "Introduce yourself",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "desu",
+        "intro"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "intro-say",
+        "label": "A four-sentence self-introduction, clearly understood",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.75"
+          },
+          {
+            "id": "pace",
+            "label": "Few long pauses",
+            "check": "pause_share <= 0.35"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "order",
+      "label": "Order food and ask prices",
+      "hours": [
+        10,
+        20
+      ],
+      "nodes": [
+        "ordering"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "order-open",
+        "label": "Answer the waiter's prompt with a full order",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.7"
+          },
+          {
+            "id": "fluent",
+            "label": "Steady pace",
+            "check": "words_per_minute >= 50"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "katakana",
+      "label": "Read katakana menus",
+      "hours": [
+        8,
+        15
+      ],
+      "nodes": [
+        "katakana"
+      ],
+      "proof": {
+        "engine": "knowledge",
+        "spec": "menu-quiz",
+        "label": "Katakana menu words, 85% right",
+        "criteria": [
+          {
+            "id": "acc",
+            "label": "85% right",
+            "check": "accuracy >= 0.85"
+          }
+        ],
+        "single_take": true
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "greetings",
+      "name": "Greetings",
+      "requires": [],
+      "lesson": "greet-lesson",
+      "drills": [
+        "greet-drill",
+        "greet-match"
+      ],
+      "mistakes": [
+        "mumbled"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Good morning (polite)?",
+        "kind": "say",
+        "answer": "おはようございます"
+      },
+      "focus": "Speaking"
+    },
+    {
+      "id": "hiragana",
+      "name": "Hiragana",
+      "requires": [],
+      "lesson": "kana-lesson",
+      "drills": [
+        "kana-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Read: さ",
+        "kind": "choice",
+        "options": [
+          "sa",
+          "ki"
+        ],
+        "answer": 0
+      },
+      "focus": "Reading"
+    },
+    {
+      "id": "desu",
+      "name": "X wa Y desu",
+      "requires": [
+        "greetings"
+      ],
+      "lesson": "desu-lesson",
+      "drills": [
+        "desu-fill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Fill: わたし__がくせいです",
+        "kind": "fill",
+        "answer": "は"
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "intro",
+      "name": "Self-introduction",
+      "requires": [
+        "desu"
+      ],
+      "lesson": "intro-lesson",
+      "drills": [
+        "intro-drill"
+      ],
+      "mistakes": [
+        "long-pauses"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Say: Nice to meet you.",
+        "kind": "say",
+        "answer": "はじめまして"
+      },
+      "focus": "Speaking"
+    },
+    {
+      "id": "ordering",
+      "name": "Ordering",
+      "requires": [
+        "intro",
+        "hiragana"
+      ],
+      "lesson": "order-lesson",
+      "drills": [
+        "order-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "This one, please?",
+        "kind": "say",
+        "answer": "これをください"
+      },
+      "focus": "Speaking"
+    },
+    {
+      "id": "katakana",
+      "name": "Katakana",
+      "requires": [
+        "hiragana"
+      ],
+      "lesson": "kana-lesson",
+      "drills": [
+        "menu-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Read: コーヒー",
+        "kind": "choice",
+        "options": [
+          "coffee",
+          "cola"
+        ],
+        "answer": 0
+      },
+      "focus": "Reading"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "greet-lesson",
+      "title": "Greetings",
+      "nodes": [
+        "greetings"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Which is the polite good morning?",
+          "options": [
+            "おはようございます",
+            "おはよう"
+          ],
+          "answer": 0,
+          "reveal": "The longer one is polite."
+        },
+        {
+          "type": "try-it",
+          "text": "Say it after the recording.",
+          "action": "say-it",
+          "target": "おはようございます"
+        }
+      ]
+    },
+    {
+      "id": "kana-lesson",
+      "title": "Kana",
+      "nodes": [
+        "hiragana",
+        "katakana"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "How many basic hiragana are there?",
+          "options": [
+            "About 46",
+            "About 2000"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Vowels first: a, i, u, e, o.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "a",
+                "label": "あ a"
+              },
+              {
+                "id": "i",
+                "label": "い i"
+              },
+              {
+                "id": "u",
+                "label": "う u"
+              },
+              {
+                "id": "e",
+                "label": "え e"
+              },
+              {
+                "id": "o",
+                "label": "お o"
+              }
+            ],
+            "edges": [
+              [
+                "a",
+                "i"
+              ],
+              [
+                "i",
+                "u"
+              ],
+              [
+                "u",
+                "e"
+              ],
+              [
+                "e",
+                "o"
+              ]
+            ],
+            "direction": "LR"
+          }
+        },
+        {
+          "type": "compare",
+          "text": "Same sound, two scripts. Which is katakana?",
+          "left": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "h",
+                "label": "こ"
+              }
+            ],
+            "edges": [],
+            "direction": "LR"
+          },
+          "right": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "k",
+                "label": "コ"
+              }
+            ],
+            "edges": [],
+            "direction": "LR"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "desu-lesson",
+      "title": "X wa Y desu",
+      "nodes": [
+        "desu"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "わたしはがくせいです means...",
+          "options": [
+            "I am a student",
+            "Where is the station"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Topic, は, description, です.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "x",
+                "label": "わたし"
+              },
+              {
+                "id": "wa",
+                "label": "は"
+              },
+              {
+                "id": "y",
+                "label": "がくせい"
+              },
+              {
+                "id": "d",
+                "label": "です"
+              }
+            ],
+            "edges": [
+              [
+                "x",
+                "wa"
+              ],
+              [
+                "wa",
+                "y"
+              ],
+              [
+                "y",
+                "d"
+              ]
+            ],
+            "direction": "LR"
+          }
+        }
+      ]
+    },
+    {
+      "id": "intro-lesson",
+      "title": "Introducing yourself",
+      "nodes": [
+        "intro"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Which line opens an introduction?",
+          "options": [
+            "はじめまして",
+            "さようなら"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "Hello, name, job, nice to meet you.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "a",
+                "label": "はじめまして"
+              },
+              {
+                "id": "b",
+                "label": "Name です"
+              },
+              {
+                "id": "c",
+                "label": "Job です"
+              },
+              {
+                "id": "d",
+                "label": "よろしく"
+              }
+            ],
+            "edges": [
+              [
+                "a",
+                "b"
+              ],
+              [
+                "b",
+                "c"
+              ],
+              [
+                "c",
+                "d"
+              ]
+            ],
+            "direction": "LR"
+          },
+          "playback": "steps"
+        },
+        {
+          "type": "compare",
+          "text": "Tap the take with long gaps.",
+          "left": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Pause s",
+                "values": [
+                  0.4,
+                  0.5,
+                  0.4
+                ]
+              }
+            ]
+          },
+          "right": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Pause s",
+                "values": [
+                  2.5,
+                  3.1,
+                  2.8
+                ]
+              }
+            ]
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "order-lesson",
+      "title": "Ordering",
+      "nodes": [
+        "ordering"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Pointing at a menu item, you say...",
+          "options": [
+            "これをください",
+            "ありがとう"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "try-it",
+          "text": "Order one coffee, please.",
+          "action": "say-it",
+          "target": "コーヒーをひとつください"
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "greet-drill",
+      "type": "say-it",
+      "title": "Say the greetings",
+      "prompt": "Say each greeting after the recording.",
+      "nodes": [
+        "greetings"
+      ],
+      "spec": "greet-say",
+      "needs": [],
+      "success": "intelligibility >= 0.8",
+      "difficulty": {
+        "param": "speed",
+        "levels": [
+          "slow",
+          "natural"
+        ],
+        "start": 0
+      },
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": [
+        "mumbled"
+      ]
+    },
+    {
+      "id": "greet-match",
+      "type": "match",
+      "title": "Greeting meanings",
+      "prompt": "Match each greeting to its meaning.",
+      "nodes": [
+        "greetings"
+      ],
+      "spec": "phrase-quiz",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "kana-drill",
+      "type": "choice",
+      "title": "Read the kana",
+      "prompt": "Pick the sound.",
+      "nodes": [
+        "hiragana"
+      ],
+      "spec": "kana-quiz",
+      "needs": [],
+      "difficulty": {
+        "param": "set",
+        "levels": [
+          "vowels",
+          "k-s-t rows",
+          "all"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "desu-fill",
+      "type": "fill",
+      "title": "Fill the particle",
+      "prompt": "Fill the gap.",
+      "nodes": [
+        "desu"
+      ],
+      "spec": "phrase-quiz",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "intro-drill",
+      "type": "say-it",
+      "title": "Your introduction",
+      "prompt": "Say your four-line introduction.",
+      "nodes": [
+        "intro"
+      ],
+      "spec": "intro-say",
+      "needs": [],
+      "success": "intelligibility >= 0.75",
+      "difficulty": {
+        "param": "length",
+        "levels": [
+          "two lines",
+          "four lines"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": [
+        "long-pauses"
+      ]
+    },
+    {
+      "id": "order-drill",
+      "type": "say-it",
+      "title": "At the restaurant",
+      "prompt": "The waiter asks what you'd like. Answer out loud.",
+      "nodes": [
+        "ordering"
+      ],
+      "spec": "order-open",
+      "needs": [],
+      "success": "intelligibility >= 0.7",
+      "difficulty": {
+        "param": "items",
+        "levels": [
+          "one dish",
+          "dish and drink"
+        ],
+        "start": 0
+      },
+      "minutes": 6,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": []
+    },
+    {
+      "id": "menu-drill",
+      "type": "choice",
+      "title": "Menu words",
+      "prompt": "Pick what the menu word means.",
+      "nodes": [
+        "katakana"
+      ],
+      "spec": "menu-quiz",
+      "needs": [],
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "greet-say": {
+      "kind": "speech",
+      "language": "ja",
+      "target": "おはようございます。こんにちは。こんばんは。ありがとうございます。すみません。",
+      "tones": false,
+      "pass": "intelligibility >= 0.8",
+      "mistakes": [
+        {
+          "id": "mumbled",
+          "when": "intelligibility < 0.6 && mean_word_confidence < 0.6",
+          "severity": 2,
+          "fix_drill": "greet-drill"
+        }
+      ]
+    },
+    "intro-say": {
+      "kind": "speech",
+      "language": "ja",
+      "target": "はじめまして。わたしはサムです。かいしゃいんです。よろしくおねがいします。",
+      "tones": false,
+      "pass": "intelligibility >= 0.75 && pause_share <= 0.35",
+      "mistakes": [
+        {
+          "id": "long-pauses",
+          "when": "pause_share > 0.4",
+          "severity": 1,
+          "fix_drill": "intro-drill"
+        }
+      ]
+    },
+    "order-open": {
+      "kind": "speech",
+      "language": "ja",
+      "prompt": "いらっしゃいませ。ごちゅうもんは？",
+      "tones": false,
+      "rubric": {
+        "kind": "rubric",
+        "criteria": [
+          {
+            "id": "complete",
+            "label": "Complete order",
+            "levels": {
+              "1": "Only a dish name",
+              "2": "Dish and ください",
+              "3": "Dish, count and ください"
+            },
+            "weight": 1
+          },
+          {
+            "id": "polite",
+            "label": "Polite form",
+            "levels": {
+              "1": "Plain form",
+              "2": "Polite form",
+              "3": "Polite form with a greeting and thanks"
+            },
+            "weight": 1
+          }
+        ],
+        "must_cite": "timestamp",
+        "pass": "complete >= 2",
+        "safety_critical": false
+      },
+      "pass": "intelligibility >= 0.7",
+      "mistakes": []
+    },
+    "kana-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "k1",
+          "prompt": "Read: あ",
+          "options": [
+            "a",
+            "o",
+            "i"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "hiragana"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "k2",
+          "prompt": "Read: か",
+          "options": [
+            "ka",
+            "sa",
+            "ta"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "hiragana"
+          ]
+        },
+        {
+          "type": "match",
+          "id": "k3",
+          "prompt": "Match the kana to the sound.",
+          "pairs": [
+            [
+              "さ",
+              "sa"
+            ],
+            [
+              "し",
+              "shi"
+            ],
+            [
+              "つ",
+              "tsu"
+            ],
+            [
+              "ね",
+              "ne"
+            ]
+          ],
+          "difficulty": 3,
+          "nodes": [
+            "hiragana"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "k4",
+          "prompt": "Read: きっぷ (ticket)",
+          "options": [
+            "kippu",
+            "kipu",
+            "kippo"
+          ],
+          "answer": 0,
+          "difficulty": 4,
+          "nodes": [
+            "hiragana"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "k5",
+          "prompt": "Read: えき (station)",
+          "options": [
+            "eki",
+            "aki",
+            "iki"
+          ],
+          "answer": 0,
+          "difficulty": 5,
+          "nodes": [
+            "hiragana"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.9"
+    },
+    "phrase-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "match",
+          "id": "p1",
+          "prompt": "Match each greeting to its meaning.",
+          "pairs": [
+            [
+              "おはようございます",
+              "Good morning"
+            ],
+            [
+              "こんばんは",
+              "Good evening"
+            ],
+            [
+              "すみません",
+              "Excuse me"
+            ]
+          ],
+          "difficulty": 1,
+          "nodes": [
+            "greetings"
+          ]
+        },
+        {
+          "type": "fill",
+          "id": "p2",
+          "prompt": "Fill the topic particle.",
+          "text": "わたし__がくせいです",
+          "answers": [
+            "は",
+            "wa"
+          ],
+          "hints": [
+            "It marks the topic"
+          ],
+          "difficulty": 2,
+          "nodes": [
+            "desu"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    },
+    "menu-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "m1",
+          "prompt": "コーヒー is...",
+          "options": [
+            "coffee",
+            "cake",
+            "cola"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "katakana"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "m2",
+          "prompt": "ビール is...",
+          "options": [
+            "beer",
+            "bill",
+            "bowl"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "katakana"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "m3",
+          "prompt": "サラダ is...",
+          "options": [
+            "salad",
+            "soda",
+            "sardine"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "katakana"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.85"
+    },
+    "shadow-check": {
+      "kind": "self-report",
+      "fields": [
+        "done",
+        "count",
+        "felt",
+        "note"
+      ],
+      "criterion": "Played the reference recording, said each line back three times, and rated how close it sounded",
+      "pass": "done && count >= 3"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "mumbled",
+      "name": "Hard to understand",
+      "nodes": [
+        "greetings"
+      ],
+      "engine": "speech",
+      "detector": {
+        "metric": "intelligibility",
+        "when": "intelligibility < 0.6 && mean_word_confidence < 0.6",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "greet-lesson",
+        "card": 1
+      },
+      "fix_drill": "greet-drill",
+      "resolved_after": 3,
+      "headline": "Words weren't recognized; slow down"
+    },
+    {
+      "id": "long-pauses",
+      "name": "Long pauses",
+      "nodes": [
+        "intro"
+      ],
+      "engine": "speech",
+      "detector": {
+        "metric": "pause_share",
+        "when": "pause_share > 0.4",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "intro-lesson",
+        "card": 2
+      },
+      "fix_drill": "intro-drill",
+      "resolved_after": 3,
+      "headline": "Long gaps between your sentences"
+    }
+  ],
+  "access": [
+    "Headphones",
+    "A quiet room"
+  ],
+  "focus": {
+    "Fundamentals": 30,
+    "Speaking": 40,
+    "Reading": 30
+  },
+  "key_metrics": [
+    {
+      "id": "clear",
+      "label": "Understood",
+      "engine": "speech",
+      "metric": "intelligibility",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "kana",
+      "label": "Kana quiz",
+      "engine": "knowledge",
+      "metric": "accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    }
+  ],
+  "copy": {
+    "placeholder": "Japanese, Korean, Thai",
+    "blurb": "Kana, phrases and being understood"
+  },
+  "notes": "Engines: speech (Whisper transcription) measures intelligibility, pace and pauses; knowledge covers kana and grammar. get_capabilities lists no per-sound model for Japanese, so no sound scores are requested; progress compares the learner with their own earlier attempts. Clarity is scored, never a native accent. If speech is missing, the learner shadows a reference recording and self-reports. Hours are estimates from general beginner course guidance, shown as ranges."
+}

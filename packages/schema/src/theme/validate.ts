@@ -56,6 +56,9 @@ export function mergeTheme(partial: unknown, base: Theme = BASE_THEME): Theme {
   };
   const merged = merge(structuredClone(base), partial ?? {});
   if (merged.id === "base" && (partial as any)?.id !== "base") delete merged.id;
+  // A single-mode theme carries its own colors in `tokens`; the base theme's dark block must not leak into it.
+  const modes: string[] | undefined = (partial as any)?.modes;
+  if (modes && modes.length === 1 && !(partial as any)?.dark) delete merged.dark;
   return merged;
 }
 

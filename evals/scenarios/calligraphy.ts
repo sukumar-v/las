@@ -1,0 +1,131 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/**
+ * Broad-pen italic calligraphy: letterforms graded with rubrics that cite a region, with measurements where they
+ * exist (slant angle from tapped points, x-height ratio, stroke contrast).
+ */
+export const calligraphy: Scenario = {
+  id: "calligraphy",
+  skill: "calligraphy",
+  notes: "Wants to letter wedding place cards. Bought a 3.8 mm broad-edge pen.",
+  expect: { engines: ["visual"], main: "visual", fallback: "self-report", physical: false, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "calligraphy",
+    name: "Italic calligraphy",
+    noun: "calligraphy",
+    source: "generated",
+    physical: false,
+    engines: ["visual", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { visual: "self-report" }),
+    why: [
+      { id: "cards", label: "Letter cards and invites" },
+      { id: "calm", label: "A slow, calm hobby" },
+      { id: "gifts", label: "Handmade gifts" }
+    ],
+    pictures: [
+      { id: "place-cards", label: "Lettering place cards", why: ["cards", "gifts"], ladderStep: 5, milestone: "Twenty names, even and on slant", proof: "A photo of five names graded for consistency", focus: { Fundamentals: 30, Letterforms: 50, Spacing: 20 } },
+      { id: "alphabet", label: "A full italic alphabet", why: ["calm"], ladderStep: 3, milestone: "Every minuscule, even height", proof: "A photo of the alphabet with even x-height", focus: { Fundamentals: 40, Letterforms: 45, Spacing: 15 } },
+      { id: "quote", label: "A framed quote", why: ["gifts", "calm"], ladderStep: 4, milestone: "Three lines with even spacing", proof: "A photo of a three-line quote, spacing even", focus: { Fundamentals: 25, Letterforms: 40, Spacing: 35 } }
+    ],
+    probes: [
+      { id: "level", type: "scale", question: "Have you used a broad-edge pen?", options: [{ value: 0, label: "Never" }, { value: 1, label: "Tried once" }, { value: 2, label: "I can write basic italic" }] },
+      { id: "theory", type: "quiz", question: "A few quick questions.", spec: "callig-quiz" }
+    ],
+    placement: [
+      { when: "!fresh && level >= 2 && quiz.correct >= 2", step: 2, evidence: "Writes basic italic" },
+      { when: "level >= 1", step: 1 }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new", hours: [0, 0] },
+      { id: "pen-angle", label: "Holding a steady pen angle", hours: [1, 3], nodes: ["pen-angle"],
+        proof: { engine: "visual", spec: "stroke-rubric", label: "A row of zigzags with thick and thin strokes at 45 degrees", criteria: [{ id: "angle", label: "Steady angle", check: "pen_angle_level >= 2" }, { id: "contrast", label: "Thick-thin contrast", check: "contrast_level >= 2" }], fallback: "self-report", fallback_spec: "page-photo" } },
+      { id: "o-n", label: "The o and n families", hours: [3, 6], nodes: ["families"],
+        proof: { engine: "visual", spec: "letter-rubric", label: "A line of o, n, a, d and b: shapes and slant even", criteria: [{ id: "shape", label: "Letter shapes", check: "shape_level >= 2" }, { id: "slant", label: "Even slant", check: "slant_level >= 2" }], fallback: "self-report", fallback_spec: "page-photo" } },
+      { id: "alphabet", label: "The full minuscule alphabet", hours: [6, 12], nodes: ["alphabet"],
+        proof: { engine: "visual", spec: "letter-rubric", label: "All 26 minuscules, x-height within 10%", criteria: [{ id: "height", label: "Even x-height", check: "x_height_level >= 2" }, { id: "slant", label: "Even slant", check: "slant_level >= 2" }], fallback: "self-report", fallback_spec: "page-photo" } },
+      { id: "spacing", label: "Words with even spacing", hours: [6, 12], nodes: ["spacing"],
+        proof: { engine: "visual", spec: "spacing-rubric", label: "Three lines of text with even letter and word spacing", criteria: [{ id: "spacing", label: "Even spacing", check: "spacing_level >= 2" }], fallback: "self-report", fallback_spec: "page-photo" } },
+      { id: "names", label: "Names with capitals", hours: [8, 16], nodes: ["capitals"],
+        proof: { engine: "visual", spec: "letter-rubric", label: "Five names with italic capitals, consistent throughout", criteria: [{ id: "shape", label: "Letter shapes", check: "shape_level >= 2" }, { id: "height", label: "Even height", check: "x_height_level >= 2" }], fallback: "self-report", fallback_spec: "page-photo" } }
+    ],
+    nodes: [
+      { id: "pen-angle", name: "Pen angle", lesson: "angle-lesson", drills: ["zigzags"], mistakes: ["drifting-angle"], review: { prompt: "Italic pen angle?", kind: "choice", options: ["About 45 degrees", "Flat, 0 degrees"], answer: 0 }, focus: "Fundamentals" },
+      { id: "families", name: "Letter families", requires: ["pen-angle"], lesson: "family-lesson", drills: ["family-rows", "family-match"], mistakes: ["wobbly-slant"], review: { prompt: "Which letters share the n arch?", kind: "choice", options: ["h, m, r", "o, c, e"], answer: 0 }, focus: "Letterforms" },
+      { id: "alphabet", name: "Full alphabet", requires: ["families"], lesson: "family-lesson", drills: ["family-rows"], review: { prompt: "How tall are ascenders?", kind: "choice", options: ["About 1.5 x-heights above", "Same as x-height"], answer: 0 }, focus: "Letterforms" },
+      { id: "spacing", name: "Spacing", requires: ["alphabet"], lesson: "spacing-lesson", drills: ["spacing-lines"], review: { prompt: "Space between words is about...", kind: "choice", options: ["An n's width", "A pen width"], answer: 0 }, focus: "Spacing" },
+      { id: "capitals", name: "Italic capitals", requires: ["spacing"], lesson: "capitals-lesson", drills: ["name-cards"], review: { prompt: "Capitals are how tall?", kind: "choice", options: ["Shorter than ascenders", "Twice the ascenders"], answer: 0 }, focus: "Letterforms" }
+    ],
+    lessons: [
+      { id: "angle-lesson", title: "Pen angle", nodes: ["pen-angle"], cards: [
+        { type: "predict", text: "Keep the pen at 45 degrees. A vertical stroke comes out...", options: ["Medium-thick", "Hairline thin"], answer: 0 },
+        { type: "sim", text: "Turn the stroke direction. Watch the width.", sim: { title: "Stroke width", params: { dir_deg: { label: "Stroke direction", min: 0, max: 180, default: 90, unit: "deg" } }, formulas: { width_pct: "abs(sin(rad(dir_deg - 45))) * 100" }, figure: { kind: "plot", x: "dir_deg", series: ["width_pct"] }, readout: [{ value: "width_pct", label: "Width", unit: "%" }] } },
+        { type: "compare", text: "Tap the row where the angle drifts.", left: { kind: "chart", type: "dots", series: [{ label: "Angle", values: [45, 44, 46, 45, 45] }] }, right: { kind: "chart", type: "dots", series: [{ label: "Angle", values: [45, 35, 55, 30, 50] }] }, answer: "right" }
+      ] },
+      { id: "family-lesson", title: "Letter families", nodes: ["families", "alphabet"], cards: [
+        { type: "predict", text: "In italic, the n's arch springs from...", options: ["Low on the stem", "The very top"], answer: 0 },
+        { type: "diagram", text: "Families: o-c-e, n-h-m-r, a-d-g-q.", figure: { kind: "graph", nodes: [{ id: "o", label: "o c e" }, { id: "n", label: "n h m r" }, { id: "a", label: "a d g q" }], edges: [] } },
+        { type: "compare", text: "Tap the line with a wandering slant.", left: { kind: "chart", type: "dots", series: [{ label: "Slant", values: [7, 7, 6, 7, 7] }] }, right: { kind: "chart", type: "dots", series: [{ label: "Slant", values: [7, 0, 12, 3, 9] }] }, answer: "right" }
+      ] },
+      { id: "spacing-lesson", title: "Spacing", nodes: ["spacing"], cards: [
+        { type: "predict", text: "Even spacing means equal gaps or equal areas?", options: ["Equal areas", "Equal gaps"], answer: 0 },
+        { type: "diagram", text: "Word space: about one n wide.", figure: { kind: "chart", type: "bar", series: [{ label: "Gap", values: [1, 1, 1, 3, 1, 1] }] } }
+      ] },
+      { id: "capitals-lesson", title: "Capitals", nodes: ["capitals"], cards: [
+        { type: "predict", text: "Italic capitals lean...", options: ["Like the minuscules", "Upright"], answer: 0 },
+        { type: "demo", text: "A capital, then the name in minuscules.", figure: { kind: "mechanism", concept: "italic capital A built from two slanted strokes and a crossbar" }, playback: "steps" }
+      ] }
+    ],
+    drills: [
+      { id: "zigzags", type: "make", title: "Zigzags", prompt: "Fill a line with zigzags at a steady 45 degrees. Photograph it.", nodes: ["pen-angle"], spec: "stroke-rubric", success: "pen_angle_level >= 2", minutes: 8, intensity: 1, focus: "Fundamentals", fixes: ["drifting-angle"] },
+      { id: "family-rows", type: "make", title: "Letter rows", prompt: "Write a row of each letter in the family. Tap the slant lines.", nodes: ["families", "alphabet"], spec: "letter-rubric", success: "shape_level >= 2 && slant_level >= 2", difficulty: { param: "letters", levels: ["o n", "o n a d b", "full alphabet"] }, minutes: 12, intensity: 1, focus: "Letterforms", fixes: ["wobbly-slant"] },
+      { id: "family-match", type: "match", title: "Families", prompt: "Match each letter to its family.", nodes: ["families"], spec: "callig-quiz", minutes: 3, intensity: 1, focus: "Letterforms" },
+      { id: "spacing-lines", type: "make", title: "Three lines", prompt: "Write three lines of a short quote with even spacing.", nodes: ["spacing"], spec: "spacing-rubric", success: "spacing_level >= 2", minutes: 15, intensity: 1, focus: "Spacing" },
+      { id: "name-cards", type: "make", title: "Place cards", prompt: "Letter five names with capitals on cards. Photograph them together.", nodes: ["capitals"], spec: "letter-rubric", success: "shape_level >= 2", minutes: 15, intensity: 1, focus: "Letterforms" }
+    ],
+    specs: {
+      "stroke-rubric": {
+        kind: "rubric",
+        criteria: [
+          { id: "pen_angle", label: "Pen angle", levels: { "1": "Angle drifts by more than 15 degrees", "2": "Mostly steady", "3": "Steady within 5 degrees" }, measure: "angle(stroke_start, stroke_end)", weight: 2 },
+          { id: "contrast", label: "Thick-thin contrast", levels: { "1": "Strokes all one width", "2": "Clear thick and thin", "3": "Crisp hairlines and full thicks" }, measure: "edge_density(strokes)" }
+        ],
+        must_cite: "region",
+        taps: [{ id: "stroke_start", prompt: "Tap where a thin stroke starts" }, { id: "stroke_end", prompt: "Tap where it ends" }],
+        pass: "pen_angle >= 2 && contrast >= 2"
+      },
+      "letter-rubric": {
+        kind: "rubric",
+        criteria: [
+          { id: "shape", label: "Letter shapes", levels: { "1": "Round arches, unlike italic", "2": "Mostly italic shapes", "3": "Consistent italic shapes" } },
+          { id: "slant", label: "Slant", levels: { "1": "Slant wanders", "2": "Mostly even", "3": "Even, about 7 degrees" }, measure: "angle(slant_top, slant_bottom)" },
+          { id: "x_height", label: "x-height", levels: { "1": "Heights vary by over 20%", "2": "Within 10%", "3": "Within 5%" }, measure: "tapped_points(baseline, x_line)", level_from: "if(height_spread < 0.05, 3, if(height_spread < 0.1, 2, 1))" }
+        ],
+        must_cite: "region",
+        taps: [{ id: "baseline", prompt: "Tap the baseline" }, { id: "x_line", prompt: "Tap the top of an n" }, { id: "slant_top", prompt: "Tap the top of a stem" }, { id: "slant_bottom", prompt: "Tap its bottom" }],
+        pass: "shape >= 2 && slant >= 2 && x_height >= 2"
+      },
+      "spacing-rubric": { kind: "rubric", criteria: [{ id: "spacing", label: "Spacing", levels: { "1": "Letters bunch and gap", "2": "Mostly even", "3": "Even texture across lines" }, measure: "proportion(gaps)" }], must_cite: "region", pass: "spacing >= 2" },
+      "callig-quiz": {
+        kind: "items",
+        items: [
+          { type: "choice", id: "q1", prompt: "Italic pen angle is about...", options: ["45 degrees", "0 degrees", "90 degrees"], answer: 0, difficulty: 1, nodes: ["pen-angle"] },
+          { type: "match", id: "q2", prompt: "Match each letter to its family.", pairs: [["h", "n family"], ["e", "o family"], ["q", "a family"]], difficulty: 2, nodes: ["families"] },
+          { type: "choice", id: "q3", prompt: "Word spacing is about...", options: ["The width of an n", "One pen width"], answer: 0, difficulty: 3, nodes: ["spacing"] }
+        ]
+      },
+      "page-photo": { kind: "self-report", fields: ["done", "photo", "felt", "note"], criterion: "Photographed the page, tapped baseline and slant points, and compared it with the exemplar" }
+    },
+    mistakes: [
+      { id: "drifting-angle", name: "Drifting pen angle", nodes: ["pen-angle"], engine: "visual", detector: { metric: "pen_angle_level", when: "pen_angle_level < 2" }, severity: 2, explain: { lesson: "angle-lesson", card: 2 }, fix_drill: "zigzags", headline: "Pen angle drifts along the line" },
+      { id: "wobbly-slant", name: "Wobbly slant", nodes: ["families"], engine: "visual", detector: { metric: "slant_level", when: "slant_level < 2" }, severity: 1, explain: { lesson: "family-lesson", card: 2 }, fix_drill: "family-rows", headline: "Letters lean different ways" }
+    ],
+    access: ["A broad-edge pen", "Guideline paper", "A phone camera"],
+    focus: { Fundamentals: 35, Letterforms: 45, Spacing: 20 },
+    key_metrics: [
+      { id: "score", label: "Rubric score", engine: "visual", metric: "score", unit: "%", better: "higher", format: "percent" },
+      { id: "slant", label: "Slant level", engine: "visual", metric: "slant_level", better: "higher", format: "number" }
+    ],
+    copy: { placeholder: "calligraphy, hand lettering", blurb: "Pen angle, families, spacing, names" },
+    notes: "Engines: visual rubrics graded with the agent's vision via submit_rubric_grade, citing a region, backed by measurements from tapped points (slant angle, x-height spread) and stroke contrast. Letterform quality is subjective, so levels carry a confidence and a human review is always possible. If no vision is available, the learner photographs the page, taps the points and self-reports against the exemplar. Hours are estimates, shown as ranges."
+  })
+};

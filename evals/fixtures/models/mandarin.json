@@ -1,0 +1,1103 @@
+{
+  "schemaVersion": 1,
+  "skill": "Mandarin Chinese",
+  "name": "Mandarin",
+  "noun": "Mandarin",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "speech",
+    "knowledge",
+    "self-report"
+  ],
+  "why": [
+    {
+      "id": "family",
+      "label": "Talk with family"
+    },
+    {
+      "id": "travel",
+      "label": "Travel in China or Taiwan"
+    },
+    {
+      "id": "work",
+      "label": "Use it at work"
+    },
+    {
+      "id": "culture",
+      "label": "Films and food culture"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "dinner",
+      "label": "A short dinner conversation",
+      "why": [
+        "family",
+        "culture"
+      ],
+      "ladderStep": 5,
+      "milestone": "Answer five dinner questions clearly",
+      "proof": "Five spoken answers, understood, tones mostly right",
+      "focus": {
+        "Fundamentals": 25,
+        "Tones": 35,
+        "Speaking": 40
+      }
+    },
+    {
+      "id": "greet",
+      "label": "Greeting the family well",
+      "why": [
+        "family"
+      ],
+      "ladderStep": 3,
+      "milestone": "Greetings with the right tones",
+      "proof": "Greetings recorded with tones mostly right",
+      "focus": {
+        "Fundamentals": 35,
+        "Tones": 45,
+        "Speaking": 20
+      }
+    },
+    {
+      "id": "menu",
+      "label": "Ordering from a menu",
+      "why": [
+        "travel",
+        "culture"
+      ],
+      "ladderStep": 4,
+      "milestone": "Order two dishes clearly",
+      "proof": "A spoken order that's understood",
+      "focus": {
+        "Fundamentals": 30,
+        "Tones": 30,
+        "Speaking": 40
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How much Mandarin do you know?",
+      "options": [
+        {
+          "value": 0,
+          "label": "None"
+        },
+        {
+          "value": 1,
+          "label": "A few words"
+        },
+        {
+          "value": 2,
+          "label": "I know the four tones"
+        },
+        {
+          "value": 3,
+          "label": "Simple conversations"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "tones",
+      "type": "quiz",
+      "question": "Which tone do you hear?",
+      "spec": "tone-quiz",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 3 && quiz.correct >= 3",
+      "step": 3,
+      "evidence": "Hears tones and talks a little"
+    },
+    {
+      "when": "level >= 2 && quiz.correct >= 2",
+      "step": 2,
+      "evidence": "Knows the tones"
+    },
+    {
+      "when": "level >= 1",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "hear-tones",
+      "label": "Hear the four tones",
+      "hours": [
+        2,
+        5
+      ],
+      "nodes": [
+        "tones"
+      ],
+      "proof": {
+        "engine": "knowledge",
+        "spec": "tone-quiz",
+        "label": "Name the tone of ten syllables, 80% right",
+        "criteria": [
+          {
+            "id": "acc",
+            "label": "80% right",
+            "check": "accuracy >= 0.8"
+          }
+        ],
+        "single_take": true
+      }
+    },
+    {
+      "id": "say-tones",
+      "label": "Say the four tones",
+      "hours": [
+        3,
+        8
+      ],
+      "nodes": [
+        "tone-shapes"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "ma-tones",
+        "label": "Say mā má mǎ mà with the right contour",
+        "criteria": [
+          {
+            "id": "tones",
+            "label": "Tones right",
+            "check": "tone_accuracy >= 0.75"
+          },
+          {
+            "id": "range",
+            "label": "Enough pitch movement",
+            "check": "pitch_range_st >= 4"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "greetings",
+      "label": "Greetings with tones",
+      "hours": [
+        4,
+        8
+      ],
+      "nodes": [
+        "greetings"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "greet-say",
+        "label": "Greet and thank, understood and tones mostly right",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.8"
+          },
+          {
+            "id": "tones",
+            "label": "Tones right",
+            "check": "tone_accuracy >= 0.7"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "order",
+      "label": "Order food",
+      "hours": [
+        8,
+        16
+      ],
+      "nodes": [
+        "measure-words",
+        "ordering"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "order-say",
+        "label": "Order two dishes and a drink, understood",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.75"
+          },
+          {
+            "id": "tones",
+            "label": "Tones right",
+            "check": "tone_accuracy >= 0.65"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    },
+    {
+      "id": "dinner",
+      "label": "Answer dinner questions",
+      "hours": [
+        15,
+        30
+      ],
+      "nodes": [
+        "questions"
+      ],
+      "proof": {
+        "engine": "speech",
+        "spec": "dinner-open",
+        "label": "Answer a dinner question in two sentences, understood",
+        "criteria": [
+          {
+            "id": "clear",
+            "label": "Understood",
+            "check": "intelligibility >= 0.7"
+          },
+          {
+            "id": "pace",
+            "label": "Few long pauses",
+            "check": "pause_share <= 0.4"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "shadow-check"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tones",
+      "name": "Hearing tones",
+      "requires": [],
+      "lesson": "tone-lesson",
+      "drills": [
+        "tone-id"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which tone falls sharply?",
+        "kind": "choice",
+        "options": [
+          "Fourth",
+          "First"
+        ],
+        "answer": 0
+      },
+      "focus": "Tones"
+    },
+    {
+      "id": "tone-shapes",
+      "name": "Saying tones",
+      "requires": [
+        "tones"
+      ],
+      "lesson": "tone-lesson",
+      "drills": [
+        "tone-say"
+      ],
+      "mistakes": [
+        "flat-tones"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Say mǎ (horse).",
+        "kind": "say",
+        "answer": "马"
+      },
+      "focus": "Tones"
+    },
+    {
+      "id": "greetings",
+      "name": "Greetings",
+      "requires": [
+        "tone-shapes"
+      ],
+      "lesson": "greet-lesson",
+      "drills": [
+        "greet-drill"
+      ],
+      "mistakes": [
+        "third-tone-sandhi"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Thank you?",
+        "kind": "say",
+        "answer": "谢谢"
+      },
+      "focus": "Speaking"
+    },
+    {
+      "id": "measure-words",
+      "name": "Measure words",
+      "requires": [
+        "greetings"
+      ],
+      "lesson": "order-lesson",
+      "drills": [
+        "measure-fill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "One bowl of rice: 一__米饭",
+        "kind": "fill",
+        "answer": "碗"
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "ordering",
+      "name": "Ordering",
+      "requires": [
+        "measure-words"
+      ],
+      "lesson": "order-lesson",
+      "drills": [
+        "order-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "I want this one?",
+        "kind": "say",
+        "answer": "我要这个"
+      },
+      "focus": "Speaking"
+    },
+    {
+      "id": "questions",
+      "name": "Answering questions",
+      "requires": [
+        "ordering"
+      ],
+      "lesson": "question-lesson",
+      "drills": [
+        "dinner-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What does 吗 do at the end?",
+        "kind": "choice",
+        "options": [
+          "Makes a yes-no question",
+          "Means 'not'"
+        ],
+        "answer": 0
+      },
+      "focus": "Speaking"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "tone-lesson",
+      "title": "The four tones",
+      "nodes": [
+        "tones",
+        "tone-shapes"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "mā and mà differ only in...",
+          "options": [
+            "Pitch movement",
+            "Vowel"
+          ],
+          "answer": 0,
+          "reveal": "Tone changes the word."
+        },
+        {
+          "type": "diagram",
+          "text": "High, rising, dipping, falling.",
+          "figure": {
+            "kind": "chart",
+            "type": "line",
+            "series": [
+              {
+                "label": "1",
+                "values": [
+                  5,
+                  5,
+                  5
+                ]
+              },
+              {
+                "label": "2",
+                "values": [
+                  3,
+                  4,
+                  5
+                ]
+              },
+              {
+                "label": "3",
+                "values": [
+                  2,
+                  1,
+                  4
+                ]
+              },
+              {
+                "label": "4",
+                "values": [
+                  5,
+                  3,
+                  1
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "compare",
+          "text": "Tap the contour that stayed flat.",
+          "left": {
+            "kind": "contour",
+            "values": [
+              5,
+              4,
+              2,
+              1
+            ],
+            "label": "Target mà"
+          },
+          "right": {
+            "kind": "contour",
+            "values": [
+              3,
+              3,
+              3,
+              3
+            ],
+            "label": "You"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "greet-lesson",
+      "title": "Greetings",
+      "nodes": [
+        "greetings"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "你好 is two third tones. The first becomes...",
+          "options": [
+            "Second tone",
+            "Fourth tone"
+          ],
+          "answer": 0,
+          "reveal": "Third plus third: the first rises."
+        },
+        {
+          "type": "compare",
+          "text": "Tap the contour with the sandhi.",
+          "left": {
+            "kind": "contour",
+            "values": [
+              2,
+              1,
+              3,
+              2,
+              1,
+              4
+            ],
+            "label": "nǐ hǎo"
+          },
+          "right": {
+            "kind": "contour",
+            "values": [
+              3,
+              4,
+              5,
+              2,
+              1,
+              4
+            ],
+            "label": "ní hǎo"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "order-lesson",
+      "title": "Ordering",
+      "nodes": [
+        "measure-words",
+        "ordering"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "一碗米饭: what is 碗?",
+          "options": [
+            "A measure word: bowl",
+            "Rice"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "try-it",
+          "text": "Say: I want this one.",
+          "action": "say-it",
+          "target": "我要这个"
+        }
+      ]
+    },
+    {
+      "id": "question-lesson",
+      "title": "Questions",
+      "nodes": [
+        "questions"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Adding 吗 to a statement makes...",
+          "options": [
+            "A yes-no question",
+            "A negative"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "Statement, then the same plus 吗.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "a",
+                "label": "你喜欢"
+              },
+              {
+                "id": "b",
+                "label": "你喜欢吗？"
+              }
+            ],
+            "edges": [
+              [
+                "a",
+                "b"
+              ]
+            ],
+            "direction": "LR"
+          },
+          "playback": "steps"
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "tone-id",
+      "type": "choice",
+      "title": "Which tone?",
+      "prompt": "Listen and pick the tone.",
+      "nodes": [
+        "tones"
+      ],
+      "spec": "tone-quiz",
+      "needs": [],
+      "difficulty": {
+        "param": "set",
+        "levels": [
+          "1 vs 4",
+          "2 vs 3",
+          "all four"
+        ],
+        "start": 0
+      },
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Tones",
+      "fixes": []
+    },
+    {
+      "id": "tone-say",
+      "type": "say-it",
+      "title": "Say the four tones",
+      "prompt": "Say mā má mǎ mà. Watch your contour.",
+      "nodes": [
+        "tone-shapes"
+      ],
+      "spec": "ma-tones",
+      "needs": [],
+      "success": "tone_accuracy >= 0.75",
+      "difficulty": {
+        "param": "syllables",
+        "levels": [
+          "ma",
+          "mixed syllables",
+          "two-syllable words"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Tones",
+      "fixes": [
+        "flat-tones"
+      ]
+    },
+    {
+      "id": "greet-drill",
+      "type": "say-it",
+      "title": "Greetings",
+      "prompt": "Say hello, thank you and goodbye.",
+      "nodes": [
+        "greetings"
+      ],
+      "spec": "greet-say",
+      "needs": [],
+      "success": "intelligibility >= 0.8 && tone_accuracy >= 0.7",
+      "difficulty": {
+        "param": "speed",
+        "levels": [
+          "slow",
+          "natural"
+        ],
+        "start": 0
+      },
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": [
+        "third-tone-sandhi"
+      ]
+    },
+    {
+      "id": "measure-fill",
+      "type": "fill",
+      "title": "Measure words",
+      "prompt": "Fill in the measure word.",
+      "nodes": [
+        "measure-words"
+      ],
+      "spec": "word-quiz",
+      "needs": [],
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "order-drill",
+      "type": "say-it",
+      "title": "Order two dishes",
+      "prompt": "Order two dishes and a tea.",
+      "nodes": [
+        "ordering"
+      ],
+      "spec": "order-say",
+      "needs": [],
+      "success": "intelligibility >= 0.75",
+      "difficulty": {
+        "param": "items",
+        "levels": [
+          "one dish",
+          "two dishes and a drink"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": []
+    },
+    {
+      "id": "dinner-drill",
+      "type": "say-it",
+      "title": "Dinner questions",
+      "prompt": "Answer the question in two sentences.",
+      "nodes": [
+        "questions"
+      ],
+      "spec": "dinner-open",
+      "needs": [],
+      "success": "intelligibility >= 0.7",
+      "difficulty": {
+        "param": "length",
+        "levels": [
+          "one sentence",
+          "two sentences",
+          "three sentences"
+        ],
+        "start": 0
+      },
+      "minutes": 6,
+      "intensity": 1,
+      "focus": "Speaking",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "ma-tones": {
+      "kind": "speech",
+      "language": "zh-CN",
+      "target": "妈 麻 马 骂",
+      "tones": true,
+      "tone_pattern": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "pass": "tone_accuracy >= 0.75",
+      "mistakes": [
+        {
+          "id": "flat-tones",
+          "when": "tone_accuracy < 0.5 && pitch_range_st < 3",
+          "severity": 2,
+          "fix_drill": "tone-say"
+        }
+      ]
+    },
+    "greet-say": {
+      "kind": "speech",
+      "language": "zh-CN",
+      "target": "你好 谢谢 再见",
+      "tones": true,
+      "tone_pattern": [
+        2,
+        3,
+        4,
+        0,
+        4,
+        4
+      ],
+      "pass": "intelligibility >= 0.8 && tone_accuracy >= 0.7",
+      "mistakes": [
+        {
+          "id": "third-tone-sandhi",
+          "when": "tone_accuracy < 0.6",
+          "severity": 1,
+          "fix_drill": "greet-drill"
+        }
+      ]
+    },
+    "order-say": {
+      "kind": "speech",
+      "language": "zh-CN",
+      "target": "我要一碗米饭，一个宫保鸡丁，还有一杯茶。",
+      "tones": true,
+      "pass": "intelligibility >= 0.75 && tone_accuracy >= 0.65",
+      "mistakes": []
+    },
+    "dinner-open": {
+      "kind": "speech",
+      "language": "zh-CN",
+      "prompt": "你喜欢吃什么菜？",
+      "tones": true,
+      "rubric": {
+        "kind": "rubric",
+        "criteria": [
+          {
+            "id": "answers",
+            "label": "Answers the question",
+            "levels": {
+              "1": "Off topic",
+              "2": "Answers in one short phrase",
+              "3": "Answers in two full sentences"
+            },
+            "weight": 1
+          }
+        ],
+        "must_cite": "timestamp",
+        "pass": "answers >= 2",
+        "safety_critical": false
+      },
+      "pass": "intelligibility >= 0.7",
+      "mistakes": []
+    },
+    "tone-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "t1",
+          "prompt": "Listen: mā. Which tone?",
+          "options": [
+            "First",
+            "Fourth"
+          ],
+          "answer": 0,
+          "audio": "tone-ma1",
+          "difficulty": 1,
+          "nodes": [
+            "tones"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "t2",
+          "prompt": "Listen: mà. Which tone?",
+          "options": [
+            "First",
+            "Fourth"
+          ],
+          "answer": 1,
+          "audio": "tone-ma4",
+          "difficulty": 1,
+          "nodes": [
+            "tones"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "t3",
+          "prompt": "Listen: má. Which tone?",
+          "options": [
+            "Second",
+            "Third"
+          ],
+          "answer": 0,
+          "audio": "tone-ma2",
+          "difficulty": 2,
+          "nodes": [
+            "tones"
+          ]
+        },
+        {
+          "type": "match",
+          "id": "t4",
+          "prompt": "Match the tone mark to its shape.",
+          "pairs": [
+            [
+              "ā",
+              "High and flat"
+            ],
+            [
+              "á",
+              "Rising"
+            ],
+            [
+              "ǎ",
+              "Dipping"
+            ],
+            [
+              "à",
+              "Falling"
+            ]
+          ],
+          "difficulty": 3,
+          "nodes": [
+            "tones"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.8"
+    },
+    "word-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "fill",
+          "id": "w1",
+          "prompt": "One bowl of rice.",
+          "text": "一__米饭",
+          "answers": [
+            "碗"
+          ],
+          "hints": [
+            "A bowl"
+          ],
+          "difficulty": 1,
+          "nodes": [
+            "measure-words"
+          ]
+        },
+        {
+          "type": "fill",
+          "id": "w2",
+          "prompt": "One cup of tea.",
+          "text": "一__茶",
+          "answers": [
+            "杯"
+          ],
+          "hints": [
+            "A cup"
+          ],
+          "difficulty": 2,
+          "nodes": [
+            "measure-words"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "w3",
+          "prompt": "The general measure word is...",
+          "options": [
+            "个",
+            "本",
+            "张"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "measure-words"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    },
+    "shadow-check": {
+      "kind": "self-report",
+      "fields": [
+        "done",
+        "count",
+        "felt",
+        "note"
+      ],
+      "criterion": "Played the reference recording, said each line back three times following its pitch, and rated the tones",
+      "pass": "done && count >= 3"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "flat-tones",
+      "name": "Flat tones",
+      "nodes": [
+        "tone-shapes"
+      ],
+      "engine": "speech",
+      "detector": {
+        "metric": "tone_accuracy",
+        "when": "tone_accuracy < 0.5 && pitch_range_st < 3",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "tone-lesson",
+        "card": 2
+      },
+      "fix_drill": "tone-say",
+      "resolved_after": 3,
+      "headline": "Tones sound flat; move your pitch"
+    },
+    {
+      "id": "third-tone-sandhi",
+      "name": "Missed tone change",
+      "nodes": [
+        "greetings"
+      ],
+      "engine": "speech",
+      "detector": {
+        "metric": "tone_accuracy",
+        "when": "tone_accuracy < 0.6",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "greet-lesson",
+        "card": 1
+      },
+      "fix_drill": "greet-drill",
+      "resolved_after": 3,
+      "headline": "First 你 should rise in 你好"
+    }
+  ],
+  "access": [
+    "Headphones",
+    "A quiet room"
+  ],
+  "focus": {
+    "Fundamentals": 25,
+    "Tones": 40,
+    "Speaking": 35
+  },
+  "key_metrics": [
+    {
+      "id": "tones",
+      "label": "Tones right",
+      "engine": "speech",
+      "metric": "tone_accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "clear",
+      "label": "Understood",
+      "engine": "speech",
+      "metric": "intelligibility",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "hear",
+      "label": "Tone quiz",
+      "engine": "knowledge",
+      "metric": "accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    }
+  ],
+  "copy": {
+    "placeholder": "Mandarin, Cantonese, Vietnamese",
+    "blurb": "Tones you can see, phrases you can use"
+  },
+  "notes": "Engines: speech with tones on (pitch contour per syllable) plus intelligibility; knowledge for hearing tones and measure words. Tone patterns follow third-tone sandhi (你好 is written as 2-3). No per-sound model is listed for Mandarin, so progress compares the learner with their own earlier attempts. If speech is missing, the learner shadows a reference recording and self-reports. Hours are estimates from general beginner course guidance, shown as ranges."
+}

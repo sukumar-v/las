@@ -1,0 +1,126 @@
+{
+  "scenario": "mandarin",
+  "skill": "Mandarin Chinese",
+  "expect": {
+    "engines": [
+      "speech",
+      "knowledge"
+    ],
+    "main": "speech",
+    "fallback": "self-report",
+    "physical": false,
+    "supervisedOnly": []
+  },
+  "runs": {
+    "real": {
+      "mode": "real",
+      "unavailable": [],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "Mandarin Chinese",
+            "notes": "Partner's family speaks Mandarin. Wants to greet them and hold a short dinner conversation."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/mandarin.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [],
+        "summary": {
+          "nodes": 6,
+          "lessons": 4,
+          "drills": 6,
+          "mistakes": 2,
+          "specs": 7,
+          "ladderSteps": 6,
+          "words": 163
+        },
+        "stored": "<id>"
+      }
+    },
+    "fallback": {
+      "mode": "fallback",
+      "unavailable": [
+        {
+          "engine": "speech",
+          "reason": "no speech model downloaded and no microphone"
+        }
+      ],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "Mandarin Chinese",
+            "notes": "Partner's family speaks Mandarin. Wants to greet them and hold a short dinner conversation."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/mandarin.fallback.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [
+          "capabilities ladder[2].proof: \"speech\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[3].proof: \"speech\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[4].proof: \"speech\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[5].proof: \"speech\" is not available now; the self-report fallback will be used and the check is less precise"
+        ],
+        "summary": {
+          "nodes": 6,
+          "lessons": 4,
+          "drills": 6,
+          "mistakes": 2,
+          "specs": 7,
+          "ladderSteps": 6,
+          "words": 163
+        },
+        "stored": "<id>"
+      }
+    }
+  }
+}
