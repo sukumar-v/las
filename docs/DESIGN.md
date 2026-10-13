@@ -77,6 +77,27 @@ las-agents (npm)  →  npx las-agents setup
 
 **Interactivity.** Tools return [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) widgets where the client shows them inline in the chat. Everything else (camera capture, the code editor, long sessions) runs in the studio PWA. Both use the same components and the learner's theme, so a screen looks the same in either place.
 
+### 3.1 Repository layout
+
+The tree above is the product as the learner installs it. The repository is a pnpm workspace (`packages/*` and `evals`):
+
+| Path | Package | Holds |
+|---|---|---|
+| `packages/schema` | `@las/schema` | Skill model, theme, spec languages, expression language, analyses and events, with their validators |
+| `packages/store` | `@las/store` | SQLite through `node:sqlite`, with migrations |
+| `packages/engines` | `@las/engines` | The measurement engines (§8). `node.ts` holds the adapters that start separate processes (UCI and GTP engines, whisper.cpp) |
+| `packages/runners` | `@las/runners` | Code runners (browser, local toolchain, container) and the table of languages |
+| `packages/server` | `@las/server` | The MCP server (tools, resources, prompts), the learning loop, and the studio's local JSON API |
+| `packages/ui` | `@las/ui` | Themeable components, screens and figures, and the theme-to-CSS generator |
+| `packages/studio` | `@las/studio` | The studio PWA and the MCP Apps widget (Vite + Preact) |
+| `packages/cli` | `las-agents` | `setup`, `serve`, `doctor`, `studio`, `checkin`, `engines test`, `model validate` |
+| `skill/` | | The `learn-any-skill` skill and its reference pages |
+| `evals/` | `@las/evals` | Theme fixtures and agent evals (§9 of [Any skill](design/any-skill.md#9-keeping-quality-up-without-per-skill-code)) |
+| `tools/` | | License check, style check, the ESLint rule for hard-coded styles, the Inspector smoke test |
+| `docs/`, `prototypes/app` | | These design docs and the clickable prototype |
+
+`packs/` in the tree above does not exist in v0.1: no curated packs ship (§13), and every skill model is stored in the database.
+
 ## 4. MCP tool surface
 
 | Group | Tools |
@@ -283,8 +304,8 @@ Verified from each project's LICENSE file or model card on 2026-10-12 and 2026-1
 | Audio | basic-pitch | Apache-2.0, model included |
 | | CREPE, torchcrepe | MIT |
 | | librosa (including beat tracking) | ISC |
-| | Pitchy (pitch, in the browser) | 0BSD-style |
-| | Meyda (features and onsets, in the browser) | MIT |
+| | Pitchy (pitch, in the browser; used by the audio engine) | MIT (LICENSE file read, v4.1.0) |
+| | Meyda (features and onsets, in the browser) | MIT. **Not used:** the audio engine computes spectral-flux onsets itself |
 | | BeatNet (code and weights) | CC-BY-4.0. Its pip package pulls in madmom, whose model files are non-commercial: don't install or load them |
 | Speech | Whisper (code and weights), whisper.cpp, faster-whisper | MIT |
 | | Kaldi, including the pronunciation-scoring recipe | Apache-2.0 |
@@ -311,9 +332,9 @@ Verified from each project's LICENSE file or model card on 2026-10-12 and 2026-1
 | Game | chess.js | BSD-2-Clause |
 | | cm-chessboard, react-chessboard (board UI) | MIT |
 | | KataGo (go engine) | Code MIT; networks ⚠ reported MIT-style or CC0 |
-| Learner model | ts-fsrs, py-fsrs, pyBKT | MIT |
+| Learner model | ts-fsrs (used), py-fsrs, pyBKT (reference only; BKT is implemented in TypeScript) | MIT |
 | Dev tooling | @modelcontextprotocol/inspector | Apache-2.0 (some older code MIT) |
-| Pack tooling | yaml (YAML parser) | ISC |
+| Pack tooling | yaml (YAML parser) | ISC. **Not used in v0.1** (no curated packs ship) |
 | Storage and sync | SQLite | Public domain |
 | | libSQL, PocketBase | MIT |
 | | ElectricSQL, Supabase (self-hosted) | Apache-2.0 |
@@ -322,6 +343,36 @@ Verified from each project's LICENSE file or model card on 2026-10-12 and 2026-1
 | | mkcert, Headscale | BSD-3-Clause |
 | | Tailscale client | BSD-3-Clause (some platform GUIs are not open source) |
 | Fonts | Any family a theme picks, if its license is allowed (usually SIL OFL 1.1 or Apache-2.0), checked per family and cached locally. The prototype's demo fonts (Gabarito, Atkinson Hyperlegible, DM Mono) are OFL 1.1 | Per font |
+
+#### What the repository depends on today
+
+Every dependency in the `package.json` files, checked on 2026-10-13 against the installed package's `package.json` and, where the package ships one, its LICENSE file. CI re-checks all of them, and everything they pull in, with `pnpm run licenses` ([tools/check-licenses.mjs](../tools/check-licenses.mjs)).
+
+| Package | Used by | License | Notes |
+|---|---|---|---|
+| `zod` 4 | schema, server | MIT | |
+| `@modelcontextprotocol/sdk` 1.32 | server | MIT | |
+| `@modelcontextprotocol/ext-apps` 1.7 | server, studio | MIT | The project is moving to Apache-2.0; both are allowed |
+| `ts-fsrs` 5.4 | server | MIT | |
+| `web-push` 3.6 | server | MPL-2.0 | Allowed with care: used unmodified. Sends opt-in check-in notifications |
+| `chess.js` 1.4 | engines | BSD-2-Clause | |
+| `pitchy` 4.1 | engines | MIT | |
+| `node:sqlite` | store | Built into Node 22.13+ | SQLite itself is public domain |
+| `preact` 10 | ui, studio | MIT | |
+| `@mediapipe/tasks-vision` 1.1 | studio | Apache-2.0 | Code only. Model files: see the Movement rows above. The npm package has no LICENSE file; license read from `package.json` |
+| `@huggingface/transformers` 4.3 | studio | Apache-2.0 | Runs Whisper in the browser. Whisper weights are MIT, but ⚠ verify the license on the `onnx-community` conversion's model card (the page was not reachable) |
+| `tesseract.js` 7 | studio | Apache-2.0 | |
+| `pyodide` 314 | studio | MPL-2.0 | Allowed with care: used unmodified. License read from `package.json` only |
+| `sql.js` 1.14 | studio | MIT | |
+| `qrcode` 1.5 | studio | MIT | Phone pairing QR code |
+| `typescript` 5.9, `@playwright/test` 1.56 | dev | Apache-2.0 | |
+| `vitest`, `vite` 8, `vite-plugin-singlefile`, `esbuild`, `tsx`, `eslint`, `@eslint/js`, `typescript-eslint`, `globals`, `preact-render-to-string`, `@types/node`, `@types/qrcode`, `@types/web-push` | dev | MIT | |
+| `pnpm` 10 | tooling | MIT | The package manager, not a dependency |
+| `lightningcss` | transitive (through `vite`) | MPL-2.0 | Allowed with care: used unmodified. CI prints it (and `pyodide`, `web-push`) as a warning |
+
+`sharp` (it bundles an LGPL libvips binary) and `onnxruntime-node` are optional Node backends of `@huggingface/transformers` that the studio never loads; `overrides` in `pnpm-workspace.yaml` removes both so they are never installed.
+
+Not in any `package.json`: Meyda, `yaml`, `happy-dom`, `@preact/preset-vite`, `vite-plugin-pwa` and Workbox. The other rows of the table above (Mermaid, Excalidraw, abcjs, VexFlow, CodeMirror and so on) are the components we chose for features that ship as data or later; none is a dependency yet.
 
 **A fully open agent stack.** LAS doesn't bundle a model; it runs inside whatever MCP client the learner uses. LAS must work end to end with:
 
@@ -367,8 +418,9 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 | Phase | Deliverable |
 |---|---|
 | 0 | Clickable prototype: onboarding, a full first session (learn, practice, perform, one-fix feedback, fix drill, second attempt, wrap-up), Today with check-ins, and Progress ✅ |
-| v0.1 | **Everything general, running locally:** MCP server, store, the skill with routing rules, `get_capabilities`, generating and validating skill models, onboarding, the learning loop, every engine in §8 with its spec language, code runners for any language, the studio PWA with phone pairing, learner-chosen themes for every surface, check-ins, `npx las-agents setup`, and agent evals across the coverage targets in [Any skill §8](design/any-skill.md#8-coverage-targets) |
-| v0.2 | Hosted mode: remote MCP, self-hosted sync, offline recording on phones, optional Web Push |
+| v0.1 ✅ | **Everything general, running locally:** MCP server, store, the skill with routing rules, `get_capabilities`, generating and validating skill models, onboarding, the learning loop, every engine in §8 with its spec language, code runners for any language, the studio PWA with phone pairing, learner-chosen themes for every surface, check-ins, `npx las-agents setup`, and agent evals across the coverage targets in [Any skill §8](design/any-skill.md#8-coverage-targets) |
+|  | *What shipped (2026-10-13):* the 39-tool MCP server and skill; skill-model and theme validation; onboarding and the learning loop (planner, BKT, FSRS, check-ins, proof checks); all ten engines, code runners for 22 languages; the studio with on-device analysis, phone pairing and opt-in Web Push check-ins; `las-agents setup` for eight agents (run from the checkout; publishing to npm is not done yet); license, style, theme, engine and Inspector checks in CI. *Manual, not in CI:* runs with a real agent (the agent evals in `evals/` run offline, with scenarios written as data for each coverage target) and tests with real recordings (fixtures are synthetic). No curated packs. |
+| v0.2 | Hosted mode: remote MCP, self-hosted sync, offline recording on phones, Web Push from a hosted server |
 | v0.3 | Curated packs: review workflow, promoting generated models, community contributions |
 
 ## 14. Open questions

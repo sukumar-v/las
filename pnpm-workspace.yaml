@@ -3,3 +3,8 @@ packages:
   - evals
 onlyBuiltDependencies:
   - esbuild
+# @huggingface/transformers lists node-only backends the studio never loads in the browser: sharp pulls an
+# LGPL libvips binary (not allowed, DESIGN §11) and onnxruntime-node a native binary. Both are removed.
+overrides:
+  sharp: "-"
+  onnxruntime-node: "-"

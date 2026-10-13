@@ -68,6 +68,41 @@ flowchart LR
 - **Audio:** a 10-second tap test measures the device's output delay once and subtracts it from every timing result.
 - **Movement:** the first recording sets each learner's body proportions, so thresholds work relative to the learner's own body.
 
+### 3.1 Visual grading flow
+
+LAS never grades an image itself. The agent's own vision does, and the engine adds the measurements and keeps the grade honest.
+
+```mermaid
+sequenceDiagram
+  participant A as Agent
+  participant S as LAS server
+  participant U as Studio
+  A->>S: request_capture(visual spec)
+  S-->>A: attempt id, studio link, rubric prompt
+  U->>S: image, tapped points, pixel measurements, OCR text
+  S-->>A: the image and the rubric prompt
+  A->>S: submit_rubric_grade(grades with region + confidence)
+  S->>S: engine applies grades, adds measurements
+  A->>S: get_analysis(attempt)
+  S-->>A: Analysis + one-fix feedback
+```
+
+1. **`request_capture`** creates the attempt and returns where to capture it (the studio, or the paired phone) plus the **rubric prompt**: the criteria, what each level means, any points the learner is asked to tap, the reference image if the spec has one, and how to cite a region.
+2. **The studio captures** the photo, scan or screenshot and the measurements that need no grader: tapped points, symmetry, exposure, color balance, edge density, recognized text. Until a grade arrives the analysis shows these measurements only, with `precision: "reduced"` and a note that grading is pending.
+3. **LAS returns the image and the rubric prompt to the agent.** The still image is the one piece of media the agent looks at, and only because the learner submitted it for grading.
+4. **The agent grades with its own vision** and calls **`submit_rubric_grade`** with one entry per criterion: a level, a confidence from 0 to 1, the **region** of the image it judged (`x, y, w, h`, 0 to 1 from the top-left) and a short note. When the spec says `must_cite: region`, a grade without a region is kept but its confidence is halved. Levels snap to the nearest level the criterion defines, and unknown criteria are ignored.
+5. **`get_analysis`** returns the `Analysis` and the one-fix card. A grade below the 0.7 confidence floor is not shown as a correction.
+
+**When the agent's model can't see images**
+
+| Order | Grader | `precision` |
+|---|---|---|
+| 1 | The agent's own vision | `full` |
+| 2 | A local open vision model that `get_capabilities` lists under `localModels` (kind `vision`; today these are Ollama models such as moondream, SmolVLM, Qwen-VL or LLaVA). Its grades are marked `grader: "local-model"` | `full`; the analysis records which grader was used |
+| 3 | The measurements, plus a criterion's `level_from` expression where the spec has one, plus the learner's self-report | `reduced` |
+
+The agent tells the learner which one was used. Rubric grading alone is never the proof for anything safety-critical.
+
 ## 4. The video coach
 
 ### 4.1 Recording
