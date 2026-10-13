@@ -4,7 +4,7 @@ import { RubricSpecSchema, checkRubricSpec } from "./rubric.js";
 import { TestSpecSchema, checkTestSpec } from "./test.js";
 import { AudioSpecSchema, checkAudioSpec } from "./audio.js";
 import { SpeechSpecSchema, checkSpeechSpec } from "./speech.js";
-import { SimSpecSchema, checkSimSpec } from "./sim.js";
+import { checkSimSpec } from "./sim.js";
 import { GameSpecSchema, ItemsSpecSchema, SelfReportSpecSchema, SensorSpecSchema, TaskSpecSchema, checkItemsSpec } from "./others.js";
 import type { EngineId } from "../engines.js";
 
