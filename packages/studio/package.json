@@ -1,4 +1,35 @@
-{ "name": "@las/studio", "version": "0.1.0", "private": true, "type": "module", "license": "MIT",
-  "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" } },
-  "scripts": { "build": "echo ok", "test": "vitest run" },
-  "dependencies": { "@las/schema": "workspace:*" }, "devDependencies": { "vitest": "^4.1.0" } }
+{
+  "name": "@las/studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Learn Any Skill studio: a PWA for onboarding, sessions, on-device capture and analysis, and the MCP Apps widget; every look comes from the learner's theme",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "vite build && vite build -c vite.widget.config.ts",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.1",
+    "@las/engines": "workspace:*",
+    "@las/runners": "workspace:*",
+    "@las/schema": "workspace:*",
+    "@las/ui": "workspace:*",
+    "@mediapipe/tasks-vision": "^1.1.0",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "preact": "^10.29.0",
+    "pyodide": "^314.0.7",
+    "qrcode": "^1.5.4",
+    "sql.js": "^1.14.2",
+    "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "tsx": "^4.23.0",
+    "vite": "^8.3.4",
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^4.1.0"
+  }
+}
