@@ -254,13 +254,14 @@ Sessions, the planner, feedback, check-ins and re-planning: [Learning loop](desi
 |---|---|
 | Allowed | MIT, BSD-2/3, ISC, Apache-2.0, public domain, SIL OFL (fonts), CC-BY-4.0 (data, with attribution) |
 | Allowed with care | MPL-2.0: use unmodified, or publish changes to those files |
-| Not allowed | GPL/AGPL code linked into LAS, non-commercial terms (CC-NC), source-available terms (FSL, BSL), custom model licenses that aren't open source, proprietary hosted services as required dependencies |
+| Optional external only | GPL tools the learner installs separately, which LAS calls as a separate process over a standard protocol (UCI for chess engines, GTP for go engines, a command line). Never bundled, linked or required; a fallback always exists |
+| Not allowed | GPL/AGPL code bundled or linked into LAS, non-commercial terms (CC-NC), source-available terms (FSL, BSL), custom model licenses that aren't open source, proprietary hosted services or runtimes as required dependencies |
 
 CI will run a license check on every dependency, and adding a new license type needs a design-doc update.
 
 ### 11.1 Chosen components
 
-Verified from each project's LICENSE file or model card on 2026-10-12. ⚠ means it still needs a check before we ship it.
+Verified from each project's LICENSE file or model card on 2026-10-12 and 2026-10-13. ⚠ means it still needs a check before we ship it (usually because the model page couldn't be reached).
 
 | Area | Component | License |
 |---|---|---|
@@ -270,19 +271,44 @@ Verified from each project's LICENSE file or model card on 2026-10-12. ⚠ means
 | | D3 | ISC |
 | | abcjs, VexFlow, Tone.js | MIT |
 | | OpenSheetMusicDisplay | BSD-3-Clause |
-| Movement | MediaPipe code, plus Pose and Hand Landmarker models | Apache-2.0 (code and model cards) |
+| Movement | MediaPipe code, plus Pose, Hand and Face Landmarker models | Apache-2.0 (code and model cards) |
+| | MediaPipe Object Detector (EfficientDet-Lite) | Code Apache-2.0; weights ⚠ no model card states a license |
+| | MediaPipe Gesture Recognizer | Hand model Apache-2.0; gesture classifier ⚠ card has no license field |
 | | MoveNet | Apache-2.0 (code and model card) |
+| | OpenCV.js (4.5.0 and later) | Apache-2.0 |
 | Audio | basic-pitch | Apache-2.0, model included |
 | | CREPE, torchcrepe | MIT |
-| | librosa | ISC |
+| | librosa (including beat tracking) | ISC |
+| | Pitchy (pitch, in the browser) | 0BSD-style |
+| | Meyda (features and onsets, in the browser) | MIT |
+| | BeatNet (code and weights) | CC-BY-4.0. Its pip package pulls in madmom, whose model files are non-commercial: don't install or load them |
 | Speech | Whisper (code and weights), whisper.cpp, faster-whisper | MIT |
 | | Kaldi, including the pronunciation-scoring recipe | Apache-2.0 |
 | | speechocean762 data | "free for commercial use" ⚠ formal license |
 | | Montreal Forced Aligner | MIT; models CC-BY-4.0 ⚠ check each model |
 | | Vosk | Apache-2.0 ⚠ only Apache-licensed models |
+| | gruut, epitran (text to reference phonemes) | MIT |
+| | wav2vec2 phoneme models (lv-60 and xlsr-53 espeak) | ⚠ reported Apache-2.0, model page not reachable |
+| | Kokoro-82M (text to speech) | Code and weights Apache-2.0. Its default English phonemizer is GPL: use gruut instead |
 | Code | Pyodide | MPL-2.0 |
+| | sql.js | MIT |
+| | SQLite WebAssembly build | Apache-2.0 wrapper; SQLite core public domain |
+| | ruby.wasm | MIT (CRuby BSD-2-Clause or Ruby license) |
+| | php-wasm | Apache-2.0 |
+| | Wasmtime | Apache-2.0 with LLVM exception |
+| | Emscripten | MIT or NCSA |
+| | TinyGo | BSD-3-Clause |
+| | Podman, Docker Engine (moby) | Apache-2.0 |
 | | CodeMirror 6, Monaco | MIT |
+| Visual | Tesseract.js plus tessdata models (reading handwriting and text) | Apache-2.0 |
+| | ONNX Runtime Web | MIT |
+| | Transformers.js | Apache-2.0 (each model checked separately) |
+| | Local vision models for text-only agents: moondream2, SmolVLM/SmolVLM2, Florence-2, Qwen2.5-VL-7B | ⚠ reported Apache-2.0 or MIT, model pages not reachable |
+| Game | chess.js | BSD-2-Clause |
+| | cm-chessboard, react-chessboard (board UI) | MIT |
+| | KataGo (go engine) | Code MIT; networks ⚠ reported MIT-style or CC0 |
 | Learner model | ts-fsrs, py-fsrs, pyBKT | MIT |
+| Dev tooling | @modelcontextprotocol/inspector | Apache-2.0 (some older code MIT) |
 | Pack tooling | yaml (YAML parser) | ISC |
 | Storage and sync | SQLite | Public domain |
 | | libSQL, PocketBase | MIT |
@@ -315,6 +341,16 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 | Cloudflare Tunnel service, Tailscale coordination server | Proprietary hosted services | Headscale, frp (Apache-2.0 ⚠ license badge only) |
 | Llama, Gemma 1–3n, Qwen2.5-3B/72B, Mistral Large 2, Codestral | Custom or non-commercial model licenses | Qwen3, Mistral Apache-2.0 models, Gemma 4 ⚠ verify |
 | Commercial pronunciation APIs | Proprietary | Kaldi pronunciation-scoring recipe |
+| Docker Desktop | Proprietary; larger companies must pay | Podman, Docker Engine |
+| WebContainers (StackBlitz) | Proprietary runtime; paid for commercial production use | Wasmtime, Pyodide, ruby.wasm, php-wasm, sql.js, containers |
+| Essentia.js | AGPL-3.0 | Meyda, Pitchy |
+| aubio.js | No license; wraps GPL aubio | Pitchy, Meyda, librosa |
+| madmom model files | CC BY-NC-SA (non-commercial) | librosa beat tracking, BeatNet's own weights |
+| python-chess, chessground | GPL-3.0 | chess.js, cm-chessboard |
+| Stockfish, Lc0 | GPL-3.0 | Optional external only, over UCI. Fallback: tactics quizzes with chess.js |
+| espeak-ng, phonemizer, Piper TTS | GPL-3.0 | Optional external only. Use gruut or epitran for phonemes and Kokoro for speech |
+| Qwen2.5-VL-3B | Research license (⚠ reported) | Qwen2.5-VL-7B, SmolVLM, Florence-2, moondream2 |
+| Moondream 3 Preview | BSL 1.1 (source-available) | moondream2 |
 
 ## 12. Privacy and safety
 

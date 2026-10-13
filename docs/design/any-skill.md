@@ -35,11 +35,11 @@ Each engine is general-purpose. The agent configures it with a spec; no new code
 | **audio** | Microphone or file | A reference (MusicXML, MIDI, ABC or a recording), tempo, tuning, tolerances | Notes, pitch error (cents), timing error (ms), tempo stability, dynamics, chords | Any instrument, singing, drumming, ear training |
 | **speech** | Microphone | Language, target text or an open prompt, a rubric | Transcript, intelligibility (target vs what was recognized), confidence per word, speaking rate, pauses, fillers, pitch contour, per-sound scores where a model exists for that language | Any language Whisper supports, tonal languages (via pitch contour), accents, public speaking |
 | **code** | Files | Language, a test spec (§3.3), runner preference | Tests passed, errors, run time, lint findings | Any programming language (§4) |
-| **visual** | Photo, scan or screenshot | A rubric (§3.2), an optional reference image, optional points the learner taps on the image | Rubric scores with confidence (from the agent's vision model), plus measurements: proportions from tapped points, symmetry, exposure, color | Drawing, painting, calligraphy, handwriting, crafts, plating, photography, design |
+| **visual** | Photo, scan or screenshot | A rubric (§3.2), an optional reference image, optional points the learner taps on the image | Rubric scores with confidence (from the agent's vision model, or a local open vision model when the agent's model is text-only), plus measurements: proportions from tapped points, symmetry, exposure, color, recognized text | Drawing, painting, calligraphy, handwriting, crafts, plating, photography, design |
 | **knowledge** | Answers | Items generated from the skill model | Accuracy, response time, spaced-repetition state | The theory side of any skill |
 | **interaction** | Keystrokes and clicks in the studio | A task spec | Speed, accuracy, consistency | Typing, shortcuts, mental math |
 | **sensor** | Phone motion sensors | What to detect | Cadence, swing tempo, steadiness | Running cadence, swing tempo, balance |
-| **game** | Positions and moves | Rules, plus an engine if one is installed (§5) | Agreement with the engine's best move, blunders, evaluation loss | Chess, go, other board games |
+| **game** | Positions and moves | Rules (chess.js for chess), plus an external engine if one is installed, spoken to over UCI (chess) or GTP (go) | Agreement with the engine's best move, blunders, evaluation loss | Chess, go, other board games |
 | **self-report** | Learner input | — | Minutes, effort (RPE), how it felt, pain | Always available as a last fallback, and labeled as such |
 
 Many skills need more than one engine:
@@ -145,7 +145,8 @@ grade: [pitch, rhythm, dynamics]
 - **Engines:** each one's status (models downloaded, runtime working, GPU or CPU).
 - **Code runners:** the browser runtimes; local toolchains with their versions; whether a container runtime is available.
 - **Devices** reachable through the studio: camera, microphone, motion sensors, a paired phone.
-- **External tools on `PATH`** that LAS knows how to call as separate processes: for example a chess engine, `ffmpeg`, `mkcert`.
+- **External tools on `PATH`** that LAS knows how to call as separate processes over a standard protocol: for example a UCI chess engine, a GTP go engine, `ffmpeg`, `mkcert`. Some of these are GPL (Stockfish, espeak-ng). That's allowed only because the learner installs them and LAS talks to them from outside ([license policy](../DESIGN.md#11-open-source-policy)).
+- **Local models** that can stand in when the agent's own model lacks a capability: an open vision model for rubric grading, a text-to-speech voice for spoken prompts.
 
 The agent already knows which other MCP servers and skills it has. The LAS skill tells it to look for useful ones (the anatomy skill, a diagram or notation server, a chess server) and prefer them when present.
 
