@@ -339,7 +339,7 @@ The planner works as before: same inputs, same score (`0.35·(1 − mastery) + 0
 
 - **Heartbeat:** `coach_wait` returns after `timeoutS` (default 45 s, capped at 55 s). Many MCP clients stop waiting for a tool result after 60 s (the TypeScript SDK's default request timeout), so 55 s keeps every client safe.
 - **Progress:** while waiting, `coach_wait` sends MCP progress notifications every 10 s when the client gave a progress token. Some clients reset their timeout on progress; LAS doesn't rely on it.
-- **Claude Code:** its tool timeout is the `MCP_TOOL_TIMEOUT` setting (milliseconds). `las-agents setup` sets it to at least 120000 in the `env` block of `~/.claude/settings.json`, so a 55 s wait has room. ⚠ verify Claude Code's default.
+- **Claude Code:** its tool timeout is the `MCP_TOOL_TIMEOUT` environment variable (milliseconds; default 100000000, about 28 hours, per the Claude Code docs). The variable applies to every MCP server, so `las-agents setup` writes 1800000 (30 minutes) into the `env` block of `~/.claude/settings.json` only when it is unset or below 120000, and never lowers a larger value. Calls longer than `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` (default 120000) move to the background; a 55 s wait never reaches that.
 - **Other clients:** setup sets each client's tool timeout where its config has one (Goose already gets `timeout: 300`; Codex's per-server tool timeout ⚠ verify; OpenCode ⚠ verify). The setting sits in the client's row of `clients.ts`.
 - **Screen deadline:** 8 s (§8). **Presence window:** 60 s. **Watcher:** one wake every 2 minutes, 5 per session. All are settings.
 
