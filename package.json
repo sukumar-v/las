@@ -20,17 +20,20 @@
     "test:e2e": "playwright test -c packages/studio/playwright.config.ts",
     "licenses": "node tools/check-licenses.mjs",
     "smoke": "node tools/smoke-inspector.mjs",
+    "demo": "node --import tsx demo/demo.ts",
     "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm licenses",
     "las:setup": "las-agents setup"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@playwright/test": "1.56.1",
     "@types/node": "^22.19.0",
     "esbuild": "^0.27.0",
     "eslint": "^9.39.0",
     "globals": "^17.13.0",
     "las-agents": "workspace:*",
+    "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.0",
     "vitest": "^4.1.0"
