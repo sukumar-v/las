@@ -23,6 +23,12 @@ Optionally paste a look with it: a design prompt, a description ("cozy, like a p
 
 Check what your machine can do with `node packages/cli/bin/las-agents.js doctor`.
 
+## Demo
+
+`pnpm demo` plays the agent against a real LAS server for three very different skills: salsa, Rust and drawing, each onboarded in its own look (a neon club, brutalist concrete, serif type on paper). It prints every tool call, ends with a summary table, and keeps the studio open on `http://127.0.0.1:4711` until you press Enter, so you can click through all three looks.
+It uses a temporary `LAS_HOME`, so your `~/.las` is never touched. `--no-wait` exits as soon as it finishes and `--port` picks another port.
+What it shows and what to look at: [demo/README.md](demo/README.md).
+
 ## What happens next
 
 The skill ([skill/SKILL.md](skill/SKILL.md)) makes the agent do this on its own the moment you name a skill:
