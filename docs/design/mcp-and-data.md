@@ -41,6 +41,9 @@ Inputs and outputs, simplified. `sk` = a learner's enrollment in one skill (a le
 | `validate_skill_model` | `SkillModel` | `{ok, errors[]}`: every check in [skill models §4](skill-packs.md#4-checks-every-skill-model-must-pass). Stores the model once it passes |
 | `get_skill_model` | `skill \| sk` | The stored model, for viewing or revising |
 
+### Theme
+The tools in [Theming §7](theming.md#7-tools-and-data): `draft_theme`, `validate_theme`, `preview_theme`, `set_theme`, `get_theme`.
+
 ### Onboarding
 | Tool | Input | Output |
 |---|---|---|
@@ -141,6 +144,8 @@ The studio sends events to the server. The server updates models and schedules; 
 learner(id, name, timezone, quiet_hours, nudge_limits, created_at)
 skill_model(id, skill, source[generated|curated], based_on_pack, pack_version, version, json, validated_at)
 enrollment(id, learner_id, skill_model_id, status[active|paused|done], created_at)
+theme(id, learner_id, name, source_kind, json, validated_at)
+theme_scope(learner_id, enrollment_id, theme_id)                            -- enrollment_id null = all skills
 intent(enrollment_id, why_json, afterwards, revisited_at)
 constraint(enrollment_id, minutes_per_week, deadline, access_json, injuries_json)
 milestone(id, enrollment_id, title, ladder_step, proof_json, target_date, status, achieved_at, self_reported)

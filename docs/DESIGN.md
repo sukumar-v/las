@@ -6,6 +6,7 @@ Status: draft · Prototype: [`prototypes/app/index.html`](../prototypes/app/inde
 |---|---|
 | **This overview** | Principles, prior art, architecture, onboarding, run modes, open-source policy, build plan |
 | [Any skill](design/any-skill.md) | **Start here.** How LAS covers any skill with no per-skill code: engines, spec languages, any programming language, finding and choosing tools, generated skill models, safety, coverage targets |
+| [Theming](design/theming.md) | The learner picks the look (a design prompt, a description, a screenshot or a tokens file); the theme spec, accessibility and font-license checks, where themes apply |
 | [Learning loop](design/learning-loop.md) | Today screen, what happens in a session, session planner, teaching cards, drills, feedback, check-ins, re-planning, progress, proof checks |
 | [Evaluation](design/evaluation.md) | Evaluator contract, analysis pipeline, the video coach, mistake library, proof standards, confidence |
 | [MCP and data](design/mcp-and-data.md) | Tool contracts, resources, prompts, agent rules, events, data model, sync, security |
@@ -31,6 +32,7 @@ It follows the same pattern as [REA](https://github.com/morluto/rea): one instal
 5. **Measure, then coach.** Evaluators produce numbers (joint angles, timing in ms, test results). The language model explains those numbers; it doesn't judge raw video or audio itself.
 6. **Open source only.** Every dependency is open source and free for anyone to use, including commercially (§11).
 7. **Local first.** Runs fully on the learner's own machine. Hosted mode is optional and exists for mobile.
+8. **The learner picks the look.** LAS has no fixed visual design language. The learner brings a style (a design prompt from a gallery, a description, a screenshot, a tokens file); the agent turns it into a theme; and every screen, widget, figure and overlay follows it. Accessibility checks always apply ([Theming](design/theming.md)).
 
 ## 2. Prior art and what's new
 
@@ -66,20 +68,21 @@ flowchart LR
 las-agents (npm)  →  npx las-agents setup
 ├── skill/        learn-any-skill: coaching loop, "show, don't tell" rules, when to call each tool
 ├── server/       MCP server (stdio locally, streamable HTTP when hosted)
-├── studio/       PWA: onboarding, camera/mic capture, code editor, widgets
+├── studio/       PWA: onboarding, camera/mic capture, code editor, widgets; everything drawn from the active theme
 ├── engines/      general-purpose measurement, configured by specs (§8)
 ├── runners/      code runners: browser, local toolchain, container
 ├── packs/        optional curated skill models; never required (§6)
 └── store/        SQLite: profile, milestones, mastery, review queue, sessions
 ```
 
-**Interactivity.** Tools return [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) widgets where the client shows them inline in the chat. Everything else (camera capture, the code editor, long sessions) runs in the studio PWA. Both use the same components, so a screen looks the same in either place.
+**Interactivity.** Tools return [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) widgets where the client shows them inline in the chat. Everything else (camera capture, the code editor, long sessions) runs in the studio PWA. Both use the same components and the learner's theme, so a screen looks the same in either place.
 
 ## 4. MCP tool surface
 
 | Group | Tools |
 |---|---|
 | `skill` | `get_capabilities`, `draft_skill_model`, `validate_skill_model`, `get_skill_model` |
+| `theme` | `draft_theme`, `validate_theme`, `preview_theme`, `set_theme`, `get_theme` |
 | `onboard` | `start_intake`, `record_answer`, `place_learner`, `suggest_milestones`, `check_feasibility`, `set_milestone` |
 | `plan` | `get_today`, `next_session`, `reschedule`, `replan` |
 | `teach` | `render_lesson`, `render_sim`, `render_mechanism` (anatomy), `render_diagram`, `explain_mistake` |
@@ -97,6 +100,7 @@ Onboarding produces three things: **why** they're learning, **what they want to 
 
 | # | Section | Screen | Answer type |
 |---|---|---|---|
+| 0 | Look | "Pick a look": paste a design prompt, describe it, add a screenshot, or skip | optional; preview of their own screens in the theme |
 | 1 | Skill | "What do you want to learn?" | single (tiles) or free text |
 | 2 | Why | "What's pulling you toward {skill}?" | multi, up to 2 |
 | 3 | Picture it | "Six months from now, what are you doing?" | single, re-ranked by why · or free text |
@@ -317,7 +321,7 @@ Verified from each project's LICENSE file or model card on 2026-10-12 and 2026-1
 | | web-push | MPL-2.0 |
 | | mkcert, Headscale | BSD-3-Clause |
 | | Tailscale client | BSD-3-Clause (some platform GUIs are not open source) |
-| Fonts | Gabarito, Atkinson Hyperlegible, DM Mono | SIL OFL 1.1 |
+| Fonts | Any family a theme picks, if its license is allowed (usually SIL OFL 1.1 or Apache-2.0), checked per family and cached locally. The prototype's demo fonts (Gabarito, Atkinson Hyperlegible, DM Mono) are OFL 1.1 | Per font |
 
 **A fully open agent stack.** LAS doesn't bundle a model; it runs inside whatever MCP client the learner uses. LAS must work end to end with:
 
@@ -363,7 +367,7 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 | Phase | Deliverable |
 |---|---|
 | 0 | Clickable prototype: onboarding, a full first session (learn, practice, perform, one-fix feedback, fix drill, second attempt, wrap-up), Today with check-ins, and Progress ✅ |
-| v0.1 | **Everything general, running locally:** MCP server, store, the skill with routing rules, `get_capabilities`, generating and validating skill models, onboarding, the learning loop, every engine in §8 with its spec language, code runners for any language, the studio PWA with phone pairing, check-ins, `npx las-agents setup`, and agent evals across the coverage targets in [Any skill §8](design/any-skill.md#8-coverage-targets) |
+| v0.1 | **Everything general, running locally:** MCP server, store, the skill with routing rules, `get_capabilities`, generating and validating skill models, onboarding, the learning loop, every engine in §8 with its spec language, code runners for any language, the studio PWA with phone pairing, learner-chosen themes for every surface, check-ins, `npx las-agents setup`, and agent evals across the coverage targets in [Any skill §8](design/any-skill.md#8-coverage-targets) |
 | v0.2 | Hosted mode: remote MCP, self-hosted sync, offline recording on phones, optional Web Push |
 | v0.3 | Curated packs: review workflow, promoting generated models, community contributions |
 
