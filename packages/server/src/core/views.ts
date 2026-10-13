@@ -1,5 +1,6 @@
 import type { Enrollment } from "@las/store";
 import type { LasContext } from "../context.js";
+import { placementOf } from "./common.js";
 
 /** Read-only views used by resources and tools. Filled in by the learning loop (phase 5) where noted. */
 export function learnerProfile(ctx: LasContext) {
@@ -24,11 +25,10 @@ export function routeFor(ctx: LasContext, e: Enrollment) {
   const model = ctx.store.getSkillModel(e.skillModelId)?.model;
   const milestone = ctx.store.activeMilestone(e.id);
   const mastery = ctx.store.getMastery(e.id);
-  const intake = ctx.store.db.get("SELECT placement FROM intake WHERE enrollment_id = ?", e.id);
-  const placement = intake?.placement ? JSON.parse(intake.placement) : undefined;
+  const placement = { step: placementOf(ctx, e.id) };
   return {
     sk: e.id,
-    start: placement?.step ?? 0,
+    start: placement.step,
     milestone,
     ladder: (model?.ladder ?? []).map((s, i) => ({
       step: i,
@@ -36,7 +36,7 @@ export function routeFor(ctx: LasContext, e: Enrollment) {
       label: s.label,
       hours: s.hours,
       nodes: s.nodes.map((n) => ({ id: n, name: model?.nodes.find((x) => x.id === n)?.name ?? n, mastery: mastery.get(n)?.pKnown ?? 0 })),
-      done: placement ? i <= placement.step : i === 0,
+      done: i <= placement.step,
       target: milestone?.ladderStep === i
     }))
   };
