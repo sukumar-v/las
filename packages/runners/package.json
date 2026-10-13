@@ -1,4 +1,12 @@
-{ "name": "@las/runners", "version": "0.1.0", "private": true, "type": "module", "license": "MIT",
-  "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" } },
+{
+  "name": "@las/runners",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Code runners for Learn Any Skill: browser runtimes, local toolchains and containers, for any language",
+  "license": "MIT",
+  "type": "module",
+  "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" }, "./browser": { "types": "./src/browser.ts", "default": "./src/browser.ts" } },
   "scripts": { "build": "echo ok", "test": "vitest run" },
-  "dependencies": { "@las/schema": "workspace:*" }, "devDependencies": { "vitest": "^4.1.0" } }
+  "dependencies": { "@las/schema": "workspace:*" },
+  "devDependencies": { "vitest": "^4.1.0" }
+}

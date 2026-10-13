@@ -1,4 +1,15 @@
-{ "name": "@las/engines", "version": "0.1.0", "private": true, "type": "module", "license": "MIT",
-  "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" } },
+{
+  "name": "@las/engines",
+  "version": "0.1.0",
+  "private": true,
+  "description": "General-purpose measurement engines for Learn Any Skill, configured by specs; they never know which skill they measure",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./node": { "types": "./src/node.ts", "default": "./src/node.ts" }
+  },
   "scripts": { "build": "echo ok", "test": "vitest run" },
-  "dependencies": { "@las/schema": "workspace:*" }, "devDependencies": { "vitest": "^4.1.0" } }
+  "dependencies": { "@las/schema": "workspace:*", "chess.js": "^1.4.0", "meyda": "^5.6.3", "pitchy": "^4.1.0" },
+  "devDependencies": { "vitest": "^4.1.0" }
+}
