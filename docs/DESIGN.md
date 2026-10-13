@@ -8,9 +8,10 @@ Status: draft · Prototype: [`prototypes/app/index.html`](../prototypes/app/inde
 | [Any skill](design/any-skill.md) | **Start here.** How LAS covers any skill with no per-skill code: engines, spec languages, any programming language, finding and choosing tools, generated skill models, safety, coverage targets |
 | [Theming](design/theming.md) | The learner picks the look (a design prompt, a description, a screenshot or a tokens file); the theme spec, accessibility and font-license checks, where themes apply |
 | [Learning loop](design/learning-loop.md) | Today screen, what happens in a session, session planner, teaching cards, drills, feedback, check-ins, re-planning, progress, proof checks |
+| [Live coach](design/live-coach.md) | The agent coaches during practice: the coach loop, the watcher that re-wakes it, MCP Apps widgets, events and screens, the session director, the fallback when no coach is reachable |
 | [Evaluation](design/evaluation.md) | Evaluator contract, analysis pipeline, the video coach, mistake library, proof standards, confidence |
 | [MCP and data](design/mcp-and-data.md) | Tool contracts, resources, prompts, agent rules, events, data model, sync, security |
-| [Skill models](design/skill-packs.md) | The skill model schema (ladder, skill graph, lessons, drills, mistakes, proofs), validation, generated vs curated, content licensing |
+| [Skill models](design/skill-packs.md) | The skill model schema (ladder, skill graph, lessons, drills, mistakes, proofs), scaffold vs fallback content, validation, generated vs curated, content licensing |
 
 LAS is an open-source MCP server and agent skill that coach someone through learning any skill, such as guitar, bouldering, Spanish or Python. It does four things:
 
@@ -27,12 +28,13 @@ It follows the same pattern as [REA](https://github.com/morluto/rea): one instal
 
 1. **Show, don't tell.** Explanations are diagrams, simulations, animations or video. The coach never writes an essay; a few sentences between visuals is the most it writes.
 2. **Every milestone has a proof.** A goal is done when the evidence passes, such as a recording, a clip or passing tests, not when the learner says so.
-3. **Personal by construction.** Answer options, suggestions and the plan are computed from the learner's own answers (see §5.3). Nothing after the first question is the same for everyone.
+3. **Personal by construction.** Answer options, suggestions and the plan are computed from the learner's own answers (see §5.3). Personalization happens twice: at model time, when the agent writes the skill model, and at screen time, when the live coach writes each next screen for what the learner just did (principle 9). Nothing after the first question is the same for everyone.
 4. **General first.** No skill gets its own code. The agent writes a skill model for whatever the learner picks, using engines that don't know which skill they're measuring. Curated packs are optional improvements, never a requirement. Every skill goes through the same screens with the same controls.
 5. **Measure, then coach.** Evaluators produce numbers (joint angles, timing in ms, test results). The language model explains those numbers; it doesn't judge raw video or audio itself.
 6. **Open source only.** Every dependency is open source and free for anyone to use, including commercially (§11).
 7. **Local first.** Runs fully on the learner's own machine. Hosted mode is optional and exists for mobile.
 8. **The learner picks the look.** LAS has no fixed visual design language. The learner brings a style (a design prompt from a gallery, a description, a screenshot, a tokens file); the agent turns it into a theme; and every screen, widget, figure and overlay follows it. Accessibility checks always apply ([Theming](design/theming.md)).
+9. **Live coach.** The agent is present during practice. It watches the learner move through the screens and writes each next screen for this learner, now. Pre-written content in the skill model is only a fallback for when no coach is reachable, so a session never blocks on a model. Live screens keep the same card types and word budgets ([Live coach](design/live-coach.md)).
 
 ## 2. Prior art and what's new
 
@@ -51,31 +53,39 @@ It follows the same pattern as [REA](https://github.com/morluto/rea): one instal
 ```mermaid
 flowchart LR
   subgraph Agent["Learner's agent (any MCP client)"]
-    SK[learn-any-skill skill<br/>coaching loop + rules]
+    SK[learn-any-skill skill<br/>live coach loop + rules]
   end
   SK <--> MCP[LAS MCP server<br/>TypeScript]
+  MCP --> DIR[Session director<br/>live session · event queue · fallback]
+  DIR --> ST
   MCP --> ST[(Store<br/>SQLite)]
   MCP --> PK[Skill models<br/>written by the agent · curated packs optional]
   MCP --> EV[Engines<br/>movement · audio · speech · code · visual<br/>knowledge · interaction · sensor · game]
   SK -. if present .-> EXT[Other MCP servers, skills, tools<br/>anatomy · notation · chess engine · …]
   MCP --> VZ[Visual layer<br/>anatomy · diagrams · sims]
   MCP <--> STU[Studio PWA<br/>camera · mic · editor · widgets]
+  DIR <-->|events · live screens| STU
+  W[Watcher<br/>las coach --watch] -. reads the event queue .-> ST
+  W -. resumes the conversation .-> SK
   STU -. hosted mode .-> SYNC[(Self-hosted sync)]
   ST -. hosted mode .-> SYNC
 ```
 
 ```
 las-agents (npm)  →  npx las-agents setup
-├── skill/        learn-any-skill: coaching loop, "show, don't tell" rules, when to call each tool
-├── server/       MCP server (stdio locally, streamable HTTP when hosted)
+├── skill/        learn-any-skill: the live coach loop, "show, don't tell" rules, when to call each tool
+├── server/       MCP server (stdio locally, streamable HTTP when hosted) and the session director
+├── cli/          setup, checkin, and the watcher (las coach --watch) that re-wakes the coach
 ├── studio/       PWA: onboarding, camera/mic capture, code editor, widgets; everything drawn from the active theme
 ├── engines/      general-purpose measurement, configured by specs (§8)
 ├── runners/      code runners: browser, local toolchain, container
 ├── packs/        optional curated skill models; never required (§6)
-└── store/        SQLite: profile, milestones, mastery, review queue, sessions
+└── store/        SQLite: profile, milestones, mastery, review queue, sessions, live sessions and the coach's event queue
 ```
 
 **Interactivity.** Tools return [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) widgets where the client shows them inline in the chat. Everything else (camera capture, the code editor, long sessions) runs in the studio PWA. Both use the same components and the learner's theme, so a screen looks the same in either place.
+
+**The live coach.** During practice the agent stays in a loop (`coach_wait` → decide → `coach_show`) and writes each next screen. The **session director** in the server holds the live session, queues studio events for the coach, validates and shows its screens, and serves the skill model's fallback content when no coach is present. The **watcher** (`las coach --watch`) resumes the coach's conversation headlessly when the learner acts and no coach is listening. Details: [Live coach](design/live-coach.md).
 
 ### 3.1 Repository layout
 
@@ -87,10 +97,10 @@ The tree above is the product as the learner installs it. The repository is a pn
 | `packages/store` | `@las/store` | SQLite through `node:sqlite`, with migrations |
 | `packages/engines` | `@las/engines` | The measurement engines (§8). `node.ts` holds the adapters that start separate processes (UCI and GTP engines, whisper.cpp) |
 | `packages/runners` | `@las/runners` | Code runners (browser, local toolchain, container) and the table of languages |
-| `packages/server` | `@las/server` | The MCP server (tools, resources, prompts), the learning loop, and the studio's local JSON API |
+| `packages/server` | `@las/server` | The MCP server (tools, resources, prompts), the learning loop, the session director (v0.2), and the studio's local JSON API |
 | `packages/ui` | `@las/ui` | Themeable components, screens and figures, and the theme-to-CSS generator |
 | `packages/studio` | `@las/studio` | The studio PWA and the MCP Apps widget (Vite + Preact) |
-| `packages/cli` | `las-agents` | `setup`, `serve`, `doctor`, `studio`, `checkin`, `engines test`, `model validate` |
+| `packages/cli` | `las-agents` | `setup`, `serve`, `doctor`, `studio`, `checkin`, `engines test`, `model validate`; from v0.2 `coach --watch` (the watcher and its table of client adapters) |
 | `skill/` | | The `learn-any-skill` skill and its reference pages |
 | `evals/` | `@las/evals` | Theme fixtures and agent evals (§9 of [Any skill](design/any-skill.md#9-keeping-quality-up-without-per-skill-code)) |
 | `tools/` | | License check, style check, the ESLint rule for hard-coded styles, the Inspector smoke test |
@@ -110,8 +120,9 @@ The tree above is the product as the learner installs it. The repository is a pn
 | `practice` | `start_drill`, `review_cards` (FSRS) |
 | `evaluate` | `request_capture`, `get_analysis`, `run_code_tests`, `compare_to_reference`, `run_proof_check`, `submit_rubric_grade` (the agent's own rubric grades for a picture, which `get_analysis` hands it) |
 | `track` | `get_progress`, `get_session_summary`, `log_external`, `report_pain`, `revisit_why`, `export_data`, `delete_data` |
+| `coach` (v0.2) | `coach_start`, `coach_wait`, `coach_show`, `coach_end`: the live coach loop ([Live coach](design/live-coach.md)) |
 
-Lesson tools take **structured specs** and reject text over budget, so the tool shapes leave no room for an essay. Inputs, outputs, agent rules and events: [MCP and data](design/mcp-and-data.md).
+Lesson tools and `coach_show` take **structured specs** and reject text over budget, so the tool shapes leave no room for an essay. Inputs, outputs, agent rules and events: [MCP and data](design/mcp-and-data.md).
 
 ## 5. Onboarding
 
@@ -216,6 +227,8 @@ interface SkillModel {
 
 Hours per step are ranges. The agent cites sources when it can search the web, and LAS corrects them from the learner's real pace.
 
+From v0.2 the model is a **scaffold** (ladder, skill graph, engine specs, mistakes with fix drills, safety, why, pictures, probes, placement) plus **fallback content** (lesson cards, practice items, feedback headlines, why explanations) that the studio uses only when no coach is present. `validate_skill_model` checks both ([Skill models §3.1](design/skill-packs.md#31-scaffold-and-fallback-content)).
+
 ## 7. Teaching visuals
 
 | Content | Tool |
@@ -253,6 +266,7 @@ Details (pipeline, video coach, mistake library, proof standards): [Evaluation](
 - **Mastery:** Bayesian Knowledge Tracing over the skill's ladder and concept graph. We'll implement it in TypeScript; pyBKT (MIT) is the reference.
 - **Reviews:** FSRS spaced repetition via ts-fsrs.
 - **Follow-ups:** an MCP server can't start a conversation, so LAS stores a schedule of check-ins. Something else has to trigger them: the client's scheduler, studio notifications (Web Push), or a cron job when hosted. Each check-in looks at what was done since the last one and moves the plan forward or reschedules it.
+- **The watcher (v0.2):** `las coach --watch` (cron-friendly with `--once`, like `las checkin`) watches the event queue. When the learner acts and no coach has called `coach_wait` in the last 60 s, it resumes the coach's conversation headlessly (Claude Code first: `claude -p --resume`). One adapter per client, in a data table. Clients with no headless mode get a notification. When the watcher can wake the coach, check-ins become live: the coach words them for the learner ([Live coach §4](design/live-coach.md#4-mechanism-2-the-watcher)).
 
 Sessions, the planner, feedback, check-ins and re-planning: [Learning loop](design/learning-loop.md).
 
@@ -421,8 +435,9 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 | 0 | Clickable prototype: onboarding, a full first session (learn, practice, perform, one-fix feedback, fix drill, second attempt, wrap-up), Today with check-ins, and Progress ✅ |
 | v0.1 ✅ | **Everything general, running locally:** MCP server, store, the skill with routing rules, `get_capabilities`, generating and validating skill models, onboarding, the learning loop, every engine in §8 with its spec language, code runners for any language, the studio PWA with phone pairing, learner-chosen themes for every surface, check-ins, `npx las-agents setup`, and agent evals across the coverage targets in [Any skill §8](design/any-skill.md#8-coverage-targets) |
 |  | *What shipped (2026-10-13):* the 39-tool MCP server and skill; skill-model and theme validation; onboarding and the learning loop (planner, BKT, FSRS, check-ins, proof checks); all ten engines, code runners for 22 languages; the studio with on-device analysis, phone pairing and opt-in Web Push check-ins; `las-agents setup` for eight agents (run from the checkout; publishing to npm is not done yet); license, style, theme, engine and Inspector checks in CI. *Manual, not in CI:* runs with a real agent (the agent evals in `evals/` run offline, with scenarios written as data for each coverage target) and tests with real recordings (fixtures are synthetic). No curated packs. |
-| v0.2 | Hosted mode: remote MCP, self-hosted sync, offline recording on phones, Web Push from a hosted server |
-| v0.3 | Curated packs: review workflow, promoting generated models, community contributions |
+| v0.2 | **Live coach:** the `coach` tools (`coach_start`, `coach_wait`, `coach_show`, `coach_end`); the session director with the presence rule, screen queue and fallback; the new studio events and the ask-the-coach box; "coach here" and "coach away" in the studio; the `live_session`, `coach_event` and `coach_screen` tables; scaffold vs fallback content in the skill model; the planner as adviser with logged overrides; `las coach --watch` with the Claude Code adapter (Codex, OpenCode, Goose after); `las-agents setup` raising Claude Code's tool timeout and installing the session-id hook; the skill's loop rules; scripted-learner and scripted-coach evals ([Live coach](design/live-coach.md)). MCP Apps widget route after Claude Code |
+| v0.3 | Hosted mode: remote MCP, self-hosted sync, offline recording on phones, Web Push from a hosted server |
+| v0.4 | Curated packs: review workflow, promoting generated models, community contributions |
 
 ## 14. Open questions
 
@@ -431,3 +446,6 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 - How much should a learner trust a generated skill model before anyone has reviewed it, and what signals should flag one for review?
 - Where can learners legally get reference clips and scores (their own teacher's recording, public-domain scores, CC-licensed clips)?
 - Which skills need a human coach in the loop (anything with real injury risk beyond bouldering)?
+- **Live coach:** how the agent (or LAS) learns its own conversation id in each client, so the watcher can resume it ([Live coach §17](design/live-coach.md#17-open-questions)).
+- **Live coach:** what a coached session costs in tokens, per client and model (about 15–25 decision round trips in 30 minutes, plus heartbeats).
+- **Live coach:** what the coach should do when the learner is silent, beyond one short nudge per screen.

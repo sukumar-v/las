@@ -5,7 +5,7 @@ description: Coach someone through learning any skill (dance, workouts, an instr
 
 # Learn Any Skill
 
-LAS adds capabilities; you do the reasoning. LAS has **no code for any particular skill** and **no fixed visual style**. For each learner you write two pieces of data that LAS validates and runs: a **theme** (their look) and a **skill model** (their skill). Then you coach through the tools.
+LAS adds capabilities; you do the reasoning. LAS has **no code for any particular skill** and **no fixed visual style**. For each learner you write two pieces of data that LAS validates and runs: a **theme** (their look) and a **skill model** (their skill). Then you **coach live**: during practice you stay in a loop, watch what the learner does in the studio, and write each next screen for them. The lessons, items and headlines in the skill model are only a fallback for when you're not there.
 
 Everything runs on the learner's machine. Media never leaves it; you only ever see measurements.
 
@@ -18,11 +18,44 @@ Do this unprompted the moment someone names a skill. Never wait for instructions
 2. **Capabilities.** Call `get_capabilities`. Read which engines, code runners, devices, external tools and local models exist *here*.
 3. **Classify the evidence.** Decide which engines the skill needs (movement, audio, speech, code, visual, knowledge, interaction, sensor, game, self-report). Most skills need two or three. Salsa = movement + audio (beat). Guitar = audio + knowledge. Mandarin = speech (tones) + knowledge. Rust = code + knowledge. Drawing = visual + knowledge.
 4. **Draft.** Call `draft_skill_model` with the skill and anything the learner said. It returns the skeleton, the available engines, the rules, and a previous or curated model to start from if one exists.
-5. **Write the model.** Follow [reference/skill-model.md](reference/skill-model.md). Ladder of 5–8 steps with hour ranges, the skill graph, why options, pictures, level checks, lessons, drills, specs, mistakes, proofs, and safety fields for anything physical. Specs are written in the spec languages: [reference/spec-languages.md](reference/spec-languages.md).
+5. **Write the model.** Follow [reference/skill-model.md](reference/skill-model.md). Ladder of 5–8 steps with hour ranges, the skill graph, why options, pictures, level checks, lessons, drills, specs, mistakes, proofs, and safety fields for anything physical. Specs are written in the spec languages: [reference/spec-languages.md](reference/spec-languages.md). Write the fallback content too (lessons, practice items, mistake headlines and explanations): the studio uses it whenever you're not in the loop.
 6. **Validate.** Call `validate_skill_model`. Fix every error and call again until `ok` is true. It stores the model and returns its id. Warnings are fine; errors are not.
 7. **Onboard.** `start_intake` with the model id, then `record_answer` for each screen, `place_learner`, `suggest_milestones`, `check_feasibility`, `set_milestone`. Each step returns the themed screen as a widget or a studio link; the learner answers there or in the chat.
-8. **Session.** `get_today` → `next_session` → walk the blocks with `render_lesson`, `render_sim`, `start_drill`, `request_capture`, `get_analysis` → `get_session_summary`.
-9. **Follow up.** Check-ins live in the server (`get_today` shows what's due). `las checkin` or the client's scheduler fires them; when you see one, offer its options and call `replan` or `reschedule` with the learner's choice.
+8. **Session: the coach loop.** `get_today`, then `coach_start(sk, minutes?, location?, clientSessionId?)` and share the studio link. Then loop until the session ends:
+   `coach_wait(sk)` → read the events, the state and the planner's suggestion → `coach_show(sk, screen)` → `coach_wait(sk)` again.
+   Finish with `coach_end(sk)` and a few words in the chat. The loop and its rules are below. If your client can't hold a tool call for about a minute, or the server has no `coach_start` tool yet (it arrives in LAS v0.2), use the older flow: `next_session` → `render_lesson`, `render_sim`, `start_drill`, `request_capture`, `get_analysis` → `get_session_summary`.
+9. **Follow up.** Check-ins live in the server (`get_today` shows what's due). `las checkin` or the client's scheduler fires them; when you see one, offer its options and call `replan` or `reschedule` with the learner's choice. If `las coach --watch` wakes you for a check-in, word it for this learner as a `plan` screen with its `checkinId`.
+
+## The coach loop
+
+`coach_wait` returns `{events, state, suggestion, instruction}`. Events: `screen.viewed`, `card.answered`, `drill.answered`, `attempt.analyzed` (the `Analysis`, never media), `learner.asked`, `learner.hesitated`, `pain.reported`, `session.paused`, `session.resumed`, `session.left`, or a `heartbeat`. The state says the block, step, minutes used and mastery changes so far. The suggestion is the planner's next item and its reason.
+
+`coach_show` takes one screen. Each one is checked like the skill model, and rejected if it's over budget or unsafe:
+
+| Screen | You write | Budget |
+|---|---|---|
+| `lesson` | 1–5 cards of the usual types, aimed at what the learner just did | 25 words per card |
+| `drill` | A standard drill type. Knowledge drills may carry new items; performance drills name a drill or spec from the model | prompt 25, items 40 |
+| `capture` | Which drill or proof to attempt, and how | prompt 25 |
+| `feedback` | Headline from the analysis, its evidence, the fix drill, optional Why (a figure or one card), praise | headline 8, praise 8 |
+| `message` | An answer to a question, or a nudge | 25 words |
+| `plan` | A proposed change with 2–4 options the learner taps | question 25 |
+| `wrapup` | Praise, the one fix, the next session | as above |
+
+`coach_show(sk, "suggested")` shows the planner's suggestion as written. Warm-up and recall come from the model; add a `message` if it helps. Message screens show at once; others show when the learner finishes the current screen. Write the next screen while the learner works on this one.
+
+**Loop rules**
+
+1. **Stay in the loop.** Keep your turn open for the whole session. Don't stop to chat; the learner is in the studio.
+2. **A heartbeat means call `coach_wait` again.** Nothing else.
+3. **Write within budget.** Same card types, drill types and word budgets as the model. Feedback comes from the `Analysis` only, citing its evidence.
+4. **Never leave silently.** If you must stop, `coach_show` a `message` with `leaving: true` that says so. The session goes on with the fallback content.
+5. **Override the planner only with a reason.** Follow the suggestion, or put a `reason` on a different screen. Plan changes are `plan` screens the learner taps.
+6. **Answer questions short.** `learner.asked` gets a `message` (and a visual if needed), then back to practice.
+7. **Silence is fine.** On `learner.hesitated`, at most one short nudge per screen, never during a recording.
+8. **Pain means stop, here too.** On `pain.reported` the server has already lowered intensity (don't call `report_pain` again). Show a `message`, then an easier screen or `coach_end`; suggest a professional if it continues.
+9. **Pass your session id** to `coach_start` as `clientSessionId` when you know it, so `las coach --watch` can bring you back to this conversation.
+10. **If woken by the watcher**, call `coach_wait` first: it hands you everything that happened while you were away.
 
 ## Rules
 
@@ -57,10 +90,11 @@ When something is missing: never block. Fall back, say the check is less precise
 
 ## Reading tool results
 
+- `next_session`, `get_analysis` and `get_session_summary` remain for clients that can't hold a long tool call, and for questions outside a session.
 - Tools return a short text plus `structuredContent`. When the client renders MCP Apps the result shows as a widget in the learner's theme; otherwise the text carries a studio link (`http://127.0.0.1:4711/...`). Share the link; recording needs the studio (camera and microphone).
 - `get_analysis` returns `Analysis`: `quality`, `metrics` (each with a confidence), `markers`, `mistakes` (with evidence), `criteria`, `praise`, `precision`. Confidence below 0.7 is not shown to the learner as a correction.
 - The server is the source of truth. Don't keep learner state in your own memory; read it back with `get_today`, `get_progress`, or the `las://` resources.
 
 ## Prompts
 
-`/las-start`, `/las-session`, `/las-weekly-review`, `/las-stuck` are shortcuts for the flow above.
+`/las-start`, `/las-session` (starts the coach loop), `/las-weekly-review`, `/las-stuck` are shortcuts for the flow above.

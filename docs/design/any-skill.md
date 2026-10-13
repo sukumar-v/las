@@ -2,7 +2,7 @@
 
 LAS has **no code for any particular skill**. Like [REA](https://github.com/morluto/rea), it gives the agent general-purpose capabilities and lets the agent reason. REA groups its tools by kind of target (native binary, APK, website). LAS groups its tools by **kind of evidence** (video, audio, speech, code, images, answers). For each skill the learner picks, the agent works out which of those apply and writes the plan, the checks and the rubrics at runtime.
 
-Related: [overview](../DESIGN.md) · [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [skill models](skill-packs.md)
+Related: [overview](../DESIGN.md) · [learning loop](learning-loop.md) · [live coach](live-coach.md) · [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [skill models](skill-packs.md)
 
 ---
 
@@ -20,8 +20,8 @@ flowchart LR
 
 | Part | Responsibility | Never does |
 |---|---|---|
-| **Agent** (any model, guided by the LAS skill) | Understands the skill; writes the skill model; picks visuals and tools; explains results; talks to the learner | Judges raw video or audio itself; changes the plan without asking |
-| **LAS server** | Structure (schemas, validation), state (learner model, schedule), the deterministic planner, routing to engines, rendering widgets | Contains logic for a specific skill |
+| **Agent** (any model, guided by the LAS skill) | Understands the skill; writes the skill model; picks visuals and tools; explains results; talks to the learner; **coaches live during practice**, writing each next screen within the same budgets ([live coach](live-coach.md)) | Judges raw video or audio itself; changes the plan without asking |
+| **LAS server** | Structure (schemas, validation), state (learner model, schedule), the deterministic planner (an adviser to the live coach), the session director, routing to engines, rendering widgets | Contains logic for a specific skill |
 | **Engines** | Measure. They're deterministic, don't know which skill they're measuring, and are configured by specs (§3) | Decide what "good" means: that comes from the spec |
 | **Other MCP servers, skills and tools** | Extra power the agent uses when it's available (a chess engine, the anatomy skill, a notation server) | Become a requirement: LAS always has a fallback |
 
@@ -171,7 +171,7 @@ A **skill model** is everything LAS needs for one skill:
 - the level-check questions;
 - a ladder with hour ranges;
 - the skill graph;
-- teaching cards;
+- teaching cards (fallback content from v0.2: the live coach writes lessons during practice);
 - drills, mistakes and proofs, all bound to engine specs;
 - warm-ups and safety fields for physical skills.
 

@@ -2,29 +2,39 @@
 
 How the agent, the LAS server and the studio talk to each other: the tool contracts, the rules the agent follows, events, and the stored data.
 
-Related: [any skill](any-skill.md) · [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [skill models](skill-packs.md) · [overview](../DESIGN.md)
+Related: [live coach](live-coach.md) · [any skill](any-skill.md) · [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [skill models](skill-packs.md) · [overview](../DESIGN.md)
 
 ---
 
 ## 1. How the pieces talk
 
+From v0.2 the agent coaches live: its turn stays open for the whole session, and it loops `coach_wait` → decide → `coach_show` until `coach_end` ([live coach](live-coach.md)).
+
 ```mermaid
 sequenceDiagram
   participant L as Learner
-  participant A as Agent + LAS skill
-  participant S as LAS server
+  participant A as Agent + LAS skill (coach)
+  participant S as LAS server (session director)
   participant U as Studio (widget or PWA)
   L->>A: "Let's practice"
-  A->>S: next_session(skill)
-  S-->>A: SessionPlan + widget
-  A->>U: show widget inline, or a studio link
-  L->>U: does the session
-  U->>S: events (drill.outcome, attempt.analyzed, …)
-  S->>S: update mastery, reviews, mistakes, schedule
-  A->>S: get_session_summary(session)
+  A->>S: coach_start(sk, minutes, location)
+  S-->>A: state + planner suggestion + studio link
+  A->>U: share the studio link, or the widget shows inline
+  loop until the session ends
+    A->>S: coach_show(next screen)
+    S->>U: the screen (live stream)
+    A->>S: coach_wait(sk)
+    L->>U: answers, drills, records
+    U->>S: events (card.answered, drill.answered, attempt.analyzed, learner.asked, …)
+    S->>S: update mastery, reviews, mistakes, schedule
+    S-->>A: events + state + suggestion, or a heartbeat
+  end
+  A->>S: coach_end(sk)
   S-->>A: summary + one fix
-  A->>L: a few words + a visual (render_* tools)
+  A->>L: a few words in the chat
 ```
+
+When no coach calls `coach_wait` for 60 s, the studio shows "coach away" and serves the skill model's fallback content; the watcher (`las coach --watch`) tries to bring the coach back. Clients that can't hold a long tool call use the v0.1 flow: `next_session`, then `get_analysis` and `get_session_summary`.
 
 - **Inline when possible:** if the client renders MCP Apps, sessions, drills and progress appear inside the chat. Otherwise tools return a studio link to the same screen (`http://127.0.0.1:4711/app/...`, e.g. `/app/today`, `/app/capture/<attemptId>`, `/app/feedback/<attemptId>`).
 - **The server is the source of truth.** The agent never keeps learner state in its own memory; it reads it back through tools and resources.
@@ -33,7 +43,8 @@ sequenceDiagram
 
 | Area | Routes |
 |---|---|
-| Server | `GET /api/health`, `GET /api/capabilities` (`?fresh=1` re-detects), `POST /api/devices` (the studio reports camera, microphone, motion and phone), `GET /api/stream` (live events), `POST /api/events` |
+| Server | `GET /api/health`, `GET /api/capabilities` (`?fresh=1` re-detects), `POST /api/devices` (the studio reports camera, microphone, motion and phone), `GET /api/stream` (live events; from v0.2 also `coach.screen` and `coach.state`), `POST /api/events` |
+| Live coach (v0.2) | `GET /api/live/:sessionId` (the live state and the current screen, for a studio that reconnects). Learner actions go through `POST /api/events` |
 | Theme | `GET /api/theme` (`?sk=`), `GET /api/fonts/:family/font.css` and `/:file` (the local font cache) |
 | Onboarding | `GET /api/state`, `GET /api/intake/:id`, `POST /api/intake/:id/answer`, `/place`, `/suggest`, `/feasibility`, `/milestone` |
 | Sessions | `GET /api/today`, `POST /api/session/next`, `GET /api/session/:id`, `POST /api/drill/:id/next`, `GET /api/reviews` |
@@ -113,6 +124,16 @@ The tools in [Theming §7](theming.md#7-tools-and-data): `draft_theme`, `validat
 | `export_data` | `scope` (`sk` or `all`) | A file |
 | `delete_data` | `scope` (`sk` or `all`), `confirm: true` | Deletes the skill's (or all) data and media files. Without `confirm: true` it refuses and says it can't be undone; the agent asks the learner first |
 
+### Coach (v0.2)
+The live coach loop ([live coach §3](live-coach.md#3-mechanism-1-the-coach-loop)). Events and screens: [live coach §6–7](live-coach.md#6-event-catalogue).
+
+| Tool | Input | Output |
+|---|---|---|
+| `coach_start` | `sk, minutes?, location?, client?, clientSessionId?` | Opens a live session (plans it; the `SessionPlan` is advice) and returns the first state, the planner's suggestion, the studio link or widget, and the loop instruction. Re-attaches if this coach already holds the session; refused while another coach is present |
+| `coach_wait` | `sk, timeoutS?` (default 45, max 55) | Blocks until something happens in the studio. Returns `{events[], state, suggestion, instruction}`: the events in order (`screen.viewed`, `card.answered`, `drill.answered`, `attempt.analyzed`, `learner.asked`, `learner.hesitated`, `pain.reported`, `session.paused`, `session.resumed`, `session.left`), the session state (block, step, minutes used, mastery deltas so far) and the planner's suggestion with its reason. After `timeoutS` with no event: a `heartbeat` that says to call again |
+| `coach_show` | `sk, screen` (`lesson`, `drill`, `capture`, `feedback`, `message`, `plan`, `wrapup`), or `"suggested"` | `{ok, errors[], screenId, shown \| queued}`. Validates the screen with the skill model's checks (budgets, card and drill types, references, evidence, safety) and rejects it otherwise. A screen that differs from the suggestion needs a `reason` |
+| `coach_end` | `sk` | Closes the session and returns the `SummaryView` |
+
 ## 3. Resources and prompts
 
 - **Resources (read-only):**
@@ -124,7 +145,7 @@ The tools in [Theming §7](theming.md#7-tools-and-data): `draft_theme`, `validat
   - `las://packs/{pack}` (curated packs)
 - **Prompts:**
   - `/las-start`: learn something new
-  - `/las-session`: today's session
+  - `/las-session`: today's session, coached live (`coach_start` and the loop)
   - `/las-weekly-review`
   - `/las-stuck`: plateau or motivation conversation
 
@@ -140,10 +161,13 @@ The tools in [Theming §7](theming.md#7-tools-and-data): `draft_theme`, `validat
 8. **Work out the skill, don't wait for instructions.** For a new skill, call `get_capabilities`, decide which engines the skill needs, write the skill model, and call `validate_skill_model` until it passes. Start from a curated pack if `draft_skill_model` offers one.
 9. **Use what's there.** Prefer other MCP servers, skills and tools the client already has when they fit (routing table in [Any skill §5](any-skill.md#5-finding-and-choosing-tools)). Third-party servers need the learner's consent and are never required.
 10. **Say when a check is weaker.** If the best engine isn't available, use the fallback, tell the learner the check is less precise, and suggest an open-source install.
+11. **Stay in the loop.** After `coach_start`, loop `coach_wait` → decide → `coach_show` → `coach_wait` until `coach_end`, keeping the turn open for the whole session. A `heartbeat` means call `coach_wait` again, not reply. Never leave mid-session silently: send a `message` with `leaving: true` that says so, and the session continues on fallback content.
+12. **Write within budget.** Live screens use the same card types, drill types and word budgets as the skill model (cards 25 words, headlines 8, messages 25). Feedback comes from the `Analysis` only and cites its evidence.
+13. **Override the planner only with a reason.** Follow the suggestion in `coach_wait`, or give a `reason` for a different screen; it goes into the planner log. Plan changes are `plan` screens the learner taps.
 
 ## 5. Events
 
-The studio sends events to the server. The server updates models and schedules; the agent reads the results.
+The studio sends events to the server. The server updates models and schedules; the agent reads the results. From v0.2 the session director also queues the learner's actions for the live coach (`coach_event`), and `coach_wait` hands them over ([live coach §6](live-coach.md#6-event-catalogue)).
 
 | Event | Payload | Server reaction |
 |---|---|---|
@@ -154,6 +178,15 @@ The studio sends events to the server. The server updates models and schedules; 
 | `attempt.captured` / `attempt.analyzed` | attempt id, `Analysis` | Mistakes, proof criteria, before-and-after |
 | `pain.reported` | area, level | Lower intensity, injury rules, follow-up |
 | `checkin.answered` | check-in, option | Re-plan, reschedule, pause |
+| `screen.viewed` (v0.2) | screen id, kind, source (coach or fallback), time on the previous screen | Screen and block timing; queued for the coach |
+| `card.answered` (v0.2) | screen id, card, answer, correct?, seconds | Logged (cards teach, drills measure: no mastery change); queued for the coach |
+| `drill.answered` (v0.2, made by the server) | drill, item?, correct or success, score, difficulty change, mastery deltas | From each item answer and each `drill.outcome`; queued for the coach |
+| `learner.asked` (v0.2) | screen id, text (up to 280 characters) | Queued for the coach; the watcher may wake it |
+| `learner.hesitated` (v0.2) | screen id, seconds | Queued for the coach; never wakes one |
+| `session.paused` / `session.resumed` (v0.2) | reason / seconds paused | Live session state; queued for the coach |
+| `session.left` (v0.2) | reason (`closed`, `studio-offline`) | Live session paused; queued for the coach |
+
+`attempt.analyzed` and `pain.reported` also go to the coach. `heartbeat` is made by `coach_wait` and is not stored.
 
 ## 6. Data model (SQLite)
 
@@ -185,7 +218,15 @@ push_subscription(id, learner_id, json, created_at)
 dispute(id, enrollment_id, attempt_id, mistake_id, metrics, consent, created_at)
 proof(id, enrollment_id, milestone_id, attempt_id, result, clip_ref, created_at)
 metric_history(id, enrollment_id, metric_id, value, attempt_id, created_at)
+live_session(id, enrollment_id, state, coach_session_id, client, coach_pid, last_wait_at, started_at, ended_at)   -- v0.2; id = session.id
+coach_event(id, live_session_id, type, json, created_at, delivered_at)            -- v0.2; the coach's event queue, in id order
+coach_screen(id, live_session_id, kind, json, shown_at, answered_at)              -- v0.2; every screen shown, live or fallback
 ```
+
+**Live coach tables (v0.2).**
+- `live_session.state` is `live`, `coach-away`, `paused` or `ended` (no open row means idle). `coach_session_id` is the client's own conversation id, which the watcher resumes; `client` is the client id from the setup CLI's table; `coach_pid` is the LAS process that holds the coach (the watcher won't resume a conversation whose process is still alive); `last_wait_at` drives the 60 s presence rule.
+- `coach_event.delivered_at` is set when the coach's next `coach_wait` call acknowledges the batch, so delivery is in order and at least once.
+- `coach_screen.json` holds the screen and its `source` (`coach` or `fallback`) and, for overrides, the reason. Overrides are also written to `planner_log`.
 
 `media_ref` points to a file on the device. Derived evidence (body points, pitch tracks, transcripts, test results) is kept next to it as `evidence.json`.
 
@@ -201,4 +242,5 @@ Media files stay on the device under `~/.las/media/<attempt>`. The database only
 
 - The local server listens only on `127.0.0.1`. Phone pairing adds a single-use QR token and HTTPS from mkcert.
 - Hosted mode uses OAuth for MCP clients and per-learner row-level access.
-- Export and delete are real tools that cover everything, media included.
+- Export and delete are real tools that cover everything, media included, and the live coach tables.
+- Live coach events carry analyses and key frames by reference, never media. A coach resumed by the watcher may call LAS tools only ([live coach §13](live-coach.md#13-privacy)).

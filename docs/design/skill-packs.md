@@ -4,7 +4,9 @@ A **skill model** is all the content LAS needs for one skill: why options, six-m
 
 **The agent writes a skill model at runtime for whatever skill the learner picks** ([Any skill §6](any-skill.md#6-skill-models)). A **curated pack** is a skill model a person has reviewed and published. When one exists, the agent starts from it; when none exists, nothing is missing. LAS never needs a pack to work.
 
-Related: [any skill](any-skill.md) · [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [overview](../DESIGN.md)
+From v0.2 a skill model is a **scaffold** plus **fallback content** (§3.1). The live coach writes each session's screens as it goes; the pre-written lessons, items, headlines and why explanations are used only when no coach is present ([live coach](live-coach.md)).
+
+Related: [live coach](live-coach.md) · [any skill](any-skill.md) · [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [overview](../DESIGN.md)
 
 The examples below use bouldering, but the same schema covers every skill.
 
@@ -18,10 +20,10 @@ A generated model is stored in the database as JSON. A curated pack is the same 
 packs/bouldering/
 ├── model.yaml         name, engines, why[], pictures[], probes[], placement[], ladder[], access, injuries, safety, focus, key metrics
 ├── nodes/             skills and concepts with prerequisites (the skill graph)
-├── lessons/           teaching-card specs (25 words per card or fewer)
-├── drills/            drills of the standard types, with how difficulty rises
+├── lessons/           teaching-card specs (25 words per card or fewer); fallback content
+├── drills/            drills of the standard types, with how difficulty rises (prompts and practice items are fallback content)
 ├── specs/             engine specs: metric, rubric, test and audio reference specs
-├── mistakes/          detectors (written in the spec language) + explanation + fix drill
+├── mistakes/          detectors (written in the spec language) + fix drill; headline and explanation are fallback content
 ├── proofs/            proof standard for each ladder step, bound to an engine spec
 ├── warmups/           physical skills only
 ├── media/             reference clips, poses, audio (each file carries its license)
@@ -93,6 +95,19 @@ success: "share(hip_wall_ok) >= 0.7"
 difficulty: { param: wall_angle, levels: [vertical, slight-overhang, overhang] }
 ```
 
+### 3.1 Scaffold and fallback content
+
+| Part | Fields | Required | Used by |
+|---|---|---|---|
+| **Scaffold** | `skill`, `name`, `noun`, `physical`, `engines`, `fallbacks`; `why`, `pictures`, `probes`, `placement`; `ladder` with each step's proof; `nodes` (id, name, requires, drills, mistakes, bkt, review card, focus); `drills` (id, type, title, nodes, spec, capture, needs, success, difficulty, minutes, intensity, focus, fixes); `specs` (metric, rubric, test, audio reference, and items specs that a proof or probe uses); `mistakes` (id, name, nodes, engine, detector, severity, fix drill, resolved_after); `warmups`, `safety`, `access`, `injuries`, `focus`, `hard_focus`, `key_metrics`, `media` | Yes, as today | Onboarding, the planner, engines, proofs, safety, and the live coach (it builds on them and can't change them) |
+| **Fallback content** | `lessons` and each node's `lesson`; drill `prompt` and `items`; items specs used only by practice drills; mistake `headline`; mistake `explain` (the why) | Optional in the schema; checked whenever present | The studio, only when no coach is present (or a present coach misses the screen deadline) |
+
+- **The agent still writes all of it.** The skill tells the agent to write full fallback content at model time, and the agent evals require it. A session must never block on a model.
+- **The validator still checks both.** Fallback content gets every check in §4 whenever it is present. When some is missing, `validate_skill_model` warns and names the screens the studio will skip when the coach is away (for example "node body.hips-in has no fallback lesson: the Learn block is skipped when no coach is present").
+- **Missing fallback never means invented text.** With no coach and no fallback, the studio skips to the next screen the scaffold can build, uses the mistake's `name` as a feedback headline, and leaves out the Why button.
+- **Live content is checked the same way.** `coach_show` runs the same budget, type, reference and safety checks on each live screen ([live coach §7](live-coach.md#7-screen-catalogue)).
+- **Curated packs need full fallback content**, so they work well with no coach.
+
 ## 4. Checks every skill model must pass
 
 `validate_skill_model` (the MCP tool) and `las model validate` (the CLI) run the same checks on generated models and curated packs:
@@ -101,8 +116,8 @@ difficulty: { param: wall_angle, levels: [vertical, slight-overhang, overhang] }
 - every ladder step has a proof bound to an engine spec, and every spec parses and uses known body points, functions and runners;
 - every proof can be measured by an engine available on this machine, or is explicitly labeled self-report;
 - the skill graph has no cycles, and every skill can be reached from step 0;
-- every skill has at least one lesson, one drill and one review card;
-- every mistake has a detector, a fix drill and an explanation visual;
+- every skill has at least one drill and one review card, and a lesson in the fallback content (missing lesson: a warning, §3.1);
+- every mistake has a detector and a fix drill, and a headline and an explanation visual in the fallback content (missing: a warning, §3.1);
 - drills use only the standard types;
 - physical skills have a warm-up, injury questions, beginner intensity caps and stop criteria, and supervised-only activities are flagged ([Any skill §7](any-skill.md#7-physical-safety-for-skills-nobody-has-reviewed));
 - every media file declares a license from the allowed list (CC0, CC-BY, or the learner's own file kept on their device).
