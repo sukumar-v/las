@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { contrast } from "@las/schema";
 import { connect } from "./helpers.js";
 import { minimalModel } from "../../schema/test/fixtures/minimal-model.js";
 
@@ -58,9 +59,18 @@ describe("MCP server", () => {
     expect(d.isError).toBe(false);
     expect(d.data.theme.modes).toEqual(["dark"]);
     expect(d.data.notes.join(" ")).toMatch(/neon/);
+    expect(d.data.theme.dark).toBeUndefined();
     const v = await s.call("validate_theme", { theme: d.data.theme });
     expect(v.isError).toBe(false);
     const themeId = v.data.themeId;
+    // a dark-only theme is stored with its own colors; the base theme's dark overrides must not be merged back in
+    expect(v.data.theme.dark).toBeUndefined();
+    expect(v.data.theme.tokens.color.accent).toBe(d.data.theme.tokens.color.accent);
+    expect(v.data.report.dark["ink/bg"]).toBeCloseTo(contrast(d.data.theme.tokens.color.ink, d.data.theme.tokens.color.bg), 2);
+    const partial = await s.call("validate_theme", { theme: { name: "Night", modes: ["dark"], tokens: { color: { bg: "#0A0C0A", surface: "#111511", ink: "#D7FFD9", muted: "#8FBF95", line: "#2D4A31", accent: "#5CFF7F", on_accent: "#04130A", focus: "#5CFF7F", good: "#5CFF7F", warn: "#FFD75C", bad: "#FF6B6B", data: ["#5CFF7F", "#FFD75C", "#5CD9FF", "#FF8BD1", "#2DD4BF"] } } } });
+    expect(partial.isError, partial.text).toBe(false);
+    expect(partial.data.theme.dark).toBeUndefined();
+    expect(partial.data.theme.tokens.color.accent).toBe("#5CFF7F");
     const bad = await s.call("validate_theme", { theme: { name: "Faint", modes: ["light"], tokens: { color: { muted: "#CCCCCC" } } } });
     expect(bad.isError).toBe(true);
     expect(bad.data.fixes.length).toBeGreaterThan(0);

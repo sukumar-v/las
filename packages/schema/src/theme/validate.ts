@@ -57,8 +57,16 @@ export function mergeTheme(partial: unknown, base: Theme = BASE_THEME): Theme {
   const merged = merge(structuredClone(base), partial ?? {});
   if (merged.id === "base" && (partial as any)?.id !== "base") delete merged.id;
   // A single-mode theme carries its own colors in `tokens`; the base theme's dark block must not leak into it.
+  // validate_theme merges every submitted theme over the base, so without this a dark-only draft (which drops `dark`)
+  // would be stored with the base theme's dark accent, and the UI would show that on dark-mode systems.
+  // A single-mode theme that brings a `dark` block of its own keeps exactly that: its gaps fall back to `tokens`.
   const modes: string[] | undefined = (partial as any)?.modes;
-  if (modes && modes.length === 1 && !(partial as any)?.dark) delete merged.dark;
+  const ownDark = (partial as any)?.dark;
+  const suppliesDark = !!ownDark && typeof ownDark === "object" && Object.keys(ownDark).length > 0;
+  if (modes && modes.length === 1) {
+    if (suppliesDark) merged.dark = structuredClone(ownDark);
+    else delete merged.dark;
+  }
   return merged;
 }
 
