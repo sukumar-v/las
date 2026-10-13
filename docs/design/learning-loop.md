@@ -2,7 +2,7 @@
 
 How LAS teaches once onboarding is done. Covers the daily home screen, what happens in a session, how sessions are planned, teaching, drills, feedback, follow-ups, progress, and what happens when a milestone is reached.
 
-Related: [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [skill packs](skill-packs.md) · [overview](../DESIGN.md) · clickable: [`prototypes/app`](../../prototypes/app/index.html) (session 1, Today, Progress)
+Related: [any skill](any-skill.md) · [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [skill models](skill-packs.md) · [overview](../DESIGN.md) · clickable: [`prototypes/app`](../../prototypes/app/index.html) (session 1, Today, Progress)
 
 ```mermaid
 flowchart LR
@@ -49,7 +49,7 @@ A session's length comes from the plan (10–60 min). It's built from blocks wit
 
 | Block | Job | Share of time | Content |
 |---|---|---|---|
-| Warm-up | Physical skills only. Required when an injury is flagged | 10–15% | Pack-defined routine |
+| Warm-up | Physical skills only. Required when an injury is flagged | 10–15% | Routine from the skill model |
 | Recall | Bring back items due for review | 10–15% | Quiz cards, play from memory, name the move |
 | Learn | **One** new idea, shown visually | 15–20% | Teaching cards (§4) |
 | Practice | Guided repetitions with instant feedback | 35–45% | Drills (§5) |
@@ -170,7 +170,7 @@ Performance drills show live meters while the learner works: a pitch needle, bea
 ## 8. Progress
 
 - **Route map:** the ladder, with a mastery ring for each skill inside each step.
-- **Key metrics:** 2–3 per pack, each with a trend line. For example, guitar chord changes per minute; bouldering straight-arm ratio; Spanish pronunciation score; Python first-try pass rate.
+- **Key metrics:** 2–3 per skill, chosen by the agent in the skill model, each with a trend line. For example, guitar chord changes per minute; bouldering straight-arm ratio; Spanish pronunciation score; Python first-try pass rate.
 - **Before and after:** the first saved attempt beside the latest attempt at the same drill. Video and audio are shown side by side.
 - **Time:** actual minutes against the plan, and the practice mix actual vs planned.
 - **History:** sessions, attempts and feedback.
@@ -197,7 +197,7 @@ There are no leaderboards. The only comparison is with your own past.
 
 ## 11. Example first sessions
 
-| Pack | Plan | Learn | Practice | Perform → feedback |
+| Skill (examples) | Plan | Learn | Practice | Perform → feedback |
 |---|---|---|---|---|
 | Bouldering, V1 → V2, 45 min at the gym, sore fingers | 8-min warm-up with open-hand grips (because of the injury) | `predict` and `sim`: hip distance from the wall vs arm load | Silent-feet traverse ×3; hips-in on three V0s | Film one V2 attempt → "Hips drift out on moves 3–5" with a hip-line overlay → fix drill: hips-in on that problem → second attempt |
 | Guitar, full song → strumming, 30 min | Recall: play G, C and D from memory (audio check) | `demo`: D DU UDU pattern with animated arrows and play-along | Tap the pattern, then strum muted at 60 bpm, adding 4 bpm every 3 clean bars | Record 4 bars → "Upstrums rush by about 60 ms" on a beat timeline → fix drill: upstrums only, with a click |

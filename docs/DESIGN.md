@@ -5,10 +5,12 @@ Status: draft · Prototype: [`prototypes/app/index.html`](../prototypes/app/inde
 | Doc | Covers |
 |---|---|
 | **This overview** | Principles, prior art, architecture, onboarding, run modes, open-source policy, build plan |
+| [Any skill](design/any-skill.md) | **Start here.** How LAS covers any skill with no per-skill code: engines, spec languages, any programming language, finding and choosing tools, generated skill models, safety, coverage targets |
+| [Theming](design/theming.md) | The learner picks the look (a design prompt, a description, a screenshot or a tokens file); the theme spec, accessibility and font-license checks, where themes apply |
 | [Learning loop](design/learning-loop.md) | Today screen, what happens in a session, session planner, teaching cards, drills, feedback, check-ins, re-planning, progress, proof checks |
 | [Evaluation](design/evaluation.md) | Evaluator contract, analysis pipeline, the video coach, mistake library, proof standards, confidence |
 | [MCP and data](design/mcp-and-data.md) | Tool contracts, resources, prompts, agent rules, events, data model, sync, security |
-| [Skill packs](design/skill-packs.md) | Pack layout, ladder and skill graph, lessons, drills, validation, packs drafted for new skills, content licensing |
+| [Skill models](design/skill-packs.md) | The skill model schema (ladder, skill graph, lessons, drills, mistakes, proofs), validation, generated vs curated, content licensing |
 
 LAS is an open-source MCP server and agent skill that coach someone through learning any skill, such as guitar, bouldering, Spanish or Python. It does four things:
 
@@ -17,7 +19,7 @@ LAS is an open-source MCP server and agent skill that coach someone through lear
 - checks real practice (recordings, video, code) against a clear standard of proof;
 - follows up until the goal is reached.
 
-It follows the same pattern as [REA](https://github.com/morluto/rea): one installable server plus one skill. The agent does the reasoning, and proven open-source tools supply the measurements.
+It follows the same pattern as [REA](https://github.com/morluto/rea): one installable server plus one skill that give the agent extra capabilities. **LAS has no code for any particular skill.** The agent works out each skill at runtime: which kinds of evidence it needs, which tools are available, and what the plan, checks and rubrics should be. General-purpose open-source engines supply the measurements ([Any skill](design/any-skill.md)).
 
 ---
 
@@ -26,10 +28,11 @@ It follows the same pattern as [REA](https://github.com/morluto/rea): one instal
 1. **Show, don't tell.** Explanations are diagrams, simulations, animations or video. The coach never writes an essay; a few sentences between visuals is the most it writes.
 2. **Every milestone has a proof.** A goal is done when the evidence passes, such as a recording, a clip or passing tests, not when the learner says so.
 3. **Personal by construction.** Answer options, suggestions and the plan are computed from the learner's own answers (see §5.3). Nothing after the first question is the same for everyone.
-4. **One flow for every skill.** Every skill pack fills the same slots, so guitar, Spanish and a skill we've never seen go through the same screens with the same controls.
+4. **General first.** No skill gets its own code. The agent writes a skill model for whatever the learner picks, using engines that don't know which skill they're measuring. Curated packs are optional improvements, never a requirement. Every skill goes through the same screens with the same controls.
 5. **Measure, then coach.** Evaluators produce numbers (joint angles, timing in ms, test results). The language model explains those numbers; it doesn't judge raw video or audio itself.
 6. **Open source only.** Every dependency is open source and free for anyone to use, including commercially (§11).
 7. **Local first.** Runs fully on the learner's own machine. Hosted mode is optional and exists for mobile.
+8. **The learner picks the look.** LAS has no fixed visual design language. The learner brings a style (a design prompt from a gallery, a description, a screenshot, a tokens file); the agent turns it into a theme; and every screen, widget, figure and overlay follows it. Accessibility checks always apply ([Theming](design/theming.md)).
 
 ## 2. Prior art and what's new
 
@@ -41,7 +44,7 @@ It follows the same pattern as [REA](https://github.com/morluto/rea): one instal
 | Climbing coach apps (Climbah, BetterClimber) | Video coaching for one sport | One skill each; not an agent tool |
 | Roadmap apps (Learni, SkillMap) | Roadmap for any topic | Don't check real practice |
 
-**What's new in LAS:** one REA-style package that combines a curriculum engine, interactive visuals, and pluggable checkers for code, audio, speech and movement. We should reuse ideas from tutor-mcp and learning-tool-mcp (both MIT) rather than rebuild them.
+**What's new in LAS:** one REA-style package that works for any skill. It combines a curriculum engine, interactive visuals, and general-purpose engines for movement, audio, speech, code, images, answers, sensors and games, all configured by the agent at runtime. We should reuse ideas from tutor-mcp and learning-tool-mcp (both MIT) rather than rebuild them.
 
 ## 3. Architecture
 
@@ -52,8 +55,9 @@ flowchart LR
   end
   SK <--> MCP[LAS MCP server<br/>TypeScript]
   MCP --> ST[(Store<br/>SQLite)]
-  MCP --> PK[Skill packs<br/>data, not code]
-  MCP --> EV[Evaluators<br/>pose · pitch · speech · code]
+  MCP --> PK[Skill models<br/>written by the agent · curated packs optional]
+  MCP --> EV[Engines<br/>movement · audio · speech · code · visual<br/>knowledge · interaction · sensor · game]
+  SK -. if present .-> EXT[Other MCP servers, skills, tools<br/>anatomy · notation · chess engine · …]
   MCP --> VZ[Visual layer<br/>anatomy · diagrams · sims]
   MCP <--> STU[Studio PWA<br/>camera · mic · editor · widgets]
   STU -. hosted mode .-> SYNC[(Self-hosted sync)]
@@ -64,23 +68,26 @@ flowchart LR
 las-agents (npm)  →  npx las-agents setup
 ├── skill/        learn-any-skill: coaching loop, "show, don't tell" rules, when to call each tool
 ├── server/       MCP server (stdio locally, streamable HTTP when hosted)
-├── studio/       PWA: onboarding, camera/mic capture, code editor, widgets
-├── evaluators/   one adapter per way of checking practice (§8)
-├── packs/        guitar/, bouldering/, spanish/, python/, … (§6)
+├── studio/       PWA: onboarding, camera/mic capture, code editor, widgets; everything drawn from the active theme
+├── engines/      general-purpose measurement, configured by specs (§8)
+├── runners/      code runners: browser, local toolchain, container
+├── packs/        optional curated skill models; never required (§6)
 └── store/        SQLite: profile, milestones, mastery, review queue, sessions
 ```
 
-**Interactivity.** Tools return [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) widgets where the client shows them inline in the chat. Everything else (camera capture, the code editor, long sessions) runs in the studio PWA. Both use the same components, so a screen looks the same in either place.
+**Interactivity.** Tools return [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) widgets where the client shows them inline in the chat. Everything else (camera capture, the code editor, long sessions) runs in the studio PWA. Both use the same components and the learner's theme, so a screen looks the same in either place.
 
 ## 4. MCP tool surface
 
 | Group | Tools |
 |---|---|
+| `skill` | `get_capabilities`, `draft_skill_model`, `validate_skill_model`, `get_skill_model` |
+| `theme` | `draft_theme`, `validate_theme`, `preview_theme`, `set_theme`, `get_theme` |
 | `onboard` | `start_intake`, `record_answer`, `place_learner`, `suggest_milestones`, `check_feasibility`, `set_milestone` |
 | `plan` | `get_today`, `next_session`, `reschedule`, `replan` |
-| `teach` | `render_lesson`, `render_mechanism` (anatomy), `render_diagram`, `explain_mistake` |
+| `teach` | `render_lesson`, `render_sim`, `render_mechanism` (anatomy), `render_diagram`, `explain_mistake` |
 | `practice` | `start_drill`, `review_cards` (FSRS) |
-| `evaluate` | `request_capture`, `get_analysis`, `run_proof_check` |
+| `evaluate` | `request_capture`, `get_analysis`, `run_code_tests`, `compare_to_reference`, `run_proof_check` |
 | `track` | `get_progress`, `get_session_summary`, `log_external`, `report_pain`, `revisit_why`, `export_data`, `delete_data` |
 
 Lesson tools take **structured specs** and reject text over budget, so the tool shapes leave no room for an essay. Inputs, outputs, agent rules and events: [MCP and data](design/mcp-and-data.md).
@@ -93,10 +100,11 @@ Onboarding produces three things: **why** they're learning, **what they want to 
 
 | # | Section | Screen | Answer type |
 |---|---|---|---|
+| 0 | Look | "Pick a look": paste a design prompt, describe it, add a screenshot, or skip | optional; preview of their own screens in the theme |
 | 1 | Skill | "What do you want to learn?" | single (tiles) or free text |
 | 2 | Why | "What's pulling you toward {skill}?" | multi, up to 2 |
 | 3 | Picture it | "Six months from now, what are you doing?" | single, re-ranked by why · or free text |
-| 4 | Level | 1–3 skill-check screens from the pack | standard types (§5.2) |
+| 4 | Level | 1–3 skill-check screens from the skill model | standard types (§5.2) |
 | 4 | Level | "Here's where you start" | placement, with "too easy" / "too hard" buttons |
 | 5 | Time | Hours per week and deadline | slider, single |
 | 5 | Time | "Anything we should plan around?" | multi: equipment and injuries |
@@ -112,17 +120,18 @@ Every screen has the same frame:
 - one question and one answer component;
 - one sticky main button, with a secondary action under it in the same place every time.
 
-Answer components are standardized. A pack chooses which ones to use but can't invent new ones:
+Answer components are standardized. A skill model chooses which ones to use but can't invent new ones:
 
 | Type | Used for | Behavior |
 |---|---|---|
 | `single` | Choosing one option | Moves on automatically after a tap |
 | `multi` | Selecting several | Button reads "Skip" / "None of these" until something is picked |
-| `holds` | Grades and levels | Like `single`, drawn as climbing holds |
-| `chords` | Visual multi-select | Diagrams instead of words |
+| `scale` | Grades, belts, levels | Like `single`, drawn in the skill's own terms (climbing holds, belt colors, CEFR levels) |
+| `visual-multi` | Selecting from pictures | Diagrams instead of words (chord shapes, poses, characters) |
 | `quiz` | Knowledge check | Gets harder each question and stops after 2 wrong answers |
-| `beat` | Short practical test | Measures timing (ms off the beat) |
-| `clip` | Video evidence | Optional; analyzed on the device |
+| `tap` | Short timing test | Measures timing (ms off the beat) |
+| `record` | Short audio or video check | Optional; analyzed by the right engine on the device |
+| `code` | Short coding check | Runs with the best available code runner |
 
 The first skill-check screen always offers **"I'm completely new to this"**, which skips straight to placement.
 
@@ -130,17 +139,17 @@ The first skill-check screen always offers **"I'm completely new to this"**, whi
 
 | Output | Inputs | Rule |
 |---|---|---|
-| Why options | skill | Each pack has its own wording (bouldering: "Push my limits"; Python: "Save time at work") |
+| Why options | skill | Each skill model has its own wording (bouldering: "Push my limits"; Python: "Save time at work") |
 | Six-month picture options | why | Each option is tagged with the reasons it fits; matches go first with a "Fits your why" badge |
-| Starting point | answers to the skill checks, plus "too easy" / "too hard" | Each pack's `place()` maps the evidence to a ladder step; the learner can move it one step at a time |
-| Equipment options | skill + picture | Pack basics plus what the picture needs (outdoor climbing adds *crash pad*, *climbing partner*) |
+| Starting point | answers to the skill checks, plus "too easy" / "too hard" | The skill model's placement rules map the evidence to a ladder step; the learner can move it one step at a time |
+| Equipment options | skill + picture | The skill's basics plus what the picture needs (outdoor climbing adds *crash pad*, *climbing partner*) |
 | Suggested milestones | starting point, time, deadline, picture, why | **Quick win** = next step. **Stretch** = furthest step reachable in about 6 weeks. **Toward your picture** = the picture's own milestone. A deadline, or a reason like a trip, event or exam, puts the quick win first; otherwise the picture's milestone leads |
 | Feasibility | estimated hours per step, time per week, deadline | Realistic / fits your deadline / ambitious / long road, with a closer "stepping stone" milestone offered when the goal is too far |
 | Practice mix | picture, starting point, injuries | Starts from the picture's mix; beginners get +10 to fundamentals; an injury lowers the hard-training categories and adds recovery and prehab |
-| Injury rules on the plan | injuries | Each pack maps an injury to a rule (fingers → open-hand grips first, no hangboard for 8 weeks) |
+| Injury rules on the plan | injuries | The skill model maps an injury to a rule (fingers → open-hand grips first, no hangboard for 8 weeks) |
 | Wording of each question | earlier answers | Questions quote what the learner already said ("Your first step toward playing at a friend's wedding") |
 
-In the prototype these are rules over pack data. In the product the agent can also **generate** options for skills that have no pack, using the same schemas, so a generated option still goes through the same placement and feasibility logic.
+The rules themselves are general code in LAS. The data they work on (options, tags, ladder, placement rules) comes from the skill model the agent writes. The prototype hard-codes four example skills to show the UX; the product generates this data for any skill.
 
 ### 5.4 Learner profile (stored)
 
@@ -163,25 +172,28 @@ In the prototype these are rules over pack data. In the product the agent can al
 
 **When a milestone is reached:** `revisit_why` asks the why and six-month questions again, because goals change.
 
-## 6. Skill packs
+## 6. Skill models
 
-A pack is data. Each one fills the same slots. The full layout (skill graph, lessons, drills, mistakes, proofs, validation, packs drafted for new skills) is in [Skill packs](design/skill-packs.md).
+A skill model is data, and the agent writes it for whatever skill the learner picks ([Any skill §6](design/any-skill.md#6-skill-models)). Curated packs are skill models a person has reviewed; they improve quality but are never required. The full schema is in [Skill models](design/skill-packs.md). In short:
 
 ```ts
-interface SkillPack {
-  name: string; noun: string; evaluator: Evaluator;
+interface SkillModel {
+  source: "generated" | "curated"; engines: EngineId[];       // which kinds of evidence this skill needs
+  name: string; noun: string;
   why: { id: string; label: string }[];                       // reasons, worded for this skill
   pictures: { id: string; label: string; why: string[];       // tagged with the reasons they fit
               ladderStep: number; milestone: string; proof: string;
               focus: Record<string, number>; access?: string[] }[];
   probes: Probe[];                                            // standard answer types only (§5.2)
-  place(evidence): number;                                    // evidence → ladder step
-  ladder: { label: string; hours: number; proof: string }[];  // estimated hours to reach each step
+  placement: PlacementRule[];                                 // evidence → ladder step, as data
+  ladder: { label: string; hours: [number, number];           // hour range to reach each step
+            proof: ProofSpec }[];                             // bound to an engine spec
   access: string[]; injuries?: Record<string, string>;        // injury → training rule
+  safety?: SafetyFields;                                      // required for physical skills
 }
 ```
 
-The estimated hours per step are rough placeholders in the prototype. Before launch they need real sources (published coaching guides, CEFR hour estimates, our own data once people use it).
+Hours per step are ranges. The agent cites sources when it can search the web, and LAS corrects them from the learner's real pace.
 
 ## 7. Teaching visuals
 
@@ -194,16 +206,20 @@ The estimated hours per step are rough placeholders in the prototype. Before lau
 | Music | abcjs or VexFlow (notation), OpenSheetMusicDisplay (MusicXML), Tone.js (playback) |
 | The body and movement | Pose-overlay replays of the learner's own clips (anatomy doesn't draw people) |
 
-## 8. Evaluators
+## 8. Engines
 
-| Modality | Measures | Open-source stack |
+Engines are general-purpose; the agent configures them with specs (metric, rubric, test and audio reference specs). Full table and examples: [Any skill §2–4](design/any-skill.md#2-engines).
+
+| Engine | Measures | Open-source stack |
 |---|---|---|
-| Movement | Joint angles, hip-to-wall distance, centre of mass over feet, smoothness | MediaPipe Pose and Hand Landmarker running on the device, in the browser; MoveNet as a fallback |
-| Audio performance | Pitch accuracy, onset timing, tempo drift | basic-pitch, torchcrepe or CREPE, librosa |
-| Speech | Transcript, words per minute, pronunciation score | whisper.cpp or faster-whisper; Kaldi's pronunciation-scoring recipe; Montreal Forced Aligner |
-| Code | Hidden tests, runtime errors | Pyodide in the browser; CodeMirror 6 editor |
-| Knowledge | Quiz accuracy, recall over time | Built in, plus ts-fsrs |
-| Crafts (drawing, pottery) | Coach review of uploaded work | The agent's vision model, guided by a rubric from the pack |
+| Movement | Joint angles, speeds, repetitions, range of motion, symmetry, balance, similarity to a reference, timing on the beat | MediaPipe Pose, Hand and Face Landmarker plus Object Detector on the device; MoveNet as a fallback |
+| Audio | Notes, pitch error, timing, tempo, chords, compared with a score or recording | basic-pitch, torchcrepe or CREPE, librosa |
+| Speech | Transcript, intelligibility, pace, pauses, pitch contour, per-sound scores where a model exists | whisper.cpp or faster-whisper; Kaldi pronunciation scoring; forced alignment |
+| Code | Tests, errors, lint, in any language | Browser (Pyodide, SQLite WebAssembly, JavaScript), local toolchains, containers (Podman) |
+| Visual | Rubric scores backed by measurements | The agent's vision model with a rubric spec; image measurements in the studio |
+| Knowledge | Accuracy, recall over time | Built in, plus ts-fsrs |
+| Interaction, sensor | Typing speed and accuracy; cadence, swing tempo, steadiness | Built into the studio |
+| Game | Agreement with the engine's best move, blunders | An external engine the learner installs, run as a separate process |
 
 Video stays on the device. Only body-position data and a few annotated key frames go to the agent.
 
@@ -242,13 +258,14 @@ Sessions, the planner, feedback, check-ins and re-planning: [Learning loop](desi
 |---|---|
 | Allowed | MIT, BSD-2/3, ISC, Apache-2.0, public domain, SIL OFL (fonts), CC-BY-4.0 (data, with attribution) |
 | Allowed with care | MPL-2.0: use unmodified, or publish changes to those files |
-| Not allowed | GPL/AGPL code linked into LAS, non-commercial terms (CC-NC), source-available terms (FSL, BSL), custom model licenses that aren't open source, proprietary hosted services as required dependencies |
+| Optional external only | GPL tools the learner installs separately, which LAS calls as a separate process over a standard protocol (UCI for chess engines, GTP for go engines, a command line). Never bundled, linked or required; a fallback always exists |
+| Not allowed | GPL/AGPL code bundled or linked into LAS, non-commercial terms (CC-NC), source-available terms (FSL, BSL), custom model licenses that aren't open source, proprietary hosted services or runtimes as required dependencies |
 
 CI will run a license check on every dependency, and adding a new license type needs a design-doc update.
 
 ### 11.1 Chosen components
 
-Verified from each project's LICENSE file or model card on 2026-10-12. ⚠ means it still needs a check before we ship it.
+Verified from each project's LICENSE file or model card on 2026-10-12 and 2026-10-13. ⚠ means it still needs a check before we ship it (usually because the model page couldn't be reached).
 
 | Area | Component | License |
 |---|---|---|
@@ -258,19 +275,44 @@ Verified from each project's LICENSE file or model card on 2026-10-12. ⚠ means
 | | D3 | ISC |
 | | abcjs, VexFlow, Tone.js | MIT |
 | | OpenSheetMusicDisplay | BSD-3-Clause |
-| Movement | MediaPipe code, plus Pose and Hand Landmarker models | Apache-2.0 (code and model cards) |
+| Movement | MediaPipe code, plus Pose, Hand and Face Landmarker models | Apache-2.0 (code and model cards) |
+| | MediaPipe Object Detector (EfficientDet-Lite) | Code Apache-2.0; weights ⚠ no model card states a license |
+| | MediaPipe Gesture Recognizer | Hand model Apache-2.0; gesture classifier ⚠ card has no license field |
 | | MoveNet | Apache-2.0 (code and model card) |
+| | OpenCV.js (4.5.0 and later) | Apache-2.0 |
 | Audio | basic-pitch | Apache-2.0, model included |
 | | CREPE, torchcrepe | MIT |
-| | librosa | ISC |
+| | librosa (including beat tracking) | ISC |
+| | Pitchy (pitch, in the browser) | 0BSD-style |
+| | Meyda (features and onsets, in the browser) | MIT |
+| | BeatNet (code and weights) | CC-BY-4.0. Its pip package pulls in madmom, whose model files are non-commercial: don't install or load them |
 | Speech | Whisper (code and weights), whisper.cpp, faster-whisper | MIT |
 | | Kaldi, including the pronunciation-scoring recipe | Apache-2.0 |
 | | speechocean762 data | "free for commercial use" ⚠ formal license |
 | | Montreal Forced Aligner | MIT; models CC-BY-4.0 ⚠ check each model |
 | | Vosk | Apache-2.0 ⚠ only Apache-licensed models |
+| | gruut, epitran (text to reference phonemes) | MIT |
+| | wav2vec2 phoneme models (lv-60 and xlsr-53 espeak) | ⚠ reported Apache-2.0, model page not reachable |
+| | Kokoro-82M (text to speech) | Code and weights Apache-2.0. Its default English phonemizer is GPL: use gruut instead |
 | Code | Pyodide | MPL-2.0 |
+| | sql.js | MIT |
+| | SQLite WebAssembly build | Apache-2.0 wrapper; SQLite core public domain |
+| | ruby.wasm | MIT (CRuby BSD-2-Clause or Ruby license) |
+| | php-wasm | Apache-2.0 |
+| | Wasmtime | Apache-2.0 with LLVM exception |
+| | Emscripten | MIT or NCSA |
+| | TinyGo | BSD-3-Clause |
+| | Podman, Docker Engine (moby) | Apache-2.0 |
 | | CodeMirror 6, Monaco | MIT |
+| Visual | Tesseract.js plus tessdata models (reading handwriting and text) | Apache-2.0 |
+| | ONNX Runtime Web | MIT |
+| | Transformers.js | Apache-2.0 (each model checked separately) |
+| | Local vision models for text-only agents: moondream2, SmolVLM/SmolVLM2, Florence-2, Qwen2.5-VL-7B | ⚠ reported Apache-2.0 or MIT, model pages not reachable |
+| Game | chess.js | BSD-2-Clause |
+| | cm-chessboard, react-chessboard (board UI) | MIT |
+| | KataGo (go engine) | Code MIT; networks ⚠ reported MIT-style or CC0 |
 | Learner model | ts-fsrs, py-fsrs, pyBKT | MIT |
+| Dev tooling | @modelcontextprotocol/inspector | Apache-2.0 (some older code MIT) |
 | Pack tooling | yaml (YAML parser) | ISC |
 | Storage and sync | SQLite | Public domain |
 | | libSQL, PocketBase | MIT |
@@ -279,7 +321,7 @@ Verified from each project's LICENSE file or model card on 2026-10-12. ⚠ means
 | | web-push | MPL-2.0 |
 | | mkcert, Headscale | BSD-3-Clause |
 | | Tailscale client | BSD-3-Clause (some platform GUIs are not open source) |
-| Fonts | Gabarito, Atkinson Hyperlegible, DM Mono | SIL OFL 1.1 |
+| Fonts | Any family a theme picks, if its license is allowed (usually SIL OFL 1.1 or Apache-2.0), checked per family and cached locally. The prototype's demo fonts (Gabarito, Atkinson Hyperlegible, DM Mono) are OFL 1.1 | Per font |
 
 **A fully open agent stack.** LAS doesn't bundle a model; it runs inside whatever MCP client the learner uses. LAS must work end to end with:
 
@@ -303,6 +345,16 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 | Cloudflare Tunnel service, Tailscale coordination server | Proprietary hosted services | Headscale, frp (Apache-2.0 ⚠ license badge only) |
 | Llama, Gemma 1–3n, Qwen2.5-3B/72B, Mistral Large 2, Codestral | Custom or non-commercial model licenses | Qwen3, Mistral Apache-2.0 models, Gemma 4 ⚠ verify |
 | Commercial pronunciation APIs | Proprietary | Kaldi pronunciation-scoring recipe |
+| Docker Desktop | Proprietary; larger companies must pay | Podman, Docker Engine |
+| WebContainers (StackBlitz) | Proprietary runtime; paid for commercial production use | Wasmtime, Pyodide, ruby.wasm, php-wasm, sql.js, containers |
+| Essentia.js | AGPL-3.0 | Meyda, Pitchy |
+| aubio.js | No license; wraps GPL aubio | Pitchy, Meyda, librosa |
+| madmom model files | CC BY-NC-SA (non-commercial) | librosa beat tracking, BeatNet's own weights |
+| python-chess, chessground | GPL-3.0 | chess.js, cm-chessboard |
+| Stockfish, Lc0 | GPL-3.0 | Optional external only, over UCI. Fallback: tactics quizzes with chess.js |
+| espeak-ng, phonemizer, Piper TTS | GPL-3.0 | Optional external only. Use gruut or epitran for phonemes and Kokoro for speech |
+| Qwen2.5-VL-3B | Research license (⚠ reported) | Qwen2.5-VL-7B, SmolVLM, Florence-2, moondream2 |
+| Moondream 3 Preview | BSL 1.1 (source-available) | moondream2 |
 
 ## 12. Privacy and safety
 
@@ -315,15 +367,14 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 | Phase | Deliverable |
 |---|---|
 | 0 | Clickable prototype: onboarding, a full first session (learn, practice, perform, one-fix feedback, fix drill, second attempt, wrap-up), Today with check-ins, and Progress ✅ |
-| 1 | MCP server, store, onboarding tools as MCP Apps widgets, the skill, and two packs (Python for quizzes and code, bouldering for movement) |
-| 2 | Evaluators: movement (MediaPipe in the studio), code (Pyodide), audio (basic-pitch), speech (whisper.cpp + pronunciation scoring) |
-| 3 | Studio PWA with phone pairing; FSRS reviews; scheduled check-ins |
-| 4 | Hosted mode: remote MCP, self-hosted sync, Web Push |
-| 5 | Pack authoring kit, packs generated by the agent for any skill, community packs |
+| v0.1 | **Everything general, running locally:** MCP server, store, the skill with routing rules, `get_capabilities`, generating and validating skill models, onboarding, the learning loop, every engine in §8 with its spec language, code runners for any language, the studio PWA with phone pairing, learner-chosen themes for every surface, check-ins, `npx las-agents setup`, and agent evals across the coverage targets in [Any skill §8](design/any-skill.md#8-coverage-targets) |
+| v0.2 | Hosted mode: remote MCP, self-hosted sync, offline recording on phones, optional Web Push |
+| v0.3 | Curated packs: review workflow, promoting generated models, community contributions |
 
 ## 14. Open questions
 
 - Where do the estimated hours per step come from, and how do we correct them from real progress?
 - Which open MCP clients render MCP Apps today, and what's our fallback when they don't?
-- How should a generated pack for an unknown skill be checked before a learner relies on it?
+- How much should a learner trust a generated skill model before anyone has reviewed it, and what signals should flag one for review?
+- Where can learners legally get reference clips and scores (their own teacher's recording, public-domain scores, CC-licensed clips)?
 - Which skills need a human coach in the loop (anything with real injury risk beyond bouldering)?
