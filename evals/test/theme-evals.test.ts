@@ -166,9 +166,8 @@ describe("theme evals", () => {
     expect(v.data.theme.components).toEqual(base.stored.components);
   });
 
-  // validate_theme merges every theme over the base theme, so a dark-only theme comes back with the base theme's
-  // `dark` overrides, which the UI applies on dark-mode systems. Remove `.fails` once validate_theme keeps the
-  // submitted theme's colors for every mode.
+  // validate_theme merges every theme over the base theme. A dark-only theme carries its colors in `tokens`, so the
+  // base theme's `dark` overrides (which the UI applies on dark-mode systems) must not come back in the stored copy.
   it("a dark-only theme keeps its own colors when stored", () => {
     for (const d of THEME_DESCRIPTIONS) {
       const r = results.get(d.id)!;
