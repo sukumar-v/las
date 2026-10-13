@@ -13,7 +13,7 @@ import { Failed } from "./screens/common.js";
 export function screenFor(r: RouteMatch | undefined) {
   if (!r) return <Failed error="This page doesn't exist." />;
   const q = r.query;
-  const sk = q.get("sk");
+  const sk = q.get("sk") ?? r.params.sk ?? null;
   switch (r.name) {
     case "home":
       return <Home />;

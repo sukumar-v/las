@@ -25,8 +25,18 @@ export const ROUTES: [pattern: string, name: string][] = [
   ["/settings", "settings"],
   ["/pair/:token", "pair"],
   ["/snapshots", "snapshots"],
-  // links the server hands out (`/s/<id>`) open a session
-  ["/s/:id", "session"]
+  // links the server's tools hand out
+  ["/s/:id", "session"],
+  ["/app/today/:sk", "today"],
+  ["/app/progress/:sk", "progress"],
+  ["/app/review/:sk", "review"],
+  ["/app/onboarding/:intakeId", "onboard"],
+  ["/app/feedback/:attemptId", "replay"],
+  ["/app/lesson", "home"],
+  ["/app/sim", "home"],
+  ["/app/diagram", "home"],
+  ["/app/mechanism", "home"],
+  ["/app/code", "home"]
 ];
 
 function split(path: string): string[] {
