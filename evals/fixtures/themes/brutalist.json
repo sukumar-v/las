@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "name": "Concrete",
+  "source": {
+    "kind": "description",
+    "note": "Raw and brutalist: thick black borders, no rounded corners, hard offset shadows, mono headings, a stark white background and one red accent."
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "tokens": {
+    "color": {
+      "bg": "#F4F4F5",
+      "surface": "#FFFFFF",
+      "ink": "#18181B",
+      "muted": "#52525B",
+      "line": "#C4C4CC",
+      "accent": "#B91C1C",
+      "on_accent": "#FFFFFF",
+      "good": "#15803D",
+      "warn": "#B45309",
+      "bad": "#B91C1C",
+      "focus": "#B91C1C",
+      "data": [
+        "#1D4ED8",
+        "#B45309",
+        "#0F766E",
+        "#7E22CE",
+        "#52525B"
+      ]
+    },
+    "type": {
+      "display": {
+        "family": "Space Mono",
+        "fallback": "ui-monospace, monospace",
+        "weight": 700,
+        "license": "OFL-1.1",
+        "source": "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
+      },
+      "body": {
+        "family": "system-ui",
+        "fallback": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "license": "system"
+      },
+      "mono": {
+        "family": "ui-monospace",
+        "fallback": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "license": "system"
+      },
+      "scale": [
+        13,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "line_height": 1.45
+    },
+    "space": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "radius": {
+      "sm": 0,
+      "md": 0,
+      "lg": 0,
+      "pill": 0
+    },
+    "border": {
+      "width": 3,
+      "style": "solid"
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "6px 6px 0 #000000"
+    },
+    "density": "comfortable"
+  },
+  "dark": {
+    "color": {
+      "bg": "#111113",
+      "surface": "#1C1C20",
+      "ink": "#F4F4F5",
+      "muted": "#B4B4BC",
+      "line": "#3F3F46",
+      "accent": "#93B4FF",
+      "on_accent": "#0B1020",
+      "good": "#4ADE80",
+      "warn": "#FBBF24",
+      "bad": "#F87171",
+      "focus": "#93B4FF",
+      "data": [
+        "#93B4FF",
+        "#FDBA74",
+        "#2DD4BF",
+        "#F9A8D4",
+        "#A1A1AA"
+      ]
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 2px 8px rgba(0,0,0,0.5)"
+    }
+  },
+  "components": {
+    "card": "hard-shadow",
+    "button": "square",
+    "chip": "tag",
+    "tile": "hard-shadow",
+    "progress": "steps",
+    "route": "timeline",
+    "meter": "ticks"
+  },
+  "motion": {
+    "personality": "none",
+    "duration_ms": 0,
+    "easing": "ease-out"
+  },
+  "figures": {
+    "stroke": 2,
+    "corner": "round",
+    "fill": "flat",
+    "overlay": {
+      "good": "good",
+      "attention": "warn",
+      "reference": "data.0",
+      "neutral": "muted"
+    }
+  },
+  "texture": {
+    "kind": "none",
+    "strength": 0
+  },
+  "voice": "plain",
+  "id": "brutalist"
+}

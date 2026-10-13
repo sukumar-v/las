@@ -1,3 +1,4 @@
 { "name": "@las/evals", "version": "0.1.0", "private": true, "type": "module", "license": "MIT",
-  "scripts": { "test": "vitest run" },
-  "dependencies": { "@las/schema": "workspace:*" }, "devDependencies": { "vitest": "^4.1.0" } }
+  "scripts": { "test": "vitest run", "themes": "tsx src/make-theme-fixtures.ts" },
+  "dependencies": { "@las/schema": "workspace:*", "@las/server": "workspace:*", "@las/store": "workspace:*", "@las/ui": "workspace:*" },
+  "devDependencies": { "tsx": "^4.23.0", "vitest": "^4.1.0" } }

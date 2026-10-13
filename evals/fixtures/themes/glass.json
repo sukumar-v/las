@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "name": "Frost",
+  "source": {
+    "kind": "description",
+    "note": "Frosted glass panels over a soft blue gradient, airy and minimal, rounded corners, a calm ocean accent and a map-style route."
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "tokens": {
+    "color": {
+      "bg": "#F4F4F5",
+      "surface": "#FFFFFF",
+      "ink": "#18181B",
+      "muted": "#52525B",
+      "line": "#C4C4CC",
+      "accent": "#0E7490",
+      "on_accent": "#FFFFFF",
+      "good": "#15803D",
+      "warn": "#B45309",
+      "bad": "#B91C1C",
+      "focus": "#0E7490",
+      "data": [
+        "#7C3AED",
+        "#F59E0B",
+        "#10B981",
+        "#EC4899",
+        "#B45309"
+      ]
+    },
+    "type": {
+      "display": {
+        "family": "system-ui",
+        "fallback": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "weight": 700,
+        "license": "system"
+      },
+      "body": {
+        "family": "system-ui",
+        "fallback": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "license": "system"
+      },
+      "mono": {
+        "family": "ui-monospace",
+        "fallback": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "license": "system"
+      },
+      "scale": [
+        13,
+        16,
+        18,
+        21,
+        26,
+        32
+      ],
+      "line_height": 1.45
+    },
+    "space": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "radius": {
+      "sm": 8,
+      "md": 14,
+      "lg": 20,
+      "pill": 999
+    },
+    "border": {
+      "width": 1,
+      "style": "solid"
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "none"
+    },
+    "density": "roomy"
+  },
+  "dark": {
+    "color": {
+      "bg": "#111113",
+      "surface": "#1C1C20",
+      "ink": "#F4F4F5",
+      "muted": "#B4B4BC",
+      "line": "#3F3F46",
+      "accent": "#93B4FF",
+      "on_accent": "#0B1020",
+      "good": "#4ADE80",
+      "warn": "#FBBF24",
+      "bad": "#F87171",
+      "focus": "#93B4FF",
+      "data": [
+        "#93B4FF",
+        "#FDBA74",
+        "#2DD4BF",
+        "#F9A8D4",
+        "#A1A1AA"
+      ]
+    },
+    "shadow": {
+      "card": "none",
+      "raised": "0 2px 8px rgba(0,0,0,0.5)"
+    }
+  },
+  "components": {
+    "card": "glass",
+    "button": "rounded",
+    "chip": "outlined",
+    "tile": "flat",
+    "progress": "dots",
+    "route": "map",
+    "meter": "ring"
+  },
+  "motion": {
+    "personality": "subtle",
+    "duration_ms": 200,
+    "easing": "cubic-bezier(.34,1.56,.64,1)"
+  },
+  "figures": {
+    "stroke": 2,
+    "corner": "round",
+    "fill": "flat",
+    "overlay": {
+      "good": "good",
+      "attention": "warn",
+      "reference": "data.0",
+      "neutral": "muted"
+    }
+  },
+  "texture": {
+    "kind": "gradient",
+    "strength": 0.35
+  },
+  "voice": "plain",
+  "id": "glass"
+}

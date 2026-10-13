@@ -9,16 +9,19 @@ import { join, relative } from "node:path";
 
 const ROOTS = ["packages/ui/src", "packages/studio/src"];
 const ALLOW = new Set(["packages/ui/src/theme/base.ts", "packages/ui/src/theme/css.ts"]);
+const TOKEN = String.raw`var\(--las-`;
+const COLOR_OK = String.raw`(?:${TOKEN}|transparent|currentColor|inherit|none|0\b|color-mix\(|(?:repeating-)?(?:linear|radial)-gradient\(|url\(#)`;
 const CHECKS = [
   [/#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b/, "hex color"],
   [/\b(?:rgba?|hsla?|oklch|oklab)\s*\(/, "color function"],
-  [/(?:^|[^-\w])(?:color|background(?:-color)?|border-color|fill|stroke|outline-color)\s*:\s*(?!var\(--las-|transparent|currentColor|inherit|none|0\b)/m, "literal color role"],
-  [/font-family\s*:\s*(?!var\(--las-)/, "literal font-family"],
-  [/border-radius\s*:\s*(?!var\(--las-|0\b|50%|inherit)/, "literal border-radius"],
-  [/box-shadow\s*:\s*(?!var\(--las-|none)/, "literal box-shadow"],
+  [new RegExp(String.raw`(?:^|[^-\w])(?:color|background(?:-color)?|border-color|fill|stroke|outline-color)\s*:(?!\s*${COLOR_OK})`), "literal color role"],
+  [new RegExp(String.raw`font-family\s*:(?!\s*${TOKEN})`), "literal font-family"],
+  [new RegExp(String.raw`border-radius\s*:(?!\s*(?:${TOKEN}|0\b|50%|inherit))`), "literal border-radius"],
+  [new RegExp(String.raw`box-shadow\s*:(?!\s*(?:${TOKEN}|none|(?:inset\s+)?0 0 0 ${TOKEN}))`), "literal box-shadow"],
   [/font-size\s*:\s*\d/, "literal font-size"],
-  [/font-weight\s*:\s*(?!var\(--las-|inherit)/, "literal font-weight"],
-  [/transition(?:-duration)?\s*:\s*[^;]*\d+m?s/, "literal motion duration"]
+  [new RegExp(String.raw`font-weight\s*:(?!\s*(?:${TOKEN}|inherit))`), "literal font-weight"],
+  [/transition(?:-duration)?\s*:\s*[^;]*\d+m?s/, "literal motion duration"],
+  [/animation(?:-duration)?\s*:\s*[^;]*\d+m?s/, "literal motion duration"]
 ];
 
 function walk(dir, out = []) {
@@ -44,6 +47,7 @@ for (const root of ROOTS) {
     const lines = text.split("\n");
     lines.forEach((line, i) => {
       if (/las-style-allow/.test(line)) return;
+      if (/prefers-reduced-motion/.test(line)) return; // reduced motion always wins: zero durations are structural
       for (const [re, why] of CHECKS) {
         if (re.test(line)) {
           failures++;

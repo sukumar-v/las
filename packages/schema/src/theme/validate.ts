@@ -1,5 +1,5 @@
 import { BASE_THEME } from "./base.js";
-import { adjustForContrast, adjustForContrastAll, contrast, isDark, mix, seriesDistinguishability } from "./color.js";
+import { adjustForContrast, adjustForContrastAll, contrast, hexToRgb, hslToRgb, isDark, mix, rgbToHex, rgbToHsl, seriesDistinguishability } from "./color.js";
 import { COMPONENT_VARIANTS, FONT_LICENSES, ThemeSchema, type ColorTokens, type Theme, type ThemeMode } from "./schema.js";
 
 export interface ThemeIssue {
@@ -138,25 +138,47 @@ export function validateTheme(input: unknown, depth = 0): ThemeValidation {
       propose(colorPath(theme, mode, "focus"), to, `focus to ${to} reaches 3:1`);
     }
     const dist = seriesDistinguishability(c.data);
-    for (const d of dist) {
-      if (d.min < DATA_MIN_DISTANCE) {
-        const [i, j] = d.pair;
-        errors.push({ path: `${colorPath(theme, mode, "data")}.${j}`, check: "series", mode, message: `data series ${i} and ${j} look alike for ${d.kind === "normal" ? "everyone" : d.kind + " color vision"}` });
-        const basePalette = (mode === "dark" ? BASE_THEME.dark!.color.data! : BASE_THEME.tokens.color.data).filter((h) => !c.data.includes(h));
-        const replacement = basePalette.find((h) => seriesDistinguishability(c.data.map((x, k) => (k === j ? h : x))).every((e) => e.min >= DATA_MIN_DISTANCE)) ?? basePalette[0];
-        if (replacement) {
-          const newData = c.data.map((x, k) => (k === j ? replacement : x));
-          propose(colorPath(theme, mode, "data"), newData, `replace series ${j} with a distinguishable color`);
-          c.data = newData;
-        }
-        break;
+    const worst = dist.find((d) => d.min < DATA_MIN_DISTANCE);
+    if (worst) {
+      const [i, j] = worst.pair;
+      errors.push({ path: `${colorPath(theme, mode, "data")}.${j}`, check: "series", mode, message: `data series ${i} and ${j} look alike for ${worst.kind === "normal" ? "everyone" : worst.kind + " color vision"}` });
+      const basePalette = mode === "dark" ? BASE_THEME.dark!.color.data! : BASE_THEME.tokens.color.data;
+      const safe = (arr: string[]) => seriesDistinguishability(arr).every((e) => e.min >= DATA_MIN_DISTANCE);
+      const candidates: string[] = [...basePalette.filter((h) => !c.data.includes(h))];
+      const [h, sat, l] = rgbToHsl(hexToRgb(c.data[j]));
+      for (const dl of [0.25, -0.25, 0.4, -0.4]) {
+        const nl = Math.max(0.08, Math.min(0.92, l + dl));
+        candidates.push(rgbToHex(hslToRgb([h, sat, nl])));
       }
+      let newData: string[] | undefined;
+      for (const target of [j, i]) {
+        const found = candidates.find((cand) => safe(c.data.map((x, k) => (k === target ? cand : x))));
+        if (found) {
+          newData = c.data.map((x, k) => (k === target ? found : x));
+          break;
+        }
+      }
+      if (!newData) newData = basePalette.slice(0, Math.max(3, Math.min(c.data.length, basePalette.length)));
+      propose(colorPath(theme, mode, "data"), newData, `replace series ${j} with a distinguishable color`);
+      c.data = newData;
     }
-    for (const d of c.data) {
+    const dataFixed = [...c.data];
+    let dataChanged = false;
+    c.data.forEach((d, k) => {
       const r = Math.max(contrast(d, c.bg), contrast(d, c.surface));
       if (r < 2) {
-        errors.push({ path: colorPath(theme, mode, "data"), check: "series", mode, message: `data color ${d} is hard to see on ${mode} surfaces (${r.toFixed(2)}:1)` });
+        errors.push({ path: `${colorPath(theme, mode, "data")}.${k}`, check: "series", mode, message: `data color ${d} is hard to see on ${mode} surfaces (${r.toFixed(2)}:1)` });
+        dataFixed[k] = adjustForContrastAll(d, [c.bg, c.surface], 2.2);
+        dataChanged = true;
       }
+    });
+    if (dataChanged) {
+      const existing = fixes.find((f) => f.path === colorPath(theme, mode, "data"));
+      if (existing) {
+        existing.to = dataFixed;
+        setPath(fixed, existing.path, dataFixed);
+      } else propose(colorPath(theme, mode, "data"), dataFixed, "data colors need 2:1 against the surfaces");
+      c.data = dataFixed;
     }
     const darkBg = isDark(c.bg);
     if (mode === "dark" && !darkBg) errors.push({ path: colorPath(theme, mode, "bg"), check: "contrast", mode, message: "the dark mode background is light" });
