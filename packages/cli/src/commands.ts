@@ -3,6 +3,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { listClientSessions } from "./client-session.js";
+import { CLAUDE_TOOL_TIMEOUT_MIN_MS, inspectClaudeSettings } from "./configs.js";
+import { makeEnv, type Env } from "./env.js";
+import { isAlive } from "./procs.js";
 
 /** The thin subcommands. Heavy packages (@las/server, @las/schema) are imported only when a command needs them. */
 
@@ -38,13 +42,50 @@ export async function serve(argv: string[]): Promise<void> {
   await mod.main(argv);
 }
 
-export async function doctor(o: Out, json: boolean): Promise<number> {
+/** The live coach's setup state on this machine (live-coach §4, §12), for `las doctor`. */
+export interface CoachDoctor {
+  claudeOnPath: boolean;
+  /** ~/.claude/settings.json */
+  claudeSettings: string;
+  /** env.MCP_TOOL_TIMEOUT there, else in this process's environment (ms) */
+  mcpToolTimeoutMs?: number;
+  mcpToolTimeoutSource?: "settings" | "environment";
+  hookInstalled: boolean;
+  clientSessions: { client: string; pid?: number; sessionId?: string; at?: string; alive: boolean }[];
+}
+
+export function coachDoctor(env: Env): CoachDoctor {
+  const claudeSettings = join(env.home, ".claude", "settings.json");
+  const st = inspectClaudeSettings(existsSync(claudeSettings) ? readFileSync(claudeSettings, "utf8") : undefined);
+  const fromEnv = process.env.MCP_TOOL_TIMEOUT ? Number(process.env.MCP_TOOL_TIMEOUT) : undefined;
+  return {
+    claudeOnPath: env.hasCommand("claude"),
+    claudeSettings,
+    mcpToolTimeoutMs: st.toolTimeoutMs ?? (Number.isFinite(fromEnv) ? fromEnv : undefined),
+    mcpToolTimeoutSource: st.toolTimeoutMs !== undefined ? "settings" : Number.isFinite(fromEnv) ? "environment" : undefined,
+    hookInstalled: st.hookInstalled,
+    clientSessions: listClientSessions(env.lasHome).map(({ client, record }) => ({ client, pid: record.pid, sessionId: record.sessionId, at: record.at, alive: isAlive(record.pid) }))
+  };
+}
+
+export function printCoachDoctor(o: Out, c: CoachDoctor): void {
+  o.out("\nLive coach");
+  o.out(`  claude on PATH:    ${c.claudeOnPath ? "yes" : "no (the watcher can't resume Claude Code)"}`);
+  const t = c.mcpToolTimeoutMs;
+  o.out(`  MCP_TOOL_TIMEOUT:  ${t === undefined ? "not set (Claude Code's default, about 28 h)" : `${t} ms (${c.mcpToolTimeoutSource})${t < CLAUDE_TOOL_TIMEOUT_MIN_MS ? `: below ${CLAUDE_TOOL_TIMEOUT_MIN_MS}, run las-agents setup` : ""}`}`);
+  o.out(`  session hook:      ${c.hookInstalled ? "installed" : `not installed in ${c.claudeSettings} (run las-agents setup)`}`);
+  if (!c.clientSessions.length) o.out("  client sessions:   none recorded yet");
+  else for (const s of c.clientSessions.slice(0, 10)) o.out(`  client session:    ${s.client} pid ${s.pid ?? "?"} ${s.alive ? "running" : "exited"}, ${s.at ?? ""}`.trimEnd());
+}
+
+export async function doctor(o: Out, json: boolean, env: Env = makeEnv()): Promise<number> {
   const { LasContext } = await import("@las/server");
   const ctx = new LasContext();
   try {
     const caps = await ctx.capabilities(true);
+    const coach = coachDoctor(env);
     if (json) {
-      o.out(JSON.stringify(caps, null, 2));
+      o.out(JSON.stringify({ ...caps, coach }, null, 2));
       return 0;
     }
     o.out(`LAS ${caps.version} on ${caps.platform.os}/${caps.platform.arch}, node ${caps.platform.node}`);
@@ -57,6 +98,7 @@ export async function doctor(o: Out, json: boolean): Promise<number> {
     o.out("\nDevices");
     o.out(`  ${Object.entries(caps.devices).map(([k, v]) => `${k}: ${v ? "yes" : "no"}`).join("  ")}`);
     if (caps.external.length) o.out(`\nExternal tools\n${caps.external.map((x) => `  ${x.name} (${x.protocol}) ${x.path}`).join("\n")}`);
+    printCoachDoctor(o, coach);
     o.out(`\nStudio: ${caps.studioUrl}`);
     return 0;
   } finally {

@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { makeEnv, type Env } from "../src/env.js";
 import { packageEntry, type InstallInfo } from "../src/install.js";
-import { runSetup, type Io, type SetupOptions } from "../src/setup.js";
+import { hookCommand, runSetup, type Io, type SetupOptions } from "../src/setup.js";
 import { run } from "../src/index.js";
 
 let root: string;
@@ -271,5 +271,98 @@ describe("cli entry", () => {
     expect(b.lines.some((l) => l.startsWith("ERR error"))).toBe(true);
     put("broken.json", "{");
     expect(await run(["model", "validate", p("broken.json")], { io: fakeIo().io })).toBe(2);
+  });
+});
+
+describe("setup: Claude Code live-coach settings (~/.claude/settings.json)", () => {
+  const settings = () => JSON.parse(read(".claude/settings.json"));
+  const mine = (s: any) => s.hooks.SessionStart.flatMap((g: any) => g.hooks).filter((h: any) => /client-session/.test(h.command));
+
+  it("adds MCP_TOOL_TIMEOUT and the SessionStart hook without touching other settings or hooks, backs up, and is idempotent", async () => {
+    const original = {
+      model: "opus",
+      env: { FOO: "1" },
+      permissions: { allow: ["Read"] },
+      hooks: {
+        SessionStart: [{ matcher: "startup", hooks: [{ type: "command", command: "echo hi" }] }],
+        PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "lint.sh" }] }]
+      }
+    };
+    put(".claude/settings.json", JSON.stringify(original, null, 2) + "\n");
+    put(".claude.json", "{}");
+    const f = fakeIo();
+    const r = await runSetup(opts({ yes: true, noSkill: true, clients: ["claude-code"] }), env(), install(), f.io);
+    expect(r.exitCode).toBe(0);
+    expect(r.results[0].settings).toBe("applied");
+    const s = settings();
+    expect(s.model).toBe("opus");
+    expect(s.permissions).toEqual({ allow: ["Read"] });
+    expect(s.env).toEqual({ FOO: "1", MCP_TOOL_TIMEOUT: "1800000" });
+    expect(s.hooks.PreToolUse).toEqual(original.hooks.PreToolUse);
+    expect(s.hooks.SessionStart[0]).toEqual(original.hooks.SessionStart[0]);
+    expect(s.hooks.SessionStart[1]).toEqual({ hooks: [{ type: "command", command: "npx -y las-agents client-session --client claude-code --pid $PPID", timeout: 10 }] });
+    expect(backups(".claude", "settings.json.las-backup-")).toHaveLength(1);
+    expect(f.text()).toMatch(/\+\s+"MCP_TOOL_TIMEOUT": "1800000"/);
+    expect(f.text()).toMatch(/settings: applied/);
+
+    const again = await runSetup(opts({ yes: true, noSkill: true, clients: ["claude-code"] }), env(), install(), fakeIo().io);
+    expect(again.results[0].settings).toBe("unchanged");
+    expect(mine(settings())).toHaveLength(1);
+    expect(backups(".claude", "settings.json.las-backup-")).toHaveLength(1);
+  });
+
+  it("creates the file when missing; never lowers a larger timeout; raises a smaller one; updates a stale hook command in place", async () => {
+    await runSetup(opts({ yes: true, noSkill: true, noCli: true, clients: ["claude-code"] }), env(), install(), fakeIo().io);
+    expect(settings().env.MCP_TOOL_TIMEOUT).toBe("1800000");
+    expect(mine(settings())).toHaveLength(1);
+
+    put(".claude/settings.json", JSON.stringify({ env: { MCP_TOOL_TIMEOUT: "9000000" }, hooks: { SessionStart: [{ hooks: [{ type: "command", command: "old/las-agents.js client-session", timeout: 5 }] }] } }));
+    await runSetup(opts({ yes: true, noSkill: true, noCli: true, clients: ["claude-code"] }), env({ hasCommand: (n) => n === "las-agents" }), install(), fakeIo().io);
+    expect(settings().env.MCP_TOOL_TIMEOUT).toBe("9000000");
+    expect(mine(settings())).toEqual([{ type: "command", command: "las-agents client-session --client claude-code --pid $PPID", timeout: 5 }]);
+
+    put(".claude/settings.json", JSON.stringify({ env: { MCP_TOOL_TIMEOUT: "60000" } }));
+    await runSetup(opts({ yes: true, noSkill: true, noCli: true, clients: ["claude-code"] }), env(), install(), fakeIo().io);
+    expect(settings().env.MCP_TOOL_TIMEOUT).toBe("1800000");
+  });
+
+  it("dry run and a declined change write nothing", async () => {
+    put(".claude/settings.json", '{"model":"opus"}');
+    const dry = await runSetup(opts({ dryRun: true, noSkill: true, clients: ["claude-code"] }), env(), install(), fakeIo().io);
+    expect(dry.results[0].settings).toBe("dry-run");
+    const no = await runSetup(opts({ noSkill: true, clients: ["claude-code"] }), env(), install(), fakeIo(["y", "n"]).io);
+    expect(no.results[0].settings).toBe("declined");
+    expect(read(".claude/settings.json")).toBe('{"model":"opus"}');
+  });
+
+  it("leaves a settings file it can't parse alone and fails clearly", async () => {
+    put(".claude/settings.json", "{ // comment\n}");
+    const f = fakeIo();
+    const r = await runSetup(opts({ yes: true, noSkill: true, clients: ["claude-code"] }), env(), install(), f.io);
+    expect(r.results[0].settings).toBe("failed");
+    expect(r.exitCode).toBe(1);
+    expect(read(".claude/settings.json")).toBe("{ // comment\n}");
+  });
+
+  it("only Claude Code gets a settings file", async () => {
+    populate();
+    const r = await runSetup(opts({ yes: true, noSkill: true }), env(), install(), fakeIo().io);
+    expect(r.results.filter((x) => x.settings !== "skipped").map((x) => x.id)).toEqual(["claude-code"]);
+    expect(read(".codex/config.toml")).toContain("tool_timeout_sec = 300");
+    expect(read(".config/goose/config.yaml")).toContain("    timeout: 300");
+  });
+});
+
+describe("hookCommand", () => {
+  it("passes $PPID on macOS/Linux, not on Windows, and quotes paths with spaces", () => {
+    expect(hookCommand(install(), env())).toBe("npx -y las-agents client-session --client claude-code --pid $PPID");
+    expect(hookCommand(install(), env({ platform: "win32" }))).toBe("npx -y las-agents client-session --client claude-code");
+    const repo: InstallInfo = { mode: "repo", repoRoot: "/opt/my repo", entry: { command: "node", args: [] } };
+    const posix = hookCommand(repo, env());
+    expect(posix).toContain("'/opt/my repo/packages/cli/bin/las-agents.js' client-session");
+    expect(posix.startsWith(process.execPath.includes(" ") ? "'" : process.execPath)).toBe(true);
+    const win = hookCommand({ ...repo, repoRoot: "C:\\Users\\A B\\las" }, env({ platform: "win32" }));
+    expect(win.startsWith('node "C:\\Users\\A B\\las')).toBe(true);
+    expect(win).not.toContain("$PPID");
   });
 });

@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { CLIENTS, describe, detectClients, findClient, SKILL_FOLDER, type ClientDef, type Detected } from "./clients.js";
-import { ConfigError, upsertConfig, type ServerEntry, type Upsert } from "./configs.js";
+import { ConfigError, upsertClaudeSettings, upsertConfig, type ServerEntry, type Upsert } from "./configs.js";
 import { unifiedDiff } from "./diff.js";
 import type { Env } from "./env.js";
 import type { InstallInfo } from "./install.js";
@@ -36,6 +36,8 @@ export interface ClientResult {
   name: string;
   server: Outcome;
   skill: Outcome;
+  /** the live-coach settings file (Claude Code's settings.json), for clients that have one */
+  settings: Outcome;
   configPath: string;
   backups: string[];
   note?: string;
@@ -150,6 +152,75 @@ async function setupServer(det: Detected, entry: ServerEntry, opts: SetupOptions
   }
 }
 
+/** A shell word: bare when safe, else quoted for the shell the client runs hooks in (sh/Git Bash, or PowerShell/cmd on Windows). */
+function shellWord(s: string, platform: NodeJS.Platform): string {
+  if (/^[A-Za-z0-9_/\\.:=@%+,-]+$/.test(s)) return s;
+  return platform === "win32" ? `"${s.replace(/"/g, '\\"')}"` : `'${s.replace(/'/g, "'\\''")}'`;
+}
+
+/**
+ * The SessionStart hook command for `client`: runs `las-agents client-session` the cheapest way available
+ * (`las-agents` on PATH, else the repository's shim through node, else npx). On macOS and Linux it passes
+ * `--pid $PPID`: Claude Code runs the hook through `sh -c`, so `$PPID` there is Claude Code's pid. On Windows the
+ * hook shell is Git Bash or PowerShell, whose `$PPID` is not the Windows pid, so the subcommand walks its parents.
+ */
+export function hookCommand(install: InstallInfo, env: Env, client = "claude-code"): string {
+  const w = (s: string) => shellWord(s, env.platform);
+  let base: string[];
+  if (install.mode === "repo" && install.repoRoot) {
+    // Windows: a quoted first word is an expression in PowerShell, so start with the bare `node` from PATH
+    base = [env.platform === "win32" ? "node" : w(process.execPath), w(join(install.repoRoot, "packages", "cli", "bin", "las-agents.js"))];
+  } else if (env.hasCommand("las-agents")) base = ["las-agents"];
+  else base = ["npx", "-y", "las-agents"];
+  const tail = ["client-session", "--client", client];
+  if (env.platform !== "win32") tail.push("--pid", "$PPID");
+  return [...base, ...tail].join(" ");
+}
+
+async function setupSettings(det: Detected, install: InstallInfo, opts: SetupOptions, env: Env, io: Io, res: ClientResult): Promise<void> {
+  const spec = det.def.settings;
+  if (!spec) return;
+  const path = spec.path(env);
+  const before = readIfExists(path);
+  let plan: Upsert;
+  try {
+    plan = upsertClaudeSettings(before, hookCommand(install, env, det.def.id));
+  } catch (e) {
+    if (!(e instanceof ConfigError)) throw e;
+    io.err(`  Can't edit ${path}: ${e.message}`);
+    res.settings = "failed";
+    return;
+  }
+  io.out(`  Live coach settings: ${path}${before === undefined ? " (will be created)" : ""}`);
+  if (plan.state === "unchanged") {
+    res.settings = "unchanged";
+    io.out("  Already set (tool timeout and session hook).");
+    return;
+  }
+  io.out("  Raises the MCP tool timeout so the coach can wait for the learner, and records this conversation's id at session start so a coach can be brought back.");
+  io.out(indent(unifiedDiff(before, plan.text, path).trimEnd()));
+  if (opts.dryRun) {
+    res.settings = "dry-run";
+    return;
+  }
+  if (!(await approve(opts, io, `  Apply this change for ${det.def.name}?`))) {
+    res.settings = "declined";
+    return;
+  }
+  try {
+    if (before !== undefined) {
+      const b = backupFile(path, io.now());
+      res.backups.push(b);
+      io.out(`  Backed up to ${b}`);
+    }
+    writeAtomic(path, plan.text);
+    res.settings = "applied";
+  } catch (e) {
+    res.settings = "failed";
+    io.err(`  Could not write ${path}: ${(e as Error).message}`);
+  }
+}
+
 async function setupSkill(def: ClientDef, install: InstallInfo, opts: SetupOptions, env: Env, io: Io, res: ClientResult): Promise<void> {
   if (!install.skillSource) {
     res.skill = "skipped";
@@ -222,23 +293,26 @@ export async function runSetup(opts: SetupOptions, env: Env, install: InstallInf
   io.out(`Found: ${targets.map((t) => t.def.name).join(", ")}`);
 
   for (const det of targets) {
-    const res: ClientResult = { id: det.def.id, name: det.def.name, server: "skipped", skill: "skipped", configPath: det.target.path, backups: [] };
+    const res: ClientResult = { id: det.def.id, name: det.def.name, server: "skipped", skill: "skipped", settings: "skipped", configPath: det.target.path, backups: [] };
     results.push(res);
     io.out("");
     io.out(`== ${det.def.name} ==`);
-    await setupServer(det, install.entry, opts, env, io, res);
+    const entry: ServerEntry = det.def.toolTimeoutS ? { ...install.entry, toolTimeoutS: det.def.toolTimeoutS } : install.entry;
+    await setupServer(det, entry, opts, env, io, res);
+    await setupSettings(det, install, opts, env, io, res);
     if (!opts.noSkill) await setupSkill(det.def, install, opts, env, io, res);
   }
 
   io.out("");
   io.out("Summary");
   for (const r of results) {
-    io.out(`  ${r.name.padEnd(15)} server: ${r.server.padEnd(9)} skill: ${r.skill}`);
+    const def = CLIENTS.find((c) => c.id === r.id);
+    io.out(`  ${r.name.padEnd(15)} server: ${r.server.padEnd(9)} skill: ${r.skill.padEnd(9)}${def?.settings ? ` settings: ${r.settings}` : ""}`.trimEnd());
     for (const b of r.backups) io.out(`    backup: ${b}`);
   }
-  const changed = results.filter((r) => r.server === "applied" || r.skill === "applied");
+  const changed = results.filter((r) => r.server === "applied" || r.skill === "applied" || r.settings === "applied");
   for (const r of changed) io.out(`  ${r.name}: ${CLIENTS.find((c) => c.id === r.id)?.restart ?? ""}`);
   if (!opts.dryRun) io.out('\nNext: open your agent and say "I want to learn <anything>" (guitar, Spanish, chess, a lab technique).');
   else io.out("\nRe-run without --dry-run to apply.");
-  return { results, exitCode: results.some((r) => r.server === "failed" || r.skill === "failed") ? 1 : 0 };
+  return { results, exitCode: results.some((r) => r.server === "failed" || r.skill === "failed" || r.settings === "failed") ? 1 : 0 };
 }

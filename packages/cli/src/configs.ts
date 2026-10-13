@@ -12,6 +12,8 @@ export const SERVER_NAME = "las";
 export interface ServerEntry {
   command: string;
   args: string[];
+  /** per-server tool-call timeout in seconds, written where the client's config has a field for it (the client's row in clients.ts) */
+  toolTimeoutS?: number;
 }
 
 export type ConfigFormat = "json-mcp-servers" | "json-claude-code" | "json-cline" | "json-opencode" | "json-continue" | "toml-codex" | "yaml-goose" | "yaml-continue";
@@ -101,7 +103,10 @@ export function yamlScalar(s: string): string {
 // ---------- TOML (Codex) ----------
 
 export function codexBlock(entry: ServerEntry): string[] {
-  return [`[mcp_servers.${SERVER_NAME}]`, `command = ${JSON.stringify(entry.command)}`, `args = [${entry.args.map((a) => JSON.stringify(a)).join(", ")}]`];
+  const block = [`[mcp_servers.${SERVER_NAME}]`, `command = ${JSON.stringify(entry.command)}`, `args = [${entry.args.map((a) => JSON.stringify(a)).join(", ")}]`];
+  // Codex: `tool_timeout_sec`, seconds, per server (codex-rs/config/src/mcp_types.rs)
+  if (entry.toolTimeoutS) block.push(`tool_timeout_sec = ${entry.toolTimeoutS}`);
+  return block;
 }
 
 const TOML_HEADER = /^\s*\[/;
@@ -247,7 +252,7 @@ export function gooseBody(entry: ServerEntry): string[] {
     ...entry.args.map((a) => `  - ${yamlScalar(a)}`),
     "enabled: true",
     "envs: {}",
-    "timeout: 300"
+    `timeout: ${entry.toolTimeoutS ?? 300}`
   ];
 }
 
@@ -274,4 +279,84 @@ export function upsertConfig(format: ConfigFormat, existing: string | undefined,
     default:
       return jsonUpsert(format, existing, entry);
   }
+}
+
+// ---------- Claude Code settings.json (live coach: tool timeout and the SessionStart hook) ----------
+
+/** setup raises `env.MCP_TOOL_TIMEOUT` when it is unset or below this (ms); a 55 s coach_wait needs room */
+export const CLAUDE_TOOL_TIMEOUT_MIN_MS = 120_000;
+/**
+ * The value written. Claude Code's own default is 100000000 ms (about 28 h) and the variable applies to every MCP
+ * server, so writing the minimum would cut the learner's other servers short; 30 minutes matches Claude Code's
+ * idle timeout for stdio servers (adapters.ts, finding 3).
+ */
+export const CLAUDE_TOOL_TIMEOUT_MS = 1_800_000;
+/** seconds Claude Code gives the hook before cancelling it */
+export const CLIENT_SESSION_HOOK_TIMEOUT_S = 10;
+
+export const isLasSessionHook = (command: unknown): boolean => typeof command === "string" && /\bclient-session\b/.test(command) && /las/.test(command);
+
+export interface ClaudeSettingsStatus {
+  /** the MCP_TOOL_TIMEOUT in the env block, as a number, when set */
+  toolTimeoutMs?: number;
+  hookInstalled: boolean;
+  hookCommand?: string;
+}
+
+function sessionStartHooks(root: Json): Json[] {
+  const groups = isObj(root.hooks) && Array.isArray(root.hooks.SessionStart) ? root.hooks.SessionStart : [];
+  return groups.filter(isObj).flatMap((g: Json) => (Array.isArray(g.hooks) ? g.hooks.filter(isObj) : []));
+}
+
+/** What `las doctor` reports from ~/.claude/settings.json. */
+export function inspectClaudeSettings(text: string | undefined): ClaudeSettingsStatus {
+  let root: Json = {};
+  try {
+    root = text ? JSON.parse(text) : {};
+  } catch {
+    return { hookInstalled: false };
+  }
+  if (!isObj(root)) return { hookInstalled: false };
+  const raw = isObj(root.env) ? root.env.MCP_TOOL_TIMEOUT : undefined;
+  const n = raw === undefined || raw === "" ? NaN : Number(raw);
+  const hook = sessionStartHooks(root).find((h) => isLasSessionHook(h.command));
+  return { toolTimeoutMs: Number.isFinite(n) ? n : undefined, hookInstalled: !!hook, hookCommand: hook?.command };
+}
+
+/**
+ * Ensures `env.MCP_TOOL_TIMEOUT` is at least CLAUDE_TOOL_TIMEOUT_MIN_MS (never lowers a larger value) and that one
+ * SessionStart command hook runs `client-session`. Everything else in the file, other hooks included, is kept.
+ * The hook group has no matcher, so it runs for every source (startup, resume, clear, compact): /clear and
+ * compaction can change the session id, and the newest file per pid wins.
+ */
+export function upsertClaudeSettings(existing: string | undefined, hookCommand: string): Upsert {
+  const blank = existing === undefined || existing.trim() === "";
+  let root: Json = {};
+  if (!blank) {
+    try {
+      root = JSON.parse(existing!);
+    } catch (e) {
+      throw new ConfigError(`not valid JSON (files with comments are not supported): ${(e as Error).message}`);
+    }
+    if (!isObj(root)) throw new ConfigError("the top level is not a JSON object");
+  }
+  const before = JSON.stringify(root);
+  if (root.env === undefined) root.env = {};
+  if (!isObj(root.env)) throw new ConfigError('"env" is not an object');
+  const current = Number(root.env.MCP_TOOL_TIMEOUT);
+  // values in "env" are strings: Claude Code copies them into its environment as written
+  if (!(Number.isFinite(current) && current >= CLAUDE_TOOL_TIMEOUT_MIN_MS)) root.env.MCP_TOOL_TIMEOUT = String(CLAUDE_TOOL_TIMEOUT_MS);
+
+  if (root.hooks === undefined) root.hooks = {};
+  if (!isObj(root.hooks)) throw new ConfigError('"hooks" is not an object');
+  if (root.hooks.SessionStart === undefined) root.hooks.SessionStart = [];
+  if (!Array.isArray(root.hooks.SessionStart)) throw new ConfigError('"hooks.SessionStart" is not a list');
+  const mine = sessionStartHooks(root).filter((h) => isLasSessionHook(h.command));
+  const hadHook = mine.length > 0;
+  if (hadHook) for (const h of mine) h.command = hookCommand;
+  else root.hooks.SessionStart.push({ hooks: [{ type: "command", command: hookCommand, timeout: CLIENT_SESSION_HOOK_TIMEOUT_S }] });
+
+  if (!blank && JSON.stringify(root) === before) return { text: existing!, state: "unchanged" };
+  const trailing = blank || existing!.endsWith("\n") ? "\n" : "";
+  return { text: JSON.stringify(root, null, detectIndent(existing)) + trailing, state: blank ? "created" : hadHook ? "replaced" : "added" };
 }

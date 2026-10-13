@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { clientSession } from "./client-session.js";
 import { checkin, doctor, enginesTest, modelValidate, serve, studio, type Out } from "./commands.js";
 import { makeEnv, type Env } from "./env.js";
 import { cliVersion, locateInstall, type InstallInfo } from "./install.js";
@@ -11,7 +12,9 @@ import { runSetup, type Io, type SetupOptions } from "./setup.js";
 export { CLIENTS, detectClients, findClient, type ClientDef } from "./clients.js";
 export { upsertConfig, type ConfigFormat, type ServerEntry } from "./configs.js";
 export { unifiedDiff } from "./diff.js";
-export { runSetup, type SetupOptions, type SetupResult } from "./setup.js";
+export { runSetup, hookCommand, type SetupOptions, type SetupResult } from "./setup.js";
+export { COACH_ADAPTERS, findAdapter, wakeSummary, type CoachAdapter, type WakeCommand } from "./adapters.js";
+export { clientSession, writeClientSession, listClientSessions, type ClientSessionRecord } from "./client-session.js";
 export { makeEnv, type Env } from "./env.js";
 export { locateInstall, type InstallInfo } from "./install.js";
 
@@ -27,6 +30,12 @@ Usage: las-agents <command> [options]
   doctor [--json]         show which engines, runners and devices are available
   studio                  start only the local studio
   checkin                 run due check-ins
+  coach --watch [--interval <s>] [--no-studio]
+                          bring the live coach back when the learner acts and no coach is there; serves the studio
+                          while its port is free
+  coach --once            one watcher pass, then exit (for cron, like checkin)
+  client-session [--client <id>] [--pid <n>]
+                          (hook) record the agent's conversation id from SessionStart JSON on stdin; prints nothing
   engines test            run the engine and runner test projects (repository checkout only)
   model validate <file>   validate a skill model (JSON only)
 
@@ -108,8 +117,25 @@ export async function run(argv: string[], deps: RunDeps = {}): Promise<number> {
         return -1; // the server keeps the process alive; bin.ts must not exit
       case "doctor": {
         const { values } = parseArgs({ args: rest, options: { json: { type: "boolean" } } });
-        return await doctor(o, !!values.json);
+        return await doctor(o, !!values.json, deps.env ?? makeEnv());
       }
+      case "coach": {
+        const { values } = parseArgs({ args: rest, options: { watch: { type: "boolean" }, once: { type: "boolean" }, interval: { type: "string" }, "no-studio": { type: "boolean" }, help: { type: "boolean", short: "h" } } });
+        if (values.help || (!values.watch && !values.once)) {
+          (values.help ? io.out : io.err)("Usage: las coach --watch [--interval <seconds>] [--no-studio]\n       las coach --once");
+          return values.help ? 0 : 2;
+        }
+        const intervalS = values.interval === undefined ? undefined : Number(values.interval);
+        if (intervalS !== undefined && !(intervalS > 0)) {
+          io.err("--interval takes a number of seconds");
+          return 2;
+        }
+        const { coachCommand } = await import("./coach.js");
+        return await coachCommand({ once: !!values.once, intervalS, studio: !values["no-studio"], log: io.err });
+      }
+      case "client-session":
+        // a hook: stdout would become model context, so nothing is printed there, and it always exits 0
+        return await clientSession(rest, { lasHome: (deps.env ?? makeEnv()).lasHome, err: process.env.LAS_DEBUG ? io.err : undefined });
       case "studio":
         return await studio(o);
       case "checkin":

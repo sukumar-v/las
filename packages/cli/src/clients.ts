@@ -32,6 +32,18 @@ export interface ClientDef {
   cli?: { command: string; add(entry: ServerEntry): string[]; remove: string[] };
   /** what to tell the learner after install */
   restart: string;
+  /**
+   * A second file setup edits for the live coach: Claude Code's user settings, where it raises MCP_TOOL_TIMEOUT and
+   * installs the SessionStart hook that records the conversation id (`las-agents client-session`).
+   */
+  settings?: { path(env: Env): string; format: "json-claude-settings" };
+  /**
+   * The per-server tool-call timeout (seconds) written into the server entry, for configs that have such a field.
+   * A 55 s coach_wait needs more than the common 60 s default to be safe.
+   */
+  toolTimeoutS?: number;
+  /** ⚠ what is still unverified about this client's tool timeout */
+  toolTimeoutNote?: string;
 }
 
 export const SKILL_FOLDER = "learn-any-skill";
@@ -67,7 +79,9 @@ export const CLIENTS: ClientDef[] = [
       add: (entry) => ["mcp", "add", "--scope", "user", "las", "--", entry.command, ...entry.args],
       remove: ["mcp", "remove", "las", "--scope", "user"]
     },
-    restart: "Start a new Claude Code session (or run /mcp) to load it."
+    restart: "Start a new Claude Code session (or run /mcp) to load it.",
+    // tool timeout: env.MCP_TOOL_TIMEOUT in settings.json (default about 28 h); `claude mcp add` has no per-server field
+    settings: { path: (e) => join(e.home, ".claude", "settings.json"), format: "json-claude-settings" }
   },
   {
     id: "claude-desktop",
@@ -75,7 +89,8 @@ export const CLIENTS: ClientDef[] = [
     aliases: ["desktop"],
     signals: (e) => [claudeDesktopDir(e)],
     configs: (e) => [{ path: join(claudeDesktopDir(e), "claude_desktop_config.json"), format: "json-mcp-servers" }],
-    restart: "Quit and reopen Claude Desktop."
+    restart: "Quit and reopen Claude Desktop.",
+    toolTimeoutNote: "⚠ verify: no per-server tool timeout field known"
   },
   {
     id: "codex",
@@ -84,6 +99,8 @@ export const CLIENTS: ClientDef[] = [
     commands: ["codex"],
     configs: (e) => [{ path: join(e.codexHome, "config.toml"), format: "toml-codex" }],
     skillDir: (e) => join(e.codexHome, "skills", SKILL_FOLDER),
+    // `[mcp_servers.las] tool_timeout_sec`, seconds (codex-rs/config/src/mcp_types.rs)
+    toolTimeoutS: 300,
     restart: "Start a new Codex session."
   },
   {
@@ -92,7 +109,8 @@ export const CLIENTS: ClientDef[] = [
     signals: (e) => [join(e.home, ".cursor")],
     configs: (e) => [{ path: join(e.home, ".cursor", "mcp.json"), format: "json-mcp-servers" }],
     skillDir: (e) => join(e.home, ".cursor", "skills", SKILL_FOLDER),
-    restart: "Reload Cursor (Settings > MCP shows the las server)."
+    restart: "Reload Cursor (Settings > MCP shows the las server).",
+    toolTimeoutNote: "⚠ verify: no per-server tool timeout field known"
   },
   {
     id: "goose",
@@ -100,6 +118,8 @@ export const CLIENTS: ClientDef[] = [
     signals: (e) => [gooseDir(e)],
     commands: ["goose"],
     configs: (e) => [{ path: join(gooseDir(e), "config.yaml"), format: "yaml-goose" }],
+    // extensions.las.timeout, seconds
+    toolTimeoutS: 300,
     restart: "Start a new Goose session."
   },
   {
@@ -111,7 +131,8 @@ export const CLIENTS: ClientDef[] = [
       { path: join(e.configHome, "opencode", "opencode.json"), format: "json-opencode", createWhenMissing: true },
       { path: join(e.cwd, "opencode.json"), format: "json-opencode" }
     ],
-    restart: "Start a new OpenCode session."
+    restart: "Start a new OpenCode session.",
+    toolTimeoutNote: "⚠ verify: OpenCode's MCP `timeout` (ms, default 5000) covers fetching the tool list, not tool calls; no tool-call timeout field found"
   },
   {
     id: "continue",
@@ -123,14 +144,16 @@ export const CLIENTS: ClientDef[] = [
       // no main config: add a standalone block file, which Continue loads next to it
       { path: join(e.home, ".continue", "mcpServers", "las.yaml"), format: "yaml-continue", createWhenMissing: true }
     ],
-    restart: "Reload the Continue extension."
+    restart: "Reload the Continue extension.",
+    toolTimeoutNote: "⚠ verify: no per-server tool timeout field known"
   },
   {
     id: "cline",
     name: "Cline",
     signals: (e) => vscodeUserDirs(e).map((d) => join(d, "globalStorage", "saoudrizwan.claude-dev")),
     configs: (e) => vscodeUserDirs(e).map((d, i) => ({ path: join(d, ...CLINE_REL), format: "json-cline" as const, createWhenMissing: i === 0 })),
-    restart: "Reload the VS Code window."
+    restart: "Reload the VS Code window.",
+    toolTimeoutNote: "⚠ verify: no per-server tool timeout field known"
   }
 ];
 

@@ -175,3 +175,12 @@ describe("Continue YAML", () => {
     expect(upsertConfig("yaml-continue", "mcpServers: []\nmodels: []\n", entry).text).toBe("mcpServers:\n  - name: las\n    command: npx\n    args:\n      - -y\n      - las-agents\n      - serve\nmodels: []\n");
   });
 });
+
+describe("per-server tool timeouts", () => {
+  it("Codex gets tool_timeout_sec and Goose its timeout when the client row sets one", () => {
+    const e = { command: "npx", args: ["-y", "las-agents", "serve"], toolTimeoutS: 240 };
+    expect(upsertConfig("toml-codex", undefined, e).text).toContain("\ntool_timeout_sec = 240\n");
+    expect(upsertConfig("yaml-goose", undefined, e).text).toContain("    timeout: 240\n");
+    expect(upsertConfig("toml-codex", undefined, { command: "npx", args: [] }).text).not.toContain("tool_timeout_sec");
+  });
+});
