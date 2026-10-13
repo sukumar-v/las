@@ -1,5 +1,6 @@
 import { SkillModelSchema, type SkillModel } from "../skill-model.js";
 import { checkLesson } from "../lesson.js";
+import { checkSimSpec } from "../specs/sim.js";
 import { DRILL_ENGINE } from "../drill.js";
 import { checkSpec, ENGINE_FOR_SPEC_KIND, type EngineSpec } from "../specs/index.js";
 import { parseExpr } from "../expr/parser.js";
@@ -82,9 +83,21 @@ export function validateSkillModel(input: unknown, capabilities?: Capabilities |
     return s ? ENGINE_FOR_SPEC_KIND[s.kind] : undefined;
   };
 
-  // Lessons: word budget
+  // Audio and speech pass/mistake expressions parse
+  for (const [id, s] of specs) {
+    if (s.kind === "audio" || s.kind === "speech") {
+      if (s.pass) safeParseExpr(s.pass, `specs.${id}.pass`, errors, "expr");
+      s.mistakes.forEach((x, k) => safeParseExpr(x.when, `specs.${id}.mistakes[${k}].when`, errors, "expr"));
+    }
+    if ((s.kind === "task" || s.kind === "sensor" || s.kind === "game" || s.kind === "self-report" || s.kind === "items" || s.kind === "rubric") && s.pass) safeParseExpr(s.pass, `specs.${id}.pass`, errors, "expr");
+  }
+
+  // Lessons: word budget, sim cards checked
   m.lessons.forEach((l, i) => {
     for (const issue of checkLesson(l)) err(`lessons[${i}].${issue.path}`, "word-budget", issue.message);
+    l.cards.forEach((c, k) => {
+      if (c.type === "sim") for (const issue of checkSimSpec(c.sim)) err(`lessons[${i}].cards[${k}].sim.${issue.path}`, "spec", issue.message);
+    });
     for (const c of l.cards) words += countWords(c.text);
     for (const n of l.nodes) if (!nodeIds.has(n)) err(`lessons[${i}].nodes`, "refs", `unknown node "${n}"`);
   });
@@ -165,6 +178,7 @@ export function validateSkillModel(input: unknown, capabilities?: Capabilities |
       return;
     }
     if (s.nodes.length === 0) err(`ladder[${k}].nodes`, "ladder", "each step past 0 names the nodes it needs");
+    for (const n of s.nodes) if (!nodeIds.has(n)) err(`ladder[${k}].nodes`, "refs", `unknown node "${n}"`);
     if (!s.proof) {
       err(`ladder[${k}].proof`, "proof", "every ladder step has a proof bound to an engine spec");
       return;
@@ -195,7 +209,12 @@ export function validateSkillModel(input: unknown, capabilities?: Capabilities |
   m.mistakes.forEach((x, i) => {
     for (const n of x.nodes) if (!nodeIds.has(n)) err(`mistakes[${i}].nodes`, "refs", `unknown node "${n}"`);
     if (!drillIds.has(x.fix_drill)) err(`mistakes[${i}].fix_drill`, "refs", `unknown drill "${x.fix_drill}"`);
-    if ("lesson" in x.explain && !lessonIds.has(x.explain.lesson)) err(`mistakes[${i}].explain.lesson`, "refs", `unknown lesson "${x.explain.lesson}"`);
+    if ("lesson" in x.explain) {
+      const ex = x.explain;
+      const lesson = m.lessons.find((l) => l.id === ex.lesson);
+      if (!lesson) err(`mistakes[${i}].explain.lesson`, "refs", `unknown lesson "${ex.lesson}"`);
+      else if (ex.card >= lesson.cards.length) err(`mistakes[${i}].explain.card`, "refs", `lesson "${lesson.id}" has ${lesson.cards.length} cards`);
+    }
     if (!engines.has(x.engine)) err(`mistakes[${i}].engine`, "engines", `"${x.engine}" is not in model.engines`);
     safeParseExpr(x.detector.when, `mistakes[${i}].detector.when`, errors, "expr");
     if (countWords(x.headline) > FEEDBACK_HEADLINE_BUDGET) err(`mistakes[${i}].headline`, "word-budget", `${FEEDBACK_HEADLINE_BUDGET} words or fewer`);
