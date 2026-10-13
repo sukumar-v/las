@@ -1,4 +1,22 @@
-{ "name": "@las/server", "version": "0.1.0", "private": true, "type": "module", "license": "MIT",
+{
+  "name": "@las/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Learn Any Skill MCP server and local studio API",
+  "license": "MIT",
+  "type": "module",
   "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" } },
-  "scripts": { "build": "echo ok", "test": "vitest run" },
-  "dependencies": { "@las/schema": "workspace:*" }, "devDependencies": { "vitest": "^4.1.0" } }
+  "bin": { "las-server": "./bin/las-server.js" },
+  "scripts": { "build": "echo ok", "test": "vitest run", "dev": "tsx src/bin.ts" },
+  "dependencies": {
+    "@las/engines": "workspace:*",
+    "@las/runners": "workspace:*",
+    "@las/schema": "workspace:*",
+    "@las/store": "workspace:*",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "ts-fsrs": "^5.4.2",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": { "tsx": "^4.23.0", "vitest": "^4.1.0" }
+}

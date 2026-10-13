@@ -70,14 +70,25 @@ export function hslToRgb([h, s, l]: [number, number, number]): RGB {
 export function adjustForContrast(fg: string, bg: string, ratio: number): string {
   if (contrast(fg, bg) >= ratio) return fg;
   const [h, s, l0] = rgbToHsl(hexToRgb(fg));
-  const darker = luminance(bg) > 0.5;
-  for (let step = 1; step <= 100; step++) {
-    const l = darker ? l0 - step / 100 : l0 + step / 100;
-    if (l < 0 || l > 1) break;
-    const candidate = rgbToHex(hslToRgb([h, s, l]));
-    if (contrast(candidate, bg) >= ratio) return candidate;
+  const darkerFirst = luminance(bg) > 0.5;
+  let best = fg;
+  let bestRatio = contrast(fg, bg);
+  for (const darker of [darkerFirst, !darkerFirst]) {
+    for (let step = 1; step <= 100; step++) {
+      const l = darker ? l0 - step / 100 : l0 + step / 100;
+      if (l < 0 || l > 1) break;
+      const candidate = rgbToHex(hslToRgb([h, s, l]));
+      const r = contrast(candidate, bg);
+      if (r >= ratio) return candidate;
+      if (r > bestRatio) {
+        best = candidate;
+        bestRatio = r;
+      }
+    }
+    const extreme = darker ? "#000000" : "#FFFFFF";
+    if (contrast(extreme, bg) >= ratio) return extreme;
   }
-  return darker ? "#000000" : "#FFFFFF";
+  return best;
 }
 
 /** Color vision deficiency simulation (Viénot/Brettel-style linear approximation in linear RGB). */
