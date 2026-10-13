@@ -2,7 +2,7 @@
 
 How the agent, the LAS server and the studio talk to each other: the tool contracts, the rules the agent follows, events, and the stored data.
 
-Related: [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [skill packs](skill-packs.md) · [overview](../DESIGN.md)
+Related: [any skill](any-skill.md) · [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [skill models](skill-packs.md) · [overview](../DESIGN.md)
 
 ---
 
@@ -33,10 +33,18 @@ sequenceDiagram
 
 Inputs and outputs, simplified. `sk` = a learner's enrollment in one skill (a learner can learn several skills).
 
+### Skill
+| Tool | Input | Output |
+|---|---|---|
+| `get_capabilities` | — | Engines and their status, code runners and detected toolchains, devices, external tools on `PATH` ([Any skill §5](any-skill.md#5-finding-and-choosing-tools)) |
+| `draft_skill_model` | `skill, notes?` | An empty skill model with the schema, the engines that are available, and a curated pack to start from if one exists |
+| `validate_skill_model` | `SkillModel` | `{ok, errors[]}`: every check in [skill models §4](skill-packs.md#4-checks-every-skill-model-must-pass). Stores the model once it passes |
+| `get_skill_model` | `skill \| sk` | The stored model, for viewing or revising |
+
 ### Onboarding
 | Tool | Input | Output |
 |---|---|---|
-| `start_intake` | `skill: string` | `{intakeId, pack, whyOptions, widget}` |
+| `start_intake` | `skillModelId` | `{intakeId, whyOptions, widget}` |
 | `record_answer` | `intakeId, field, value` | `{next, options}`: options already ranked for this learner |
 | `place_learner` | `intakeId` | `{step, evidence}` |
 | `suggest_milestones` | `intakeId` | `Suggestion[]` (quick win, toward your picture, stretch) |
@@ -55,6 +63,7 @@ Inputs and outputs, simplified. `sk` = a learner's enrollment in one skill (a le
 | Tool | Input | Output |
 |---|---|---|
 | `render_lesson` | `LessonSpec` (cards, 25-word budget) | Widget. **Rejects specs over budget** |
+| `render_sim` | `SimSpec`: parameters with ranges, formulas, a plot or figure, a live readout | Interactive widget for any concept. Declarative, so nothing the agent writes runs as code |
 | `render_mechanism` | `concept` | anatomy figure (cached) |
 | `render_diagram` | `DiagramSpec` (mermaid, d3, notation, code trace) | Widget |
 | `explain_mistake` | `mistakeId, attemptId?` | The mistake's explanation visual, using the learner's own frame when there is one |
@@ -70,6 +79,8 @@ Inputs and outputs, simplified. `sk` = a learner's enrollment in one skill (a le
 |---|---|---|
 | `request_capture` | `attemptSpec` | Recording widget or studio link (opens on the phone if paired) |
 | `get_analysis` | `attemptId` | `Analysis` ([evaluation §1](evaluation.md#1-evaluator-contract)) + key frames |
+| `run_code_tests` | `TestSpec, files` | Test results from the best available runner (asks the learner before a runner's first use) |
+| `compare_to_reference` | `attemptId, reference` | Similarity over time to a reference clip, recording or score |
 | `run_proof_check` | `milestoneId` | Recording flow, then `ProofResult` |
 
 ### Track
@@ -89,7 +100,8 @@ Inputs and outputs, simplified. `sk` = a learner's enrollment in one skill (a le
   - `las://skills/{sk}/route`
   - `las://skills/{sk}/progress`
   - `las://skills/{sk}/mistakes`
-  - `las://packs/{pack}`
+  - `las://skills/{sk}/model`
+  - `las://packs/{pack}` (curated packs)
 - **Prompts:**
   - `/las-start`: learn something new
   - `/las-session`: today's session
@@ -105,6 +117,9 @@ Inputs and outputs, simplified. `sk` = a learner's enrollment in one skill (a le
 5. **Pain means stop:** call `report_pain`, lower intensity, and suggest a professional if it continues. Never diagnose.
 6. **Talk to the learner's why,** not to guilt. No countdowns or "you broke your streak".
 7. **Unsure means ask** for a better recording, never guess.
+8. **Work out the skill, don't wait for instructions.** For a new skill, call `get_capabilities`, decide which engines the skill needs, write the skill model, and call `validate_skill_model` until it passes. Start from a curated pack if `draft_skill_model` offers one.
+9. **Use what's there.** Prefer other MCP servers, skills and tools the client already has when they fit (routing table in [Any skill §5](any-skill.md#5-finding-and-choosing-tools)). Third-party servers need the learner's consent and are never required.
+10. **Say when a check is weaker.** If the best engine isn't available, use the fallback, tell the learner the check is less precise, and suggest an open-source install.
 
 ## 5. Events
 
@@ -124,7 +139,8 @@ The studio sends events to the server. The server updates models and schedules; 
 
 ```
 learner(id, name, timezone, quiet_hours, nudge_limits, created_at)
-enrollment(id, learner_id, pack_id, pack_version, status[active|paused|done], created_at)
+skill_model(id, skill, source[generated|curated], based_on_pack, pack_version, version, json, validated_at)
+enrollment(id, learner_id, skill_model_id, status[active|paused|done], created_at)
 intent(enrollment_id, why_json, afterwards, revisited_at)
 constraint(enrollment_id, minutes_per_week, deadline, access_json, injuries_json)
 milestone(id, enrollment_id, title, ladder_step, proof_json, target_date, status, achieved_at, self_reported)

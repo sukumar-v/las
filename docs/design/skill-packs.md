@@ -1,28 +1,34 @@
-# Skill packs
+# Skill models
 
-A skill pack is all the content for one skill: its ladder, skill graph, lessons, drills, mistakes and proof standards. Packs are data, not code. They plug into the same onboarding screens, session blocks and evaluators.
+A **skill model** is all the content LAS needs for one skill: why options, six-month pictures, level checks, a ladder, the skill graph, lessons, drills, mistakes, proofs and safety fields. It's data, not code, and it plugs into the same onboarding screens, session blocks and engines as every other skill.
 
-Related: [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [overview](../DESIGN.md)
+**The agent writes a skill model at runtime for whatever skill the learner picks** ([Any skill §6](any-skill.md#6-skill-models)). A **curated pack** is a skill model a person has reviewed and published. When one exists, the agent starts from it; when none exists, nothing is missing. LAS never needs a pack to work.
+
+Related: [any skill](any-skill.md) · [learning loop](learning-loop.md) · [evaluation](evaluation.md) · [MCP and data](mcp-and-data.md) · [overview](../DESIGN.md)
+
+The examples below use bouldering, but the same schema covers every skill.
 
 ---
 
 ## 1. Layout
 
+A generated model is stored in the database as JSON. A curated pack is the same content as files, so people can review it in a pull request:
+
 ```
 packs/bouldering/
-├── pack.yaml          name, evaluator, why[], pictures[], probes[], ladder[], access, injuries, focus, key metrics
+├── model.yaml         name, engines, why[], pictures[], probes[], placement[], ladder[], access, injuries, safety, focus, key metrics
 ├── nodes/             skills and concepts with prerequisites (the skill graph)
 ├── lessons/           teaching-card specs (25 words per card or fewer)
 ├── drills/            drills of the standard types, with how difficulty rises
-├── mistakes/          detectors + explanation + fix drill
-├── proofs/            proof standard for each ladder step
+├── specs/             engine specs: metric, rubric, test and audio reference specs
+├── mistakes/          detectors (written in the spec language) + explanation + fix drill
+├── proofs/            proof standard for each ladder step, bound to an engine spec
 ├── warmups/           physical skills only
 ├── media/             reference clips, poses, audio (each file carries its license)
-├── tests/             labeled example attempts for evaluator regression tests
-└── LICENSE            CC-BY-4.0 or CC0 for pack content
+└── LICENSE            CC-BY-4.0 or CC0
 ```
 
-Packs are written in YAML and compiled to JSON. The YAML parser is `yaml` (ISC).
+Curated packs are written in YAML and compiled to the same JSON a generated model uses. The YAML parser is `yaml` (ISC).
 
 ## 2. Ladder and skill graph
 
@@ -79,50 +85,44 @@ cards:
 # drills/hip-in-traverse.yaml
 type: move
 nodes: [body.hips-in]
-evaluator: movement
+engine: movement
+spec: specs/hips-in.metric.yaml          # a metric spec (any-skill.md §3.1)
 capture: { angle: side-45, duration_s: 60 }
 needs: [climbing-gym]
 success: "share(hip_wall_ok) >= 0.7"
 difficulty: { param: wall_angle, levels: [vertical, slight-overhang, overhang] }
 ```
 
-## 4. Checks every pack must pass
+## 4. Checks every skill model must pass
 
-`las pack validate` checks:
+`validate_skill_model` (the MCP tool) and `las model validate` (the CLI) run the same checks on generated models and curated packs:
+
 - the schema is valid, and every lesson card stays within the word budget;
-- every ladder step has a proof standard and at least one skill;
+- every ladder step has a proof bound to an engine spec, and every spec parses and uses known body points, functions and runners;
+- every proof can be measured by an engine available on this machine, or is explicitly labeled self-report;
 - the skill graph has no cycles, and every skill can be reached from step 0;
 - every skill has at least one lesson, one drill and one review card;
 - every mistake has a detector, a fix drill and an explanation visual;
-- drills use only the standard types and only evaluators that exist;
-- every media file declares a license from the allowed list (CC0, CC-BY, or the pack's own license).
+- drills use only the standard types;
+- physical skills have a warm-up, injury questions, beginner intensity caps and stop criteria, and supervised-only activities are flagged ([Any skill §7](any-skill.md#7-physical-safety-for-skills-nobody-has-reviewed));
+- every media file declares a license from the allowed list (CC0, CC-BY, or the learner's own file kept on their device).
 
-`las pack test` runs every evaluator over `tests/` and checks the expected mistakes and criteria come out ([evaluation §8](evaluation.md#8-testing-evaluators)).
+`las model preview` opens the studio with a model loaded, including onboarding.
 
-`las pack preview` opens the studio with the pack loaded, including onboarding.
+## 5. Generated and curated
 
-## 5. Skills without a pack
-
-For a skill with no pack, the agent drafts one with `draft_pack(skill)`:
-
-1. It fills `pack.yaml` (why options, six-month pictures, the level question, a ladder of 5–7 steps with rough hours) and a small skill graph.
-2. Drills and proofs use only what works for any skill: the **knowledge** evaluator, the **craft** evaluator (rubric plus coach review), and general-purpose **movement** metrics (smoothness, symmetry, holding a pose) where it fits.
-3. The draft has to pass `las pack validate` before a learner sees it.
-4. Learners see an **"Early pack"** label. Estimates are shown as ranges, and the first weekly review asks whether the ladder feels right.
-
-## 6. Quality tiers
-
-| Tier | Who maintains it | Tested evaluators | Shown as |
+| Source | Who writes it | Shown to learners as | How it improves |
 |---|---|---|---|
-| Core | The LAS project | Yes, with a `tests/` set | — |
-| Community | Contributors, reviewed through pull requests | Required for movement, audio and speech | "Community pack" |
-| Draft | Generated by the agent | No | "Early pack" |
+| **Generated** (the default) | The agent, for this learner, at runtime | Estimates as ranges; "Early" label on the ladder | Thresholds calibrated from the learner's own attempts; disputes and weekly-review feedback flag problems |
+| **Curated** | A person reviews a generated model (or writes one) and publishes it in `packs/` through a pull request | No label | Reviews, real hour data, reference media with consent |
 
-A draft gets promoted by opening a pull request with fixes, example attempts and real hour estimates.
+- **Promotion:** a generated model can be exported (`las model export`) and opened as a pull request. Review checks the ladder, safety fields and specs.
+- **Updates:** curated packs are versioned. A learner's model records the version it came from, and the agent can offer to merge improvements.
 
-## 7. Content licensing
+## 6. Content licensing
 
-- Pack text and data: **CC-BY-4.0 or CC0**.
-- Media: each file declares its license, and only CC0 or CC-BY is accepted. Reference clips need written consent from the people in them.
-- **Music:** chord progressions and strumming patterns are fine to use. Lyrics, recordings and sheet music of copyrighted songs are not included. Play-along backing tracks are made in-house or are public domain. A milestone can still name a song ("Strumming patterns: Wonderwall"); the learner brings the song.
-- **Language content:** dialogues are written for the pack. No textbook excerpts.
+- Curated pack text and data: **CC-BY-4.0 or CC0**.
+- Media in curated packs: each file declares its license, and only CC0 or CC-BY is accepted. Reference clips need written consent from the people in them.
+- **Learner-supplied references** (a teacher's clip, a score the learner owns) stay on the learner's device. They're used only for that learner and never published.
+- **Music:** chord progressions and patterns are fine. Lyrics, recordings and sheet music of copyrighted songs aren't included in packs. A milestone can still name a song; the learner brings the song.
+- **Language content:** dialogues are written for the model. No textbook excerpts.

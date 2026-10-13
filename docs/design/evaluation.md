@@ -2,7 +2,9 @@
 
 How LAS turns a recording, a clip or a piece of code into measurements, mistakes and a pass or fail against the proof standard, and how the video coach works.
 
-Related: [learning loop](learning-loop.md) · [MCP and data](mcp-and-data.md) · [skill packs](skill-packs.md) · [overview](../DESIGN.md)
+Related: [any skill](any-skill.md) · [learning loop](learning-loop.md) · [MCP and data](mcp-and-data.md) · [skill models](skill-packs.md) · [overview](../DESIGN.md)
+
+Engines are general-purpose and don't know which skill they're measuring. The agent configures them with specs ([Any skill §2–4](any-skill.md#2-engines)). Bouldering appears below only as a worked example.
 
 ---
 
@@ -12,8 +14,9 @@ Each way of checking practice is one evaluator. All of them return the same resu
 
 ```ts
 interface Evaluator {
-  id: "movement" | "audio" | "speech" | "code" | "knowledge" | "craft";
+  id: "movement" | "audio" | "speech" | "code" | "visual" | "knowledge" | "interaction" | "sensor" | "game" | "self-report";
   capture: CaptureSpec;                 // what to record and how (camera angle, duration, tempo, tests…)
+  spec: EngineSpec;                     // metric, rubric, test or audio reference spec written by the agent
   analyze(e: Evidence): Promise<Analysis>;
 }
 
@@ -23,7 +26,7 @@ interface Analysis {
   markers: { t: number; label: string }[];             // timestamps or line numbers worth showing
   mistakes: { id: string; severity: 1 | 2 | 3; confidence: number; at: number[]; evidence: EvidenceRef }[];
   criteria: Record<string, boolean>;                   // pass/fail for each proof-standard criterion
-  version: string;                                     // evaluator + pack version, so results are reproducible
+  version: string;                                     // engine + spec + skill model version, so results are reproducible
 }
 ```
 
@@ -47,16 +50,19 @@ flowchart LR
 - **Choosing feedback:** see [learning loop §6](learning-loop.md#6-feedback-and-correction). One fix, one thing done well, both with evidence.
 - **Retention:** raw video and audio stay on the device for 30 days by default, adjustable by the learner. Analyses are kept permanently. Proof clips are kept until the learner deletes them.
 
-## 3. Evaluators by type of skill
+## 3. Engines
 
-| Evaluator | Records | Extracts | Metrics (examples) | Feedback within | Limits |
+| Engine | Records | Extracts | Metrics (examples) | Feedback within | Limits |
 |---|---|---|---|---|---|
-| **Movement** | 30 fps or faster clip with a framing guide | MediaPipe Pose (33 body points with 3D estimates) and Hand Landmarker (21 points per hand) | Joint angles, straight-arm ratio, hip-to-wall distance, foot re-placements, smoothness, centre of mass over feet | ~30 s for a 60 s clip | One camera can't see depth well. Fine finger detail is unreliable |
+| **Movement** | 30 fps or faster clip (60 fps for swings and spins) with a framing guide | MediaPipe Pose (33 body points with 3D estimates), Hand Landmarker (21 points per hand), Face Landmarker and Object Detector, as the spec asks | Whatever the metric spec defines: joint angles, speeds, repetitions, range of motion, symmetry, balance, similarity to a reference, timing on the beat | ~30 s for a 60 s clip | One camera can't see depth well. Fine finger detail is unreliable. Fast objects blur |
 | **Audio** | Mic recording with a metronome or backing track in the headphones | basic-pitch (notes), torchcrepe (pitch), librosa (onsets and tempo) | Timing off the beat (ms), tempo drift, pitch accuracy (cents), right or wrong notes, string buzz | ~5 s | Bluetooth delay must be calibrated. Chords played together are harder to read than single notes |
 | **Speech** | Mic recording, either repeating after the coach or a role-play turn | whisper.cpp (transcript), Kaldi pronunciation scoring with a forced aligner (per-sound scores) | Words understood %, score per sound, words per minute, pauses | ~5 s | Accents differ: score clarity, not a "native" accent |
-| **Code** | Editor contents | Pyodide runs the hidden tests in the browser | Tests passed, error types, run time | ~2 s | Only languages that run in the browser (Python first) |
+| **Code** | Editor contents or files | The test spec, run by the best available runner: browser (JavaScript, TypeScript, Python via Pyodide, SQL), local toolchain (any installed language) or container | Tests passed, error types, run time, lint findings | ~2 s in the browser; longer for compiled languages | Languages without a browser runtime need the toolchain or a container |
 | **Knowledge** | Answers | — | Accuracy, response time | Instant | — |
-| **Craft** (drawing, pottery…) | Photo or clip | The agent's vision model with the pack's rubric | Rubric scores, each with confidence | ~10 s | Subjective. Offers "share with a human reviewer" |
+| **Visual** (drawing, crafts, plating, photography…) | Photo, scan or screenshot | The agent's vision model with the rubric spec, plus measurements from points the learner taps | Rubric scores, each with confidence and an image region | ~10 s | Subjective. Offers "share with a human reviewer" |
+| **Interaction** | Keystrokes and clicks in the studio | — | Speed, accuracy, consistency | Instant | Studio only |
+| **Sensor** | Phone motion sensors | Cadence and tempo detection | Cadence, swing tempo, steadiness | Instant | Phone placement changes the signal |
+| **Game** | Moves and positions | An external engine, if installed, run as a separate process | Agreement with the best move, blunders, evaluation loss | ~2 s per position | Needs an engine installed; otherwise falls back to tactics quizzes |
 
 **Calibration**
 - **Audio:** a 10-second tap test measures the device's output delay once and subtracts it from every timing result.
@@ -66,7 +72,7 @@ flowchart LR
 
 ### 4.1 Recording
 
-1. **The pack recommends an angle for each drill.** Bouldering hips: side-on at 45° from about 4 m, phone at hip height. Squat depth: directly side-on. Guitar fretting hand: over the shoulder.
+1. **The metric spec states an angle for each drill.** Bouldering hips: side-on at 45° from about 4 m, phone at hip height. Squat depth: directly side-on. Guitar fretting hand: over the shoulder.
 2. **Live framing guide:** an outline of where the body should be. The record button stays disabled until:
    - the needed body points are visible with 60% confidence or more for 1 s;
    - the light is bright enough;
@@ -78,7 +84,7 @@ flowchart LR
 1. **Body points every frame:** MediaPipe Pose, plus Hand Landmarker when the drill needs it.
 2. **Smoothing:** a One Euro filter reduces jitter without adding lag. This is an algorithm we implement, not a dependency.
 3. **Split into moves:** when the hands and feet stop (velocity minima), that's a position. Contacts that stay put mark holds. Each move runs from one position to the next.
-4. **Measure each move,** using the pack's metrics. Bouldering:
+4. **Measure each move,** using the metric spec. Worked example, bouldering:
 
 | Metric | How it's computed | Reliable from |
 |---|---|---|
@@ -88,7 +94,7 @@ flowchart LR
 | Smoothness | Jerk (change in acceleration) during each move | Any angle |
 | Balance | Centre of mass over the feet during reaches | Side-on or from behind |
 
-5. **Find mistakes:** run the pack's mistake detectors (§5) over the per-move metrics.
+5. **Find mistakes:** run the skill model's mistake detectors (§5) over the per-move metrics.
 6. **Compare with a reference:** line up the learner's moves with a coach's clip of a similar move (dynamic time warping) and draw the reference as a ghost.
 
 ### 4.3 Replay screen
@@ -106,7 +112,7 @@ flowchart LR
 
 ## 5. Mistake library
 
-Each pack's `mistakes/` folder defines the mistakes it can detect:
+The agent writes mistake detectors in the spec language as part of the skill model ([curated packs](skill-packs.md) keep them in `mistakes/`):
 
 ```yaml
 id: hips-away
@@ -125,7 +131,7 @@ resolved_after: 3         # attempts in a row without it
 
 **Examples**
 
-| Pack | Mistake | Detected by | Shown as | Fix drill |
+| Skill (examples) | Mistake | Detected by | Shown as | Fix drill |
 |---|---|---|---|---|
 | Bouldering | Hips away from the wall | `hip_wall_cm` above the learner's threshold in 40% or more of moves | Hip line drawn on the frame, plus a ghost of the target position | Hips-in traverse |
 | Bouldering | Bent arms while resting | `straight_arm_ratio` < 0.5 | Elbow angle arc on the frame | Straight-arm shake-outs |
@@ -159,8 +165,16 @@ criteria:
 ## 7. Confidence and disagreement
 
 - Below the confidence floor, a mistake isn't shown at all. If no metric can be trusted, the result is a re-record request that names the problem.
-- When the learner disputes a correction, that mistake is muted for the attempt and the dispute is logged with the metrics. With the learner's consent, disputes help tune pack thresholds.
+- When the learner disputes a correction, that mistake is muted for the attempt and the dispute is logged with the metrics. With the learner's consent, disputes flag the skill model for review and help tune its thresholds.
 
 ## 8. Testing evaluators
 
-Each pack ships labeled example attempts in `tests/` (CC-BY-4.0 or CC0, with consent from whoever recorded them). `las pack test` runs every evaluator over them and fails the build when results drift past tolerance. This keeps model or threshold changes from quietly changing feedback.
+Tests are per **engine**, not per skill:
+
+- **Movement:** synthetic pose sequences with known angles, repetitions, timings and beat offsets, plus a few CC0 clips.
+- **Audio:** synthesized tones and rhythms with known pitch and timing errors.
+- **Speech:** recorded samples with consent, with known transcripts.
+- **Code:** fixtures for each runner and several languages.
+- **Visual:** images with known measurements.
+
+`las engines test` runs every engine over its fixtures and fails the build when results drift past tolerance. This keeps model or threshold changes from quietly changing feedback. Whether the agent configures engines well is checked separately by agent evals ([Any skill §9](any-skill.md#9-keeping-quality-up-without-per-skill-code)).
