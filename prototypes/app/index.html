@@ -1,0 +1,1822 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- artifact:start -->
+<title>Learn Any Skill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=DM+Mono:wght@400;500&family=Gabarito:wght@500;700;800&display=swap">
+<style>
+:root{
+  /* Layout: one 440px app column. Every screen is the same frame: progress, answers-so-far ribbon, one question, one answer component, one sticky action. Learning paths are drawn as climbing routes of holds. */
+  --bg:#ECF0F5;
+  --surface:#FFFFFF;
+  --sunk:#F4F6F9;
+  --ink:#121A26;
+  --muted:#586477;
+  --line:#D2D9E2;
+  --accent:#2445F0;
+  --on-accent:#FFFFFF;
+  --accent-soft:#E2E7FF;
+  --flag:#E0A100;
+  --flag-soft:#FFF2C7;
+  --good:#127A45;
+  --good-soft:#DCF2E5;
+  --warn:#A9530B;
+  --warn-soft:#FBE9D3;
+  --seg1:#2445F0; --seg2:#E0A100; --seg3:#12A06A; --seg4:#C2417A; --seg5:#7A8699;
+  --display:"Gabarito","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E131A; --surface:#171E28; --sunk:#121821; --ink:#E9EEF5; --muted:#97A3B4; --line:#2A3443;
+    --accent:#7E95FF; --on-accent:#0B1020; --accent-soft:#1E2850;
+    --flag:#FFC933; --flag-soft:#3A2F0E; --good:#4CC98A; --good-soft:#123323; --warn:#F2A35E; --warn-soft:#3A2412;
+    --seg1:#7E95FF; --seg2:#FFC933; --seg3:#4CC98A; --seg4:#F07AAE; --seg5:#8D99AB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E131A; --surface:#171E28; --sunk:#121821; --ink:#E9EEF5; --muted:#97A3B4; --line:#2A3443;
+  --accent:#7E95FF; --on-accent:#0B1020; --accent-soft:#1E2850;
+  --flag:#FFC933; --flag-soft:#3A2F0E; --good:#4CC98A; --good-soft:#123323; --warn:#F2A35E; --warn-soft:#3A2412;
+  --seg1:#7E95FF; --seg2:#FFC933; --seg3:#4CC98A; --seg4:#F07AAE; --seg5:#8D99AB;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{height:100%;box-sizing:border-box}
+body{min-height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1:focus{outline:none}
+.app{max-width:440px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-inline:16px}
+
+/* frame */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 6px;display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:12px}
+.iconbtn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0}
+.iconbtn:disabled{visibility:hidden}
+.progress{display:flex;gap:4px}
+.progress span{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden;position:relative}
+.progress span i{position:absolute;inset:0;background:var(--accent);transform-origin:left;transition:transform .3s ease}
+.secname{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.ribbon{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
+.ribbon::-webkit-scrollbar{display:none}
+.ribbon:empty{display:none}
+.rib{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px 4px 6px;font-size:13px;font-weight:700;white-space:nowrap}
+.rib .ic{width:16px;height:16px;color:var(--accent)}
+.rib:hover{border-color:var(--accent)}
+
+main{flex:1;padding-block:8px 20px;display:flex;flex-direction:column;gap:16px}
+main.enter{animation:enter .26s ease-out}
+main.enter.back{animation-name:enterBack}
+@keyframes enter{from{transform:translateX(18px);opacity:.35}to{transform:none;opacity:1}}
+@keyframes enterBack{from{transform:translateX(-18px);opacity:.35}to{transform:none;opacity:1}}
+.q{display:flex;flex-direction:column;gap:6px}
+h1{font-family:var(--display);font-weight:800;font-size:29px;line-height:1.1;letter-spacing:-.01em;margin:4px 0 0;text-wrap:balance}
+.sub{margin:0;color:var(--muted);text-wrap:balance}
+.sub b{color:var(--ink)}
+h2{font-family:var(--display);font-weight:700;font-size:17px;margin:6px 0 -6px}
+h2 small{font-family:var(--body);font-weight:400;color:var(--muted);font-size:14px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ic{width:20px;height:20px;flex:none}
+.ic.sm{width:14px;height:14px}
+
+/* answer components: tiles (single), chips (multi) */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tiles.list{grid-template-columns:1fr}
+.tile{position:relative;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px;min-height:64px;display:flex;align-items:center;gap:12px;min-width:0;transition:transform .12s ease,border-color .12s ease,background-color .12s ease}
+.tile:active{transform:scale(.98)}
+.tile .ti{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.tile .tt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile .tt b{font-family:var(--display);font-weight:700;font-size:17px;line-height:1.15}
+.tile .tt small{font-size:14px;color:var(--muted);line-height:1.3}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);background:var(--accent-soft)}
+.tile[aria-pressed="true"] .ti{background:var(--accent);color:var(--on-accent)}
+.tile .badge{position:absolute;top:-9px;right:12px}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;background:var(--flag);color:#1A1405}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 15px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px;transition:transform .12s ease,background-color .12s ease}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip:active{transform:scale(.96)}
+.chips.big .chip{font-size:16px;padding:12px 16px}
+.hint{font-size:13px;color:var(--muted);margin-top:-6px}
+.tag{display:inline-block;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;background:var(--accent-soft);color:var(--accent)}
+
+.field{display:flex;gap:8px}
+.field input{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:13px 14px;font-size:17px}
+.field input:focus{border-color:var(--accent);outline:none}
+.go{border:0;border-radius:12px;background:var(--accent);color:var(--on-accent);padding:0 18px;font-weight:700}
+.go:disabled{background:var(--line);color:var(--muted)}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.note{display:flex;gap:10px;align-items:center;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--muted)}
+.note b{color:var(--ink)}
+.note .ic{color:var(--accent)}
+
+/* chord diagrams */
+.chords{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.chord{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;font-family:var(--display);font-weight:700;min-width:0}
+.chord svg{width:100%;max-width:60px;height:auto;display:block}
+.chord .str,.chord .fret{stroke:var(--muted);stroke-width:1}
+.chord .nut{stroke:var(--ink)}
+.chord .dot{fill:var(--ink)}
+.chord .open{fill:none;stroke:var(--ink);stroke-width:1.2}
+.chord .mk{fill:var(--muted);font-size:9px;font-family:var(--mono)}
+.chord[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.chord[aria-pressed="true"] .dot{fill:var(--accent)}
+
+/* grade holds */
+.holds{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.holdbtn{border:1.5px solid var(--line);background:var(--surface);border-radius:58% 42% 52% 48%/48% 56% 44% 52%;aspect-ratio:1.2;max-width:100%;font-family:var(--mono);font-weight:500;font-size:17px;display:grid;place-items:center;padding:0}
+.holdbtn:nth-child(even){border-radius:44% 56% 46% 54%/56% 44% 58% 42%}
+.holdbtn.word{font-family:var(--body);font-size:13px;font-weight:700}
+.holdbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+/* panels: beat test, quiz, clip */
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.pad{height:150px;border-radius:14px;border:0;background:var(--accent);color:var(--on-accent);font-family:var(--display);font-weight:800;font-size:32px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.pad.pulse{animation:pulse .2s ease-out}
+@keyframes pulse{from{filter:brightness(1.4);transform:scale(.985)}to{filter:none;transform:none}}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.timeline svg{width:100%;height:auto;display:block}
+.timeline .axis{stroke:var(--line);stroke-width:1.5}
+.timeline .beat{stroke:var(--muted);stroke-width:1.5}
+.timeline .lbl{fill:var(--muted);font-family:var(--mono);font-size:9px}
+.timeline .t-good{fill:var(--good)} .timeline .t-ok{fill:var(--flag)} .timeline .t-bad{fill:var(--warn)}
+.timeline .miss{fill:none;stroke:var(--warn);stroke-width:1.5}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.info{background:var(--accent-soft);color:var(--accent)}
+.dots{display:flex;gap:6px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block}
+.dots i.r,.dots i.on{background:var(--good)}
+.dots i.w{background:var(--warn)}
+.prompt{font-family:var(--display);font-weight:800;font-size:26px;line-height:1.15}
+pre.code{font-family:var(--mono);font-size:14px;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0;overflow-x:auto}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:13px 14px;font-weight:700;transition:background-color .15s ease}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.opt.wrong{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.opt:disabled{cursor:default}
+.upload{display:flex;align-items:center;gap:12px;border:1.5px dashed var(--accent);border-radius:var(--r);padding:22px 16px;background:var(--accent-soft);cursor:pointer;font-weight:700;color:var(--accent)}
+.upload span{min-width:0;overflow-wrap:anywhere;color:var(--ink)}
+
+/* time */
+input[type=range]{width:100%;accent-color:var(--accent);height:32px;margin:0}
+.bignum{font-family:var(--display);font-weight:800;font-size:48px;line-height:1;font-variant-numeric:tabular-nums}
+.bignum small{font-size:18px;color:var(--muted);font-weight:500}
+.rangehint{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:-10px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:92px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:10px 10px 8px}
+.day{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.day i{display:block;width:100%;max-width:30px;border-radius:6px;background:var(--accent);transition:height .2s ease}
+.day i.off{background:var(--sunk);border:1px solid var(--line);height:6px}
+.day span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ladder / route */
+.ladder{display:flex;flex-direction:column;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:6px 0;overflow:hidden}
+.rung{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:6px;padding:9px 14px 9px 8px;border:0;background:none;text-align:left;position:relative;min-height:48px;width:100%}
+.rung::before{content:"";position:absolute;left:28px;top:0;bottom:0;width:2px;background:var(--line)}
+.rung:first-child::before{top:50%}
+.rung:last-child::before{bottom:50%}
+.rung.done::before{background:var(--accent)}
+.rung.here::before{bottom:50%}
+.rung:last-child.here::before{display:none}
+.rung .h{width:22px;height:18px;margin-left:9px;border-radius:60% 40% 55% 45%/50% 60% 40% 50%;background:var(--line);position:relative;z-index:1}
+.rung:nth-child(even) .h{border-radius:45% 55% 40% 60%/60% 45% 55% 40%}
+.rung .t{font-weight:700;min-width:0}
+.rung .m{font-family:var(--mono);font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.rung.done .h,.rung.here .h{background:var(--accent)}
+.rung.here .h{box-shadow:0 0 0 4px var(--accent-soft)}
+.rung.done .t{color:var(--muted);font-weight:400}
+.rung.target{background:var(--flag-soft)}
+.rung.target .h{background:var(--flag);box-shadow:0 0 0 4px var(--surface),0 0 0 6px var(--flag)}
+.rung.target .m{color:var(--ink)}
+.rung.next .h{background:var(--surface);border:2px dashed var(--flag)}
+.rung:disabled{cursor:default;color:inherit}
+button.rung:not(:disabled):hover{background:var(--sunk)}
+.you{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);border-radius:999px;padding:2px 8px}
+.ev{display:flex;flex-wrap:wrap;gap:6px}
+.ev span{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
+.ev .ic{width:14px;height:14px;color:var(--good)}
+.nudge{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* goals */
+.goals{display:flex;flex-direction:column;gap:10px}
+.goal{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;width:100%}
+.goal .k{display:flex;justify-content:space-between;gap:8px}
+.goal .g{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;overflow-wrap:anywhere}
+.goal.sel{border:2px solid var(--accent);background:var(--surface);box-shadow:0 6px 24px -12px color-mix(in srgb,var(--accent) 60%,transparent);cursor:default}
+.goal.sel .k .eyebrow:first-child{color:var(--accent)}
+.proof{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted)}
+.proof .ic{color:var(--accent);margin-top:1px}
+.proof b{color:var(--ink)}
+.proofbox{background:var(--sunk);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.stone{display:flex;flex-direction:column;gap:10px;background:var(--warn-soft);border-radius:12px;padding:12px;font-size:14px}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;padding:6px;font-size:14px}
+
+/* plan */
+.hero{background:var(--ink);color:var(--bg);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.hero .eyebrow{color:inherit;opacity:.7}
+.hero h1{margin:0;font-size:28px}
+.hero .proof{color:inherit;opacity:.85}
+.hero .proof b{color:inherit}
+.hero .proof .ic{color:var(--flag)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid color-mix(in srgb,var(--bg) 25%,transparent);padding-top:12px}
+.stat{display:flex;flex-direction:column;min-width:0}
+.stat b{font-family:var(--display);font-size:21px;line-height:1.1}
+.stat span{font-size:12px;opacity:.7}
+.why-line{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.why-line b{color:var(--ink)}
+.mix{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px}
+.mix i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.legend b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks .ic{color:var(--accent);margin-top:1px}
+.checks li.care .ic{color:var(--warn)}
+details.profile{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 14px}
+details.profile summary{font-weight:700;cursor:pointer}
+details.profile summary small{font-weight:400;color:var(--muted)}
+details.profile pre{font-family:var(--mono);font-size:12px;line-height:1.5;overflow-x:auto;background:var(--sunk);border-radius:10px;padding:10px;margin:10px 0;max-height:340px}
+
+/* action */
+.cta{position:sticky;bottom:0;z-index:5;background:linear-gradient(to top,var(--bg) 78%,color-mix(in srgb,var(--bg) 0%,transparent));padding:18px 0 calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:2px}
+.cta .main{width:100%;height:54px;border:0;border-radius:14px;background:var(--accent);color:var(--on-accent);font-family:var(--display);font-weight:800;font-size:18px;transition:transform .12s ease}
+.cta .main:active:not(:disabled){transform:scale(.985)}
+.cta .main:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.cta .alt{min-height:32px}
+.toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:10;text-align:center}
+
+/* ---------- learning loop ---------- */
+.fig{width:100%;height:auto;display:block}
+.fig .wall{stroke:var(--muted);stroke-width:3}
+.fig .hold{fill:var(--flag)}
+.fig .limb{stroke:var(--ink);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.fig .torso{stroke-width:8}
+.fig .head{fill:var(--ink)}
+.fig .mark{fill:none;stroke:var(--warn);stroke-width:2.5}
+.fig .gap{stroke:var(--warn);stroke-width:2;stroke-dasharray:3 3}
+.chart{width:100%;height:auto;display:block}
+.chart .ok{fill:var(--accent)} .chart .bad{fill:var(--warn)} .chart .up{fill:var(--flag)}
+.chart .thr{stroke:var(--warn);stroke-width:1.5;stroke-dasharray:4 3}
+.chart .base{stroke:var(--line);stroke-width:1.5}
+.chart .beat{stroke:var(--muted);stroke-width:1.5} .chart .grid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
+.chart .lbl{fill:var(--muted);font-family:var(--mono);font-size:9px}
+.chart .curve,.chart .tone{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round}
+.visopts{display:grid;gap:10px}
+.visopts.n2{grid-template-columns:1fr 1fr} .visopts.n3{grid-template-columns:repeat(3,1fr)}
+.visopt{border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:700;min-width:0}
+.visopt .fig{max-width:110px}
+.visopt.right{border-color:var(--good);background:var(--good-soft)} .visopt.wrong{border-color:var(--warn);background:var(--warn-soft)}
+.visopt:disabled{cursor:default;color:inherit}
+.reveal{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;font-size:15px}
+.reveal.good{background:var(--good-soft)} .reveal.good .ic{color:var(--good)}
+.reveal.warn{background:var(--warn-soft)} .reveal.warn .ic{color:var(--warn)}
+.checklist{display:flex;flex-direction:column;gap:8px}
+.tick{display:flex;align-items:center;gap:12px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;font-weight:700}
+.tick .ic{color:var(--line);border:1.5px solid var(--line);border-radius:6px;padding:1px}
+.tick[aria-pressed="true"]{border-color:var(--good);background:var(--good-soft)}
+.tick[aria-pressed="true"] .ic{color:var(--on-accent);background:var(--good);border-color:var(--good)}
+#simwrap{flex-direction:row;align-items:center;gap:14px}
+.simfig{width:44%;max-width:150px;flex:none}
+.readout{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.readout b.mono{font-family:var(--display);font-size:34px;line-height:1}
+.readout i,.rubric i,.meter{display:block;height:10px;border-radius:5px;background:var(--sunk);border:1px solid var(--line);overflow:hidden}
+.readout i b,.rubric i b{display:block;height:100%}
+.readout .ok,.rubric .ok{background:var(--accent)} .readout .bad,.rubric .bad{background:var(--warn)}
+.readout small{color:var(--muted);font-size:12px}
+.meter i{display:block;height:100%;background:var(--accent)}
+.grid8{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.grid8 span{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:8px;padding:6px 0;background:var(--sunk)}
+.grid8 b{font-family:var(--display);font-size:22px;line-height:1;color:var(--accent)}
+.grid8 .rest b{color:var(--line)}
+.grid8 small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.grid8 .hl{background:var(--accent)} .grid8 .hl b,.grid8 .hl small{color:var(--on-accent)}
+.visopt .grid8{width:100%;gap:1px} .visopt .grid8 b{font-size:14px} .visopt .grid8 small{font-size:8px} .visopt .grid8 span{padding:3px 0;border-radius:4px}
+.vowels{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.vowel{border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.vowel b{font-family:var(--display);font-size:30px;line-height:1}
+.vowel small{color:var(--muted)}
+.swap{color:var(--accent);border-bottom:2px solid var(--accent)}
+pre.trace span{display:inline-block;width:100%;border-radius:4px;padding:0 4px}
+pre.trace span.on{background:var(--flag-soft);box-shadow:inset 3px 0 0 var(--flag)}
+.framing{display:flex;align-items:center;gap:14px;background:var(--surface);border:2px dashed var(--accent);border-radius:var(--r);padding:14px;color:var(--muted);font-size:14px}
+.framing .fig{width:70px;flex:none;opacity:.55}
+.framing.mic .ic{width:36px;height:36px;color:var(--accent)}
+.recbtn{height:64px;border-radius:999px;border:0;background:var(--warn);color:#fff;font-family:var(--display);font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px}
+.recbtn:disabled{opacity:.8}
+.editor{width:100%;min-height:150px;font-family:var(--mono);font-size:14px;line-height:1.5;border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--sunk);resize:vertical}
+.editor:focus{outline:none;border-color:var(--accent)}
+.tests{display:flex;flex-direction:column;gap:6px}
+.tests div{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-radius:10px;padding:8px 10px;font-size:13px}
+.tests .ok{background:var(--good-soft);color:var(--good)} .tests .bad{background:var(--warn-soft);color:var(--warn)}
+.pipe{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pipe li{display:flex;gap:12px;align-items:center;color:var(--muted);font-weight:700}
+.pipe li .ic{color:var(--line);transition:color .2s ease}
+.pipe li.done{color:var(--ink)} .pipe li.done .ic{color:var(--good)}
+.fixcard{background:var(--surface);border:2px solid var(--warn);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.fixcard h1{margin:0;font-size:24px}
+.fixcard .eyebrow{color:var(--warn)}
+.evidence{background:var(--sunk);border-radius:12px;padding:10px}
+.why{display:flex;gap:10px}
+.why .fig{width:50%}
+.praise{display:flex;gap:10px;align-items:center;background:var(--good-soft);border-radius:12px;padding:12px 14px}
+.praise .ic{color:var(--good)}
+.vbars{display:flex;justify-content:space-around;align-items:flex-end;height:110px}
+.vbars div{display:flex;flex-direction:column;align-items:center;gap:3px}
+.vbars i{display:block;width:26px;border-radius:6px}
+.vbars .ok{background:var(--accent)} .vbars .bad{background:var(--warn)}
+.vbars b{font-family:var(--display);font-size:18px}
+.vbars small{color:var(--muted);font-size:11px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.pair div{display:flex;flex-direction:column;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.rubric{display:flex;flex-direction:column;gap:8px;width:100%}
+.rubric div{display:grid;grid-template-columns:100px 1fr;align-items:center;gap:10px;font-size:14px}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.ba > div{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.ba > div.up{border-color:var(--good);background:var(--good-soft)}
+.ba b{font-family:var(--display);font-size:22px}
+.ba .arrow{font-size:22px;color:var(--muted)}
+.mastery{display:flex;gap:14px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.mastery div{display:flex;flex-direction:column}
+.mastery span{color:var(--muted);font-size:14px}
+.ring .track{fill:none;stroke:var(--line);stroke-width:5}
+.ring .fill{fill:none;stroke:var(--accent);stroke-width:5;stroke-linecap:round}
+.tabs{display:flex;background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:3px;justify-self:center}
+.tabs button{border:0;background:none;border-radius:999px;padding:6px 14px;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+.next{background:var(--ink);color:var(--bg);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.next .eyebrow,.next .hint{color:inherit;opacity:.75}
+.next b{font-family:var(--display);font-size:22px;line-height:1.15}
+.cardbtn{display:flex;gap:12px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px}
+.cardbtn .ic{color:var(--accent)}
+.cardbtn span{display:flex;flex-direction:column}
+.cardbtn small{color:var(--muted)}
+.weekdots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.weekdots div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.weekdots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);display:block}
+.weekdots i.plan{border-color:var(--accent)} .weekdots i.done{background:var(--good);border-color:var(--good)}
+.weekdots span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.nodes div{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;font-size:14px;font-weight:700;min-width:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="bar" id="bar"></div>
+    <nav class="ribbon" id="ribbon" aria-label="Your answers so far"></nav>
+  </header>
+  <main id="screen" aria-live="polite"></main>
+  <div class="cta">
+    <button class="main" id="next" type="button" data-act="next">Continue</button>
+    <div class="alt" id="alt"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+
+const ICONS = {
+  back:'<path d="M12 4l-6 6 6 6"/>',
+  guitar:'<circle cx="7.5" cy="13" r="4.5"/><circle cx="7.5" cy="13" r="1.2"/><path d="M10.5 10L16.5 4M15 2.5l2.5 2.5"/>',
+  climb:'<path d="M2 17l5.5-9 3.5 5 2-3 5 7z"/>',
+  speech:'<path d="M3 4.5h14v9H8.5L5 16.5v-3H3z"/>',
+  code:'<path d="M7 6l-4 4 4 4M13 6l4 4-4 4"/>',
+  piano:'<rect x="2.5" y="4" width="15" height="12" rx="1.5"/><path d="M7.5 10v6M12.5 10v6M6 4v6h3V4M11 4v6h3V4"/>',
+  pencil:'<path d="M13.5 3.5l3 3L7 16H4v-3z"/><path d="M11.5 5.5l3 3"/>',
+  mic:'<rect x="7" y="2.5" width="6" height="10" rx="3"/><path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5"/>',
+  cam:'<rect x="2" y="5" width="11" height="10" rx="2"/><path d="M13 9l5-3v8l-5-3"/>',
+  check:'<path d="M4 10.5l4 4 8-9"/>',
+  eye:'<path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10z"/><circle cx="10" cy="10" r="2.5"/>',
+  flag:'<path d="M5 18V3M5 4h9l-2 3.5 2 3.5H5"/>',
+  clock:'<circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 2"/>',
+  spark:'<path d="M10 2.5l1.8 4.7 4.7 1.8-4.7 1.8L10 15.5l-1.8-4.7L3.5 9l4.7-1.8z"/>',
+  heart:'<path d="M10 16.5S3 12.5 3 7.5A3.5 3.5 0 0 1 10 6a3.5 3.5 0 0 1 7 1.5c0 5-7 9-7 9z"/>',
+  image:'<rect x="2.5" y="3.5" width="15" height="13" rx="2"/><path d="M2.5 13l4-4 3 3 2-2 6 6"/><circle cx="13" cy="7.5" r="1.3"/>',
+  target:'<circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="4"/><circle cx="10" cy="10" r=".8"/>',
+  clockfast:'<circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 2"/>',
+  care:'<path d="M10 2.5l6.5 2.5v5c0 4-3 6.5-6.5 7.5C6.5 16.5 3.5 14 3.5 10V5z"/>',
+  repeat:'<path d="M4 8a6 6 0 0 1 10.5-3M16 12a6 6 0 0 1-10.5 3"/><path d="M14.5 2v3h-3M5.5 18v-3h3"/>',
+  up:'<path d="M10 16V4M5 9l5-5 5 5"/>',
+  down:'<path d="M10 4v12M5 11l5 5 5-5"/>'
+};
+const icon = (n, cls) => `<svg class="${cls || "ic"}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ICONS.spark}</svg>`;
+
+const EVAL = {
+  audio:{t:"Listens to your recording", i:"mic"},
+  video:{t:"Checks body position in your clip", i:"cam"},
+  speech:{t:"Scores your speaking", i:"mic"},
+  code:{t:"Runs your code against tests", i:"code"},
+  quiz:{t:"Short check quiz", i:"check"},
+  coach:{t:"Coach reviews what you made", i:"eye"}
+};
+const DEADLINES = [
+  {id:"none", t:"No deadline", w:null},
+  {id:"2w", t:"2 weeks", w:2},
+  {id:"1m", t:"1 month", w:4},
+  {id:"3m", t:"3 months", w:13},
+  {id:"6m", t:"6 months", w:26}
+];
+const QUICK = [
+  {n:"Guitar", i:"guitar"}, {n:"Bouldering", i:"climb"}, {n:"Spanish", i:"speech"},
+  {n:"Python", i:"code"}, {n:"Piano", i:"piano"}, {n:"Drawing", i:"pencil"}
+];
+const CHORDS = [
+  {n:"G", f:[3,2,0,0,0,3]}, {n:"C", f:[-1,3,2,0,1,0]}, {n:"D", f:[-1,-1,0,2,3,2]}, {n:"Em", f:[0,2,2,0,0,0]},
+  {n:"Am", f:[-1,0,2,2,1,0]}, {n:"E", f:[0,2,2,1,0,0]}, {n:"A", f:[-1,0,2,2,2,0]}, {n:"F", f:[1,3,3,2,1,1], barre:1}
+];
+
+/* Each pack supplies the same parts, so every learning path runs through the same screens:
+   why[] · after[] (tagged with the whys they fit) · probes[] (standard answer types) · place() · rungs[] · access · injuries */
+const PACKS = {
+  guitar: {
+    name:"Guitar", noun:"the guitar", icon:"guitar", ev:"audio",
+    blurb:"Guitar pack · 8-step ladder · listens to you play",
+    placeholder:"e.g. Play Wonderwall",
+    why:[
+      {id:"fun", t:"Unwind and have fun", i:"heart"}, {id:"people", t:"Play with friends", i:"speech"},
+      {id:"create", t:"Express myself", i:"pencil"}, {id:"dream", t:"A childhood dream", i:"spark"},
+      {id:"event", t:"A gig or event coming up", i:"flag"}, {id:"mind", t:"Keep my brain sharp", i:"target"}
+    ],
+    probes:[
+      {type:"chords", id:"chords", q:"Tap the chords you can play", sub:"Only the ones that ring clean."},
+      {type:"single", id:"songs", q:"How many songs can you play start to finish?", options:[{v:"0", t:"None yet"}, {v:"1-4", t:"1 to 4"}, {v:"5+", t:"5 or more"}]},
+      {type:"beat", id:"rhythm", q:"Tap along to the beat", sub:"8 clicks at 90 bpm. Turn your sound on.", optional:true}
+    ],
+    place(d){
+      const ch = d.chords || [], open = ch.filter(c => c !== "F").length;
+      const steady = d.rhythm && d.rhythm.missed <= 1 && d.rhythm.ms <= 80;
+      let b = 0;
+      if (open >= 4) b = 1;
+      if (b >= 1 && steady) b = 2;
+      if (open >= 4 && d.songs === "1-4") b = Math.max(b, 3);
+      if (open >= 4 && d.songs === "5+") b = Math.max(b, 4);
+      if (open >= 5 && ch.includes("F")) b = Math.max(b, 5);
+      if (b >= 5 && d.songs === "5+") b = 6;
+      return b;
+    },
+    evidence(d){
+      const out = [`${(d.chords || []).length} chord${(d.chords || []).length === 1 ? "" : "s"}`];
+      if (d.songs) out.push(`${d.songs === "0" ? "No" : d.songs} songs`);
+      if (d.rhythm) out.push(d.rhythm.missed >= 3 ? "Beat test: missed beats" : `Beat test: ${d.rhythm.ms} ms off`);
+      return out;
+    },
+    rungs:[
+      {t:"Never played", h:0},
+      {t:"4 open chords: G, C, D, Em", h:6, proof:"Each chord rings clean, no muted strings"},
+      {t:"Change chords on the beat at 60 bpm", h:6, proof:"4 changes per bar, 90%+ on the beat"},
+      {t:"Play a full 4-chord song", h:8, proof:"Whole song at 80% tempo, rhythm accuracy 90%+"},
+      {t:"Strumming patterns: Wonderwall", h:12, proof:"One take, pattern held through every verse"},
+      {t:"The F barre chord", h:15, proof:"F rings clean 4 of 5 tries, change from C in under 2 s"},
+      {t:"Play and sing 5 songs from memory", h:25, proof:"5 takes, no sheet, no stops"},
+      {t:"Fingerpick a full intro", h:30, proof:"Travis pattern at 70 bpm, even volume across strings"}
+    ],
+    after:[
+      {id:"campfire", t:"Playing around a campfire", why:["fun","people"], rung:3, m:"Play and sing one campfire song, start to finish", proof:"One take, voice and guitar, no stops", focus:{"Chords & rhythm":50, "Songs":35, "Singing along":15}},
+      {id:"wedding", t:"Playing at a friend's wedding", why:["event","people"], rung:7, m:"Fingerpick the first 8 bars of a wedding song", proof:"Clean take at 70 bpm, even dynamics", focus:{"Fingerpicking":45, "Songs":35, "Stage nerves":20}, access:["Nylon-string guitar"]},
+      {id:"write", t:"Writing my own songs", why:["create","dream"], rung:3, m:"Write and play a 4-chord verse of your own", proof:"Recording plus chord chart, changes on the beat", focus:{"Chords & rhythm":40, "Theory basics":35, "Songwriting":25}},
+      {id:"band", t:"Jamming with a band", why:["people","dream","fun"], rung:4, m:"Hold a strumming groove over a backing track for 3 minutes", proof:"Timing drift under 40 ms against the track", focus:{"Rhythm & timing":50, "Chords":30, "Listening":20}, access:["Amp or audio interface"]},
+      {id:"calm", t:"Playing to switch off after work", why:["mind","fun"], rung:2, m:"10 minutes of chord changes without looking at your hands", proof:"Recorded take, changes on the beat", focus:{"Chords & rhythm":55, "Songs":30, "Technique":15}}
+    ],
+    focus:{"Chords & rhythm":45, "Songs":35, "Technique":20},
+    access:["Acoustic guitar", "Electric guitar", "Tuner app", "No guitar yet"],
+    injuries:{"Wrist":"Short sessions with a wrist warm-up first", "Fingertips":"15-minute blocks until calluses form"},
+    hardFocus:/technique|fingerpicking/i
+  },
+  bouldering: {
+    name:"Bouldering", noun:"bouldering", icon:"climb", ev:"video",
+    blurb:"Bouldering pack · V0 to V6 ladder · video coach",
+    placeholder:"e.g. Send a V3",
+    why:[
+      {id:"health", t:"Get strong and fit", i:"heart"}, {id:"people", t:"Climb with friends", i:"speech"},
+      {id:"fun", t:"Have fun moving", i:"spark"}, {id:"limits", t:"Push my limits", i:"target"},
+      {id:"mind", t:"Clear my head", i:"eye"}, {id:"trip", t:"A trip to real rock", i:"flag"}
+    ],
+    probes:[
+      {type:"holds", id:"grade", q:"What's the hardest grade you've sent?", sub:"Sent means top to bottom, no falls."},
+      {type:"multi", id:"moves", q:"Which moves already feel natural?", options:["Smearing", "Flagging", "Heel hook", "Drop knee", "Dyno"], optional:true},
+      {type:"clip", id:"clip", q:"Got a clip of you climbing?", sub:"Your phone checks body position. The video stays on it.", optional:true}
+    ],
+    place(d){ return d.grade == null ? 0 : d.grade; },
+    evidence(d){
+      const out = [d.grade ? `Hardest send: ${this.rungs[d.grade].l}` : "Never climbed"];
+      if (d.moves && d.moves.length) out.push(`${d.moves.length} moves`);
+      if (d.clip) out.push("Clip added");
+      return out;
+    },
+    rungs:[
+      {t:"Never climbed", l:"Never climbed", h:0},
+      {t:"Send a V0", l:"V0", h:4, proof:"Video: 2 different V0s, feet placed quietly"},
+      {t:"Send a V1", l:"V1", h:8, proof:"Video: 2 different V1s, straight arms on rests"},
+      {t:"Send a V2", l:"V2", h:15, proof:"Video: 2 different V2s, hips close to the wall"},
+      {t:"Send a V3", l:"V3", h:25, proof:"Video: 2 different V3s, hips in, flagging where needed"},
+      {t:"Send a V4", l:"V4", h:40, proof:"Video: 2 different V4s, smooth weight shifts, no foot slips"},
+      {t:"Send a V5", l:"V5", h:60, proof:"Video: 1 V5, body position check passes"},
+      {t:"Send a V6", l:"V6+", h:90, proof:"Video: 1 V6, no wasted moves"}
+    ],
+    after:[
+      {id:"outdoor", t:"Climbing outdoors", why:["trip","limits","fun"], rung:3, m:"Send your first outdoor boulder", proof:"Video of a clean send on rock, pads and spotter set up right", focus:{"Footwork":35, "Reading problems":30, "Falling & spotting":20, "Strength":15}, access:["Crash pad", "Climbing partner"]},
+      {id:"v5", t:"Climbing V5", why:["limits"], rung:6, m:"Send your first V5", proof:"Video of 1 V5 send, body position check passes", focus:{"Strength":35, "Body position":30, "Footwork":20, "Projecting":15}, access:["Hangboard"]},
+      {id:"fit", t:"Getting strong and fit", why:["health","mind"], rung:3, m:"Climb 3 times a week for a month and send V2", proof:"Session log plus 2 V2 sends on video", focus:{"Endurance":35, "Strength":30, "Footwork":20, "Recovery":15}},
+      {id:"friends", t:"Climbing with friends every week", why:["people","fun"], rung:2, m:"Flash three V1s in one session", proof:"Video: 3 different V1s, each on the first try", focus:{"Footwork":40, "Reading problems":30, "Body position":30}}
+    ],
+    focus:{"Footwork":40, "Body position":30, "Strength":20, "Reading problems":10},
+    access:["Climbing gym", "Home wall", "Climbing shoes"],
+    injuries:{"Fingers":"Open-hand grips first, no hangboard for 8 weeks", "Shoulders":"No dynos, shoulder prehab every session", "Elbows":"Antagonist work, volume capped", "Knees":"No drop knees, down-climb instead of jumping"},
+    hardFocus:/strength|endurance|projecting/i
+  },
+  spanish: {
+    name:"Spanish", noun:"Spanish", icon:"speech", ev:"speech",
+    blurb:"Spanish pack · CEFR ladder · speaking coach",
+    placeholder:"e.g. Order dinner in Madrid",
+    why:[
+      {id:"trip", t:"An upcoming trip", i:"flag"}, {id:"family", t:"Talk with family or a partner", i:"heart"},
+      {id:"career", t:"Work or career", i:"target"}, {id:"media", t:"Enjoy shows, music, books", i:"image"},
+      {id:"mind", t:"Keep my brain sharp", i:"spark"}, {id:"finish", t:"Finally finish what I started", i:"repeat"}
+    ],
+    probes:[
+      {type:"quiz", id:"quiz", q:"What does this mean?", sub:"It stops once it gets hard.", items:[
+        {q:"Hola", o:["Goodbye","Hello","Thank you"], a:1},
+        {q:"La cuenta, por favor", o:["The bill, please","The menu, please","The account is mine"], a:0},
+        {q:"¿Dónde está el baño?", o:["When does the bus leave?","Is the bath hot?","Where is the bathroom?"], a:2},
+        {q:"Ayer fuimos al mercado", o:["Tomorrow we go to the market","Yesterday we went to the market","We were at the market today"], a:1},
+        {q:"Si tuviera tiempo, viajaría más", o:["If I had time, I'd travel more","I had time, so I traveled","When I have time, I travel"], a:0},
+        {q:"Ojalá me lo hubieras dicho antes", o:["Maybe you'll tell me later","You told me before, hopefully","I wish you'd told me sooner"], a:2}
+      ], map:c => c <= 1 ? 0 : c <= 3 ? 1 : c === 4 ? 2 : c === 5 ? 3 : 4}
+    ],
+    place(d){ return d.quiz && d.quiz.done ? this.probes[0].map(d.quiz.c) : 0; },
+    evidence(d){ return d.quiz && d.quiz.hist.length ? [`Placement: ${d.quiz.c} of ${d.quiz.hist.length} right`] : ["Brand new"]; },
+    rungs:[
+      {t:"Brand new", h:0},
+      {t:"Survival phrases", h:25, proof:"Voice role-play: order food and ask directions, no English"},
+      {t:"A1: basic chats", h:40, proof:"5-minute chat about yourself, pronunciation score 75+"},
+      {t:"A2: past and future", h:90, proof:"Tell a 2-minute story in the past tense, 80% understood"},
+      {t:"B1: real conversations", h:150, proof:"15-minute conversation on a topic you didn't prepare"},
+      {t:"B2: nuance and debate", h:200, proof:"Argue both sides of an opinion for 5 minutes"}
+    ],
+    after:[
+      {id:"travel", t:"Traveling without English", why:["trip"], rung:1, m:"Get through a day of travel in Spanish", proof:"Voice role-play: order food, buy a ticket, ask directions, no English", focus:{"Speaking":40, "Listening":35, "Vocab":20, "Grammar":5}, access:["Travel date booked"]},
+      {id:"family", t:"Talking with family", why:["family"], rung:2, m:"A 5-minute call about your week", proof:"Voice chat with the coach, 80% understood without repeats", focus:{"Speaking":40, "Listening":30, "Vocab":15, "Grammar":15}},
+      {id:"work", t:"Using Spanish at work", why:["career"], rung:3, m:"Run a 10-minute work call in Spanish", proof:"Role-play call, key points understood, no English", focus:{"Speaking":40, "Listening":25, "Work vocab":20, "Grammar":15}},
+      {id:"dele", t:"Passing the DELE B1", why:["career","finish"], rung:4, m:"Score 70% or more on a DELE B1 mock exam", proof:"Timed mock: reading, listening, writing, speaking", ev:"quiz", focus:{"Grammar":30, "Reading":25, "Listening":25, "Speaking":20}},
+      {id:"shows", t:"Watching shows in Spanish", why:["media","mind"], rung:3, m:"Follow a 10-minute episode with Spanish subtitles", proof:"Comprehension check, 80% or more", ev:"quiz", focus:{"Listening":50, "Vocab":30, "Speaking":10, "Grammar":10}}
+    ],
+    focus:{"Speaking":35, "Listening":30, "Vocab":20, "Grammar":15},
+    access:["Headphones", "A speaking partner", "Spanish TV or podcasts"],
+    injuries:null
+  },
+  python: {
+    name:"Python", noun:"Python", icon:"code", ev:"code",
+    blurb:"Python pack · project ladder · runs your code",
+    placeholder:"e.g. Automate my weekly report",
+    why:[
+      {id:"job", t:"Get a developer job", i:"target"}, {id:"work", t:"Save time at work", i:"clock"},
+      {id:"build", t:"Build my own ideas", i:"spark"}, {id:"curious", t:"Just curious how it works", i:"eye"},
+      {id:"class", t:"A class or exam", i:"flag"}
+    ],
+    probes:[
+      {type:"quiz", id:"quiz", q:"What does this print?", sub:"It stops once it gets hard.", items:[
+        {q:"print(2 + 3 * 4)", o:["14","20","2 + 3 * 4"], a:0, code:true},
+        {q:"for i in range(3):\n    print(i)", o:["1 2 3","0 1 2","0 1 2 3"], a:1, code:true},
+        {q:"nums = [3, 1, 2]\nnums.sort()\nprint(nums[-1])", o:["2","1","3"], a:2, code:true},
+        {q:"def add(x, y=10):\n    return x + y\n\nprint(add(5))", o:["15","5","TypeError"], a:0, code:true},
+        {q:'d = {w: len(w) for w in ["hi", "hey"]}\nprint(d["hey"])', o:["2","3",'"hey"'], a:1, code:true}
+      ], map:c => [0,1,2,2,2,3][c]}
+    ],
+    place(d){ return d.quiz && d.quiz.done ? this.probes[0].map(d.quiz.c) : 0; },
+    evidence(d){ return d.quiz && d.quiz.hist.length ? [`Placement: ${d.quiz.c} of ${d.quiz.hist.length} right`] : ["Never coded"]; },
+    rungs:[
+      {t:"Never coded", h:0},
+      {t:"Run your first script", h:2, proof:"Your script prints the right output"},
+      {t:"Variables, loops and functions", h:15, proof:"20 small exercises, hidden tests pass"},
+      {t:"Build a command-line tool", h:20, proof:"Your tool passes 10 hidden tests"},
+      {t:"Files, APIs and libraries", h:20, proof:"Fetch an API and save to a file, tests pass"},
+      {t:"Automate a real weekly task", h:25, proof:"Script runs on your real files twice in one week"},
+      {t:"Ship a small web app", h:40, proof:"App deployed, tests pass in CI"}
+    ],
+    after:[
+      {id:"automate", t:"Automating boring work", why:["work"], rung:5, m:"Automate one task you do every week", proof:"Runs on your real files, tests pass in the sandbox", focus:{"Writing code":45, "Files & APIs":30, "Reading code":25}},
+      {id:"job", t:"Working as a developer", why:["job"], rung:6, m:"Ship a tested web app to GitHub", proof:"Repo with passing CI, plus a code review from the coach", focus:{"Projects":40, "Writing code":30, "Testing":15, "Reading code":15}, access:["GitHub account"]},
+      {id:"data", t:"Analyzing data", why:["work","curious"], rung:4, m:"Answer 3 real questions from a CSV with pandas", proof:"Notebook runs top to bottom, answers match", focus:{"Data & pandas":45, "Writing code":35, "Charts":20}},
+      {id:"app", t:"Building my own app", why:["build"], rung:6, m:"Ship a small app a friend can use", proof:"Live URL plus passing tests", focus:{"Projects":50, "Writing code":35, "Reading code":15}},
+      {id:"exam", t:"Acing a class or exam", why:["class","curious"], rung:3, m:"Solve 10 exam-style problems in 60 minutes", proof:"Hidden tests pass, inside the time limit", focus:{"Problem solving":45, "Reading code":30, "Writing code":25}}
+    ],
+    focus:{"Writing code":50, "Reading code":25, "Projects":25},
+    access:["Laptop", "Phone only", "GitHub account"],
+    injuries:null
+  }
+};
+
+function genericPack(name){
+  const n = name.trim() || "this skill", s = n.toLowerCase();
+  return {
+    name:n.charAt(0).toUpperCase() + n.slice(1), noun:s, icon:"spark", ev:"coach", generic:true,
+    blurb:`No ${s} pack yet · your agent drafts a starter ladder`,
+    placeholder:`e.g. My first ${s} piece`,
+    why:[
+      {id:"fun", t:"For fun", i:"heart"}, {id:"people", t:"To share with people", i:"speech"},
+      {id:"career", t:"Career", i:"target"}, {id:"health", t:"Health and wellbeing", i:"care"},
+      {id:"create", t:"Make my own things", i:"pencil"}, {id:"prove", t:"Prove it to myself", i:"flag"}
+    ],
+    probes:[
+      {type:"single", id:"level", q:`How much ${s} have you done?`, options:[
+        {v:0, t:"Never tried it", d:"Starting from zero"},
+        {v:1, t:"Tried a few times", d:"I know what it looks like, not how to do it"},
+        {v:2, t:"Practice now and then", d:"Some basics, no routine"},
+        {v:3, t:"Practice every week", d:"Comfortable with the basics"}
+      ]}
+    ],
+    place(d){ return d.level == null ? 0 : d.level; },
+    evidence(d){ return [this.probes[0].options[d.level || 0].t]; },
+    rungs:[
+      {t:"Brand new", h:0},
+      {t:"First session done", h:2, proof:"Log one session with a photo or clip of your attempt"},
+      {t:"Basics down", h:8, proof:"Coach review: the fundamentals look right"},
+      {t:"First real result", h:15, proof:"Upload one finished result"},
+      {t:"Comfortable", h:25, proof:"Three results in a month, each reviewed"},
+      {t:"Confident", h:40, proof:"Do it without a guide, coach review"}
+    ],
+    after:[
+      {id:"enjoy", t:"Enjoying it for its own sake", why:["fun","health"], rung:2, m:`A 20-minute ${s} session you enjoy start to finish`, proof:"Session log plus a clip or photo"},
+      {id:"show", t:"Showing people what I made", why:["create","people"], rung:3, m:`Make one ${s} piece you're proud to show`, proof:"Upload it, coach review against your goal"},
+      {id:"work", t:"Using it at work", why:["career"], rung:3, m:`Use ${s} on one real task at work`, proof:"Before and after, coach review"},
+      {id:"teach", t:"Teaching it to a friend", why:["people","prove"], rung:4, m:`Teach a friend the basics of ${s}`, proof:"A clip of your friend doing it"}
+    ],
+    focus:{"Practice":60, "Concepts":25, "Review":15},
+    access:["Equipment", "A place to practice", "Someone to practice with"],
+    injuries:null
+  };
+}
+
+function matchSkill(t){
+  t = t.toLowerCase();
+  if (/guitar/.test(t)) return "guitar";
+  if (/climb|boulder/.test(t)) return "bouldering";
+  if (/spanish|español|espanol/.test(t)) return "spanish";
+  if (/python|coding|\bcode\b|program/.test(t)) return "python";
+  return "generic";
+}
+
+function matchCustom(id, text){
+  const t = text.toLowerCase();
+  if (id === "bouldering"){
+    const m = t.match(/v\s?(\d+)/);
+    if (m) return Math.min(+m[1] + 1, 7);
+    if (/outdoor|rock|crag/.test(t)) return 3;
+  } else if (id === "guitar"){
+    if (/\bF\b/.test(text) || /barre/.test(t)) return 5;
+    if (/finger|pick/.test(t)) return 7;
+    if (/sing|5 songs|five songs/.test(t)) return 6;
+    if (/wonderwall|strum/.test(t)) return 4;
+    if (/song|play/.test(t)) return 3;
+    if (/chord/.test(t)) return 1;
+  } else if (id === "spanish"){
+    if (/b2/.test(t)) return 5;
+    if (/b1|dele/.test(t)) return 4;
+    if (/a2|story|past|work|meeting/.test(t)) return 3;
+    if (/a1|conversation|talk|chat|call/.test(t)) return 2;
+    if (/order|trip|travel|direction|survive|menu|dinner|food/.test(t)) return 1;
+  } else if (id === "python"){
+    if (/web|app|site/.test(t)) return 6;
+    if (/automate|report|script/.test(t)) return 5;
+    if (/api|file|librar|pandas|csv|data/.test(t)) return 4;
+    if (/cli|tool|command|exam|problem/.test(t)) return 3;
+    if (/loop|function|basic/.test(t)) return 2;
+    if (/first|hello/.test(t)) return 1;
+  }
+  return null;
+}
+
+/* ---------- state ---------- */
+const SECTIONS = ["Skill","Why","Picture it","Level","Time","Milestone","Plan"];
+const DEFAULT = {mode:"onboard", sess:null, app:null, idx:0, skillId:null, skillName:"", why:[], after:null, afterCustom:"", diag:{}, adjust:0, baseline:null,
+  minutes:180, deadline:"none", access:[], injuries:[], milestone:null, later:null, showLadder:false, custom:""};
+const KEY = "las-prototype-v3";
+let S = clone(DEFAULT);
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(clone(DEFAULT), JSON.parse(raw)); } catch (e) {}
+if (S.diag) delete S.diag.flash;
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+const pack = () => S.skillId === "generic" ? genericPack(S.skillName) : PACKS[S.skillId];
+const afterObj = () => S.after ? pack().after.find(a => a.id === S.after) : null;
+const afterText = () => afterObj() ? afterObj().t : S.afterCustom.trim();
+const whyLabel = id => (pack().why.find(w => w.id === id) || {t:id}).t;
+const hrs = m => String(+(m / 60).toFixed(1));
+const deadlineW = () => DEADLINES.find(d => d.id === S.deadline).w;
+const lc1 = s => s.charAt(0).toLowerCase() + s.slice(1);
+
+function screens(){
+  const list = [{sec:0, id:"skill"}];
+  if (!S.skillId) return list;
+  list.push({sec:1, id:"why"}, {sec:2, id:"after"});
+  pack().probes.forEach((p, i) => list.push({sec:3, id:"probe", n:i}));
+  list.push({sec:3, id:"place"}, {sec:4, id:"time"}, {sec:4, id:"around"}, {sec:5, id:"goal"}, {sec:6, id:"plan"});
+  return list;
+}
+const cur = () => screens()[S.idx] || screens()[0];
+
+function setSkill(name){
+  const id = name.trim().length > 1 ? matchSkill(name) : null;
+  if (id !== S.skillId || id === "generic"){
+    Object.assign(S, {why:[], after:null, afterCustom:"", diag:{}, adjust:0, baseline:null, access:[], injuries:[], milestone:null, later:null, showLadder:false, custom:""});
+  }
+  S.skillName = name;
+  S.skillId = id;
+}
+
+function computeBaseline(){
+  const p = pack(), top = p.rungs.length - 1;
+  const raw = S.diag.fresh ? 0 : p.place(S.diag);
+  if (raw !== S.diag.raw){ S.diag.raw = raw; S.adjust = 0; }
+  const b = Math.max(0, Math.min(top - 1, raw + S.adjust));
+  if (b !== S.baseline){ S.baseline = b; S.milestone = null; S.later = null; }
+}
+
+function hoursTo(r){ const R = pack().rungs; let h = 0; for (let i = S.baseline + 1; i <= r; i++) h += R[i].h; return h; }
+function weeksTo(r){ return r <= S.baseline ? 0 : Math.max(1, Math.ceil(hoursTo(r) / (S.minutes / 60))); }
+function sessions(){
+  const m = S.minutes, n = m <= 60 ? 2 : m <= 150 ? 3 : m <= 300 ? 4 : 5;
+  const DAYS = {2:[1,5], 3:[0,2,5], 4:[0,1,3,5], 5:[0,1,3,4,6]};
+  return {n, len:Math.max(10, Math.round(m / n / 5) * 5), days:DAYS[n]};
+}
+const futureDate = w => new Date(Date.now() + w * 7 * 864e5);
+const fmtDate = w => futureDate(w).toLocaleDateString("en-US", {month:"short", day:"numeric"});
+
+/* After options ranked by how many of the learner's reasons they fit */
+function rankedAfter(){
+  const p = pack();
+  return p.after.map((a, i) => ({a, i, fit:a.why.filter(w => S.why.includes(w)).length}))
+    .sort((x, y) => y.fit - x.fit || x.i - y.i);
+}
+/* Equipment options: pack basics plus whatever their picture calls for */
+function accessOptions(){
+  const p = pack(), a = afterObj();
+  return p.access.concat(a && a.access ? a.access.filter(x => !p.access.includes(x)) : []);
+}
+
+function mk(kind, rung){ const p = pack(), r = p.rungs[rung]; return {kind, rung, title:r.t, proof:r.proof, ev:r.ev || p.ev}; }
+function suggestions(){
+  const p = pack(), top = p.rungs.length - 1, b = S.baseline;
+  const quick = Math.min(b + 1, top);
+  let stretch = quick;
+  for (let r = quick + 1; r <= top; r++){ if (weeksTo(r) <= 6) stretch = r; else break; }
+  if (stretch === quick && quick < top) stretch = quick + 1;
+  const out = [mk("quick", quick)];
+  const a = afterObj();
+  if (a) out.push({kind:"dream", rung:Math.min(Math.max(a.rung, b + 1), top), title:a.m, proof:a.proof, ev:a.ev || p.ev});
+  else if (S.afterCustom.trim()){ const r = Math.min(b + 2, top); out.push({kind:"dream", rung:r, title:`First step toward "${S.afterCustom.trim()}"`, proof:p.rungs[r].proof, ev:p.ev}); }
+  if (stretch !== quick) out.push(mk("stretch", stretch));
+  /* someone with a deadline or an event sees the fastest option first; everyone else sees their own picture first */
+  const urgent = deadlineW() || S.why.some(w => ["event","trip","class"].includes(w));
+  if (!urgent && out[1] && out[1].kind === "dream") out.unshift(out.splice(1, 1)[0]);
+  return out.filter((s, i, arr) => arr.findIndex(x => x.rung === s.rung && x.title === s.title) === i);
+}
+function kindLabel(s){
+  if (s.kind === "quick") return deadlineW() && weeksTo(s.rung) <= deadlineW() ? "Before your deadline" : "Quick win";
+  if (s.kind === "stretch") return "Stretch";
+  if (s.kind === "dream") return afterText() ? `Toward ${lc1(afterText())}` : "Toward your picture";
+  if (s.kind === "stone") return "Stepping stone";
+  if (s.kind === "custom") return "In your words";
+  return "From the ladder";
+}
+
+function feas(m){
+  const R = pack().rungs, b = S.baseline, w = weeksTo(m.rung), dl = deadlineW();
+  if (m.rung <= b) return {kind:"warn", label:"You're already past this", msg:"Pick something higher up the ladder."};
+  const stoneWithin = lim => { let s = null; for (let r = b + 1; r < m.rung; r++) if (weeksTo(r) <= lim) s = r; return s; };
+  if (dl){
+    if (w <= dl) return {kind:"good", label:"Fits your deadline"};
+    const s = stoneWithin(dl);
+    return {kind:"warn", label:"Ambitious", stone:s,
+      msg: s != null ? `Reach "${R[s].t}" by your deadline, then this by week ${w}.`
+                     : `Even the next step needs about ${weeksTo(b + 1)} weeks. Add time or move the deadline.`};
+  }
+  if (w <= 12) return {kind:"good", label:"Realistic"};
+  const s = stoneWithin(8);
+  return {kind:"warn", label:"Long road", stone:s,
+    msg: s != null ? `Start with "${R[s].t}" in about ${weeksTo(s)} weeks and keep this as the next goal.`
+                   : `About ${w} weeks at this pace. More time per week brings it closer.`};
+}
+
+/* Practice mix: starts from their picture, then bends to their level and injuries */
+function focusMix(){
+  const p = pack(), a = afterObj();
+  let f = Object.entries((a && a.focus) || p.focus).map(([k, v]) => ({k, v}));
+  const why = [];
+  if (S.baseline <= 1){ f[0].v += 10; why.push("new to this: more fundamentals"); }
+  if (S.injuries.length){
+    f.forEach(x => { if (p.hardFocus && p.hardFocus.test(x.k)) x.v = Math.max(5, x.v - 10); });
+    f.push({k:"Recovery & prehab", v:10});
+    why.push(`${S.injuries.join(" and ").toLowerCase()}: recovery built in`);
+  }
+  const sum = f.reduce((t, x) => t + x.v, 0);
+  f.forEach(x => { x.v = Math.round(x.v / sum * 100); });
+  f[0].v += 100 - f.reduce((t, x) => t + x.v, 0);
+  return {f, why};
+}
+
+/* ---------- views ---------- */
+const chip = (label, on, attrs, ic) => `<button type="button" class="chip" aria-pressed="${on ? "true" : "false"}" ${attrs}>${ic ? icon(ic, "ic sm") : ""}${esc(label)}</button>`;
+const tile = (title, small, on, attrs, ic, badge) => `<button type="button" class="tile" aria-pressed="${on ? "true" : "false"}" ${attrs}>${badge ? `<span class="badge">${esc(badge)}</span>` : ""}${ic ? `<span class="ti">${icon(ic)}</span>` : ""}<span class="tt"><b>${esc(title)}</b>${small ? `<small>${esc(small)}</small>` : ""}</span></button>`;
+const head = (q, sub) => `<div class="q"><h1 tabindex="-1">${q}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div>`;
+
+const VIEWS = {
+  skill(){
+    const known = S.skillId ? pack() : null;
+    return head("What do you want to learn?") + `
+      <div class="tiles" id="quick">${QUICK.map(q => tile(q.n, null, S.skillName.trim().toLowerCase() === q.n.toLowerCase(), `data-act="pick-skill" data-v="${q.n}"`, q.i)).join("")}</div>
+      <div class="or">or anything else</div>
+      <form class="field" data-form="skill" autocomplete="off">
+        <input id="skill-input" aria-label="Skill" placeholder="Rock climbing, Japanese, chess…" value="${esc(QUICK.some(q => q.n === S.skillName) ? "" : S.skillName)}" enterkeyhint="go">
+        <button class="go" type="submit" ${known && !QUICK.some(q => q.n === S.skillName) ? "" : "disabled"} id="skill-go">Go</button>
+      </form>
+      <p class="hint" id="skill-note">${known ? esc(known.blurb) : "Every skill gets its own ladder of goals."}</p>`;
+  },
+  why(){
+    const p = pack();
+    return head(`What's pulling you toward ${esc(p.noun)}?`, "Pick up to two.") + `
+      <div class="tiles list">${p.why.map(w => tile(w.t, null, S.why.includes(w.id), `data-act="why" data-v="${w.id}"`, w.i)).join("")}</div>`;
+  },
+  after(){
+    const p = pack(), list = rankedAfter();
+    const because = S.why.map(id => `<b>${esc(lc1(whyLabel(id)))}</b>`).join(" and ");
+    return head("Six months from now, what are you doing?", `You're here to ${because}. These fit that best.`) + `
+      <div class="tiles list">${list.map(({a, fit}) => tile(a.t, null, S.after === a.id, `data-act="after" data-v="${a.id}"`, null, fit ? "Fits your why" : null)).join("")}</div>
+      <form class="field" data-form="after" autocomplete="off"><input id="after-input" aria-label="In your own words" placeholder="Or say it your way" value="${esc(S.afterCustom)}" enterkeyhint="next"></form>`;
+  },
+  probe(scr){
+    const pr = pack().probes[scr.n], d = S.diag;
+    let body = "";
+    if (pr.type === "chords") body = `<div class="chords">${CHORDS.map(c => `<button type="button" class="chord" data-act="chord" data-v="${c.n}" aria-pressed="${(d.chords || []).includes(c.n)}" aria-label="${c.n} chord">${chordSVG(c)}<span>${c.n}</span></button>`).join("")}</div>`;
+    else if (pr.type === "single") body = `<div class="tiles list">${pr.options.map((o, i) => tile(o.t, o.d, d[pr.id] === o.v, `data-act="single" data-v="${i}"`)).join("")}</div>`;
+    else if (pr.type === "holds") body = `<div class="holds">${pack().rungs.map((r, i) => `<button type="button" class="holdbtn${i === 0 ? " word" : ""}" data-act="hold" data-v="${i}" aria-pressed="${d.grade === i}">${esc(i === 0 ? "Never" : r.l)}</button>`).join("")}</div>`;
+    else if (pr.type === "multi") body = `<div class="chips big">${pr.options.map(o => chip(o, (d[pr.id] || []).includes(o), `data-act="multi" data-v="${esc(o)}"`)).join("")}</div>`;
+    else if (pr.type === "beat") body = `<div class="panel" id="rhythm">${rhythmPanel()}</div>`;
+    else if (pr.type === "clip") body = `<label class="upload" for="clip">${icon("cam")}<span id="clip-name">${d.clip ? esc(d.clip) : "Add a clip from your camera roll"}</span></label><input type="file" id="clip" accept="video/*" hidden>`;
+    else if (pr.type === "quiz") body = quizView(pr);
+    return head(esc(pr.q), pr.sub ? esc(pr.sub) : "") + body;
+  },
+  place(){
+    const p = pack(), R = p.rungs, b = S.baseline;
+    const lo = Math.max(0, b - 1), hi = Math.min(R.length - 1, b + 2), rows = [];
+    for (let i = hi; i >= lo; i--) rows.push(`<div class="rung ${i < b ? "done" : i === b ? "here" : ""}"><span class="h"></span><span class="t">${esc(R[i].t)}</span><span class="m">${i === b ? `<span class="you">You</span>` : i > b ? `~${weeksTo(i)} wk` : ""}</span></div>`);
+    const ev = S.diag.fresh ? ["Starting fresh"] : p.evidence(S.diag);
+    return head("Here's where you start", "Based on what you just showed us.") + `
+      <div class="ev">${ev.map(e => `<span>${icon("check")}${esc(e)}</span>`).join("")}</div>
+      <div class="ladder">${rows.join("")}</div>
+      <div class="nudge">
+        <button class="btn" type="button" data-act="adjust" data-v="-1" ${b <= 0 ? "disabled" : ""}>${icon("down", "ic sm")} Too hard</button>
+        <button class="btn" type="button" data-act="adjust" data-v="1" ${b >= R.length - 2 ? "disabled" : ""}>${icon("up", "ic sm")} Too easy</button>
+      </div>`;
+  },
+  time(){
+    return head("How much time can you give it?", "A rough guess is fine. You can change it any week.") + `
+      <div class="bignum"><span id="hrs">${hrs(S.minutes)}</span> <small>hours a week</small></div>
+      <input type="range" id="minutes" min="30" max="600" step="30" value="${S.minutes}" aria-label="Hours per week">
+      <div class="rangehint"><span>30 min</span><span>10 h</span></div>
+      <div class="week" id="week" aria-label="Practice days">${weekCells()}</div>
+      <h2>Any deadline?</h2>
+      <div class="chips">${DEADLINES.map(d => chip(d.t, S.deadline === d.id, `data-act="deadline" data-v="${d.id}"`)).join("")}</div>`;
+  },
+  around(){
+    const p = pack();
+    return head("Anything we should plan around?", "Tap what applies. Skip if nothing does.") + `
+      <h2>What you have</h2>
+      <div class="chips">${accessOptions().map(a => chip(a, S.access.includes(a), `data-act="access" data-v="${esc(a)}"`)).join("")}</div>
+      ${p.injuries ? `<h2>Anything that hurts?</h2>
+      <div class="chips">${Object.keys(p.injuries).map(a => chip(a, S.injuries.includes(a), `data-act="injury" data-v="${esc(a)}"`, "care")).join("")}</div>` : ""}`;
+  },
+  goal(){
+    const p = pack(), m = S.milestone, sugs = suggestions();
+    const own = m && !sugs.some(s => same(s, m)) ? [m] : [];
+    GOALS = own.concat(sugs);
+    const sub = afterText() ? `Your first step toward <b>${esc(lc1(afterText()))}</b>.` : "Something you could show us.";
+    return head("Pick your first milestone", sub) + `
+      <div class="goals">${GOALS.map((g, i) => goalCard(g, i, m && same(g, m))).join("")}</div>
+      <form class="field" data-form="custom" autocomplete="off">
+        <input id="custom" aria-label="Your own milestone" placeholder="${esc(p.placeholder)}" value="${esc(S.custom)}" enterkeyhint="done">
+        <button class="go" type="submit">Set</button>
+      </form>
+      <button class="linkbtn" type="button" data-act="ladder" style="align-self:flex-start">${S.showLadder ? "Hide" : "Show"} the full ${esc(p.name)} ladder</button>
+      ${S.showLadder ? ladder() : ""}`;
+  },
+  plan(){
+    const p = pack(), m = S.milestone, ev = EVAL[m.ev], w = weeksTo(m.rung), ses = sessions(), mix = focusMix();
+    const care = S.injuries.map(i => `<li class="care">${icon("care")}<span><b>${esc(i)}:</b> ${esc(p.injuries[i])}.</span></li>`).join("");
+    return `<section class="hero">
+        <span class="eyebrow">${esc(p.name)} · first milestone</span>
+        <h1 tabindex="-1">${esc(m.title)}</h1>
+        <div class="proof">${icon(ev.i)}<span><b>${esc(ev.t)}</b><br>${esc(m.proof)}</span></div>
+        <div class="stats">
+          <div class="stat"><b class="mono">${fmtDate(w)}</b><span>target date</span></div>
+          <div class="stat"><b class="mono">${w} wk</b><span>estimate</span></div>
+          <div class="stat"><b class="mono">${hrs(S.minutes)} h</b><span>per week</span></div>
+        </div>
+      </section>
+      <h2>Your route</h2>
+      ${route()}
+      <h2>Shaped by your answers</h2>
+      <div class="why-line">${S.why.map(id => `<span class="tag">${esc(whyLabel(id))}</span>`).join("")}<span>→</span><b>${esc(afterText())}</b></div>
+      <div class="mix" role="img" aria-label="Practice mix">${mix.f.map((x, i) => `<i style="width:${x.v}%;background:var(--seg${i + 1})"></i>`).join("")}</div>
+      <div class="legend">${mix.f.map((x, i) => `<span><i style="background:var(--seg${i + 1})"></i>${esc(x.k)} <b>${x.v}%</b></span>`).join("")}</div>
+      ${mix.why.length ? `<p class="hint" style="margin:0">Adjusted for: ${esc(mix.why.join(" · "))}</p>` : ""}
+      <h2>Check-ins</h2>
+      <div class="week" aria-label="Practice days">${weekCells()}</div>
+      <ul class="checks">
+        <li>${icon("clock")}<span>${ses.n} sessions a week, about ${ses.len} min each. We nudge you if you miss one.</span></li>
+        <li>${icon("flag")}<span>Proof check around ${fmtDate(w)}: ${esc(lc1(ev.t))}.</span></li>
+        ${care}
+        <li>${icon("repeat")}<span>Once you hit it, we ask why again. Goals change.</span></li>
+      </ul>
+      <details class="profile"><summary>Learner profile <small>· what the MCP server stores</small></summary>
+        <pre id="json">${esc(JSON.stringify(profile(), null, 2))}</pre>
+        <button class="btn" type="button" data-act="copy">Copy JSON</button>
+      </details>`;
+  }
+};
+
+let GOALS = [];
+const same = (a, b) => a.rung === b.rung && a.title === b.title;
+
+function chordSVG(c){
+  const X = i => 8 + i * 9.6, Y = j => 16 + j * 13;
+  let s = `<svg viewBox="0 0 64 72" aria-hidden="true">`;
+  for (let j = 1; j <= 4; j++) s += `<line class="fret" x1="${X(0)}" y1="${Y(j)}" x2="${X(5)}" y2="${Y(j)}"/>`;
+  for (let i = 0; i < 6; i++) s += `<line class="str" x1="${X(i)}" y1="${Y(0)}" x2="${X(i)}" y2="${Y(4)}"/>`;
+  s += `<line class="nut" x1="${X(0)}" y1="${Y(0)}" x2="${X(5)}" y2="${Y(0)}" stroke-width="${c.barre ? 1.2 : 3}"/>`;
+  if (c.barre) s += `<rect class="dot" x="${X(0) - 4}" y="${Y(0) + 2.5}" width="${X(5) - X(0) + 8}" height="8" rx="4"/>`;
+  c.f.forEach((f, i) => {
+    if (f < 0) s += `<text class="mk" x="${X(i)}" y="${Y(0) - 4}" text-anchor="middle">×</text>`;
+    else if (f === 0) s += `<circle class="open" cx="${X(i)}" cy="${Y(0) - 7}" r="2.6"/>`;
+    else if (!(c.barre && f === c.barre)) s += `<circle class="dot" cx="${X(i)}" cy="${Y(f) - 6.5}" r="3.8"/>`;
+  });
+  return s + "</svg>";
+}
+
+function rhythmPanel(){
+  const r = S.diag.rhythm;
+  if (!r) return `<button class="pad" type="button" data-act="rhythm-start">${icon("mic")} Start</button>`;
+  const step = 260 / 7, ib = 60000 / 90;
+  let svg = `<svg viewBox="0 0 300 64" role="img" aria-label="Your taps against the beat"><line class="axis" x1="10" y1="30" x2="290" y2="30"/>`;
+  r.offs.forEach((o, k) => {
+    const x = 20 + k * step;
+    svg += `<line class="beat" x1="${x}" y1="18" x2="${x}" y2="42"/>`;
+    if (o === null) svg += `<circle class="miss" cx="${x}" cy="52" r="3.5"/>`;
+    else {
+      const dx = Math.max(-step / 2, Math.min(step / 2, o / ib * step));
+      svg += `<circle class="${Math.abs(o) <= 60 ? "t-good" : Math.abs(o) <= 120 ? "t-ok" : "t-bad"}" cx="${(x + dx).toFixed(1)}" cy="30" r="5"/>`;
+    }
+  });
+  svg += `<text class="lbl" x="10" y="12">early</text><text class="lbl" x="290" y="12" text-anchor="end">late</text></svg>`;
+  const bad = r.missed >= 3;
+  const v = bad ? ["warn", "Missed beats"] : r.ms <= 60 ? ["good", "Steady"] : r.ms <= 120 ? ["info", "Close"] : ["warn", "Drifts"];
+  return `<div class="timeline">${svg}</div>
+    <div class="row"><span class="pill ${v[0]}">${v[1]}</span><span class="mono">${bad ? `${r.missed} of 8 missed` : `avg ${r.ms} ms off`}</span><button class="linkbtn" type="button" data-act="rhythm-start">Try again</button></div>`;
+}
+
+function quizView(pr){
+  const q = S.diag.quiz || (S.diag.quiz = {i:0, c:0, w:0, done:false, hist:[]});
+  const dots = `<div class="dots" aria-hidden="true">${pr.items.map((_, k) => `<i class="${q.hist[k] === true ? "r" : q.hist[k] === false ? "w" : ""}"></i>`).join("")}</div>`;
+  if (q.done) return `<div class="panel">${dots}<div class="prompt">${q.c} of ${q.hist.length} right</div>
+      <span style="color:var(--muted)">${q.w >= 2 ? "Stopped at your edge. That's where we start." : "You cleared the whole set."}</span>
+      <button class="linkbtn" style="align-self:flex-start" type="button" data-act="quiz-reset">Retake</button></div>`;
+  const it = pr.items[q.i], fl = S.diag.flash;
+  return `<div class="panel">${dots}
+      ${it.code ? `<pre class="code">${esc(it.q)}</pre>` : `<div class="prompt" lang="es">${esc(it.q)}</div>`}
+      <div class="opts">${it.o.map((o, k) => {
+        let c = ""; if (fl){ if (k === it.a) c = "right"; else if (k === fl.pick) c = "wrong"; }
+        return `<button type="button" class="opt ${c}" data-act="answer" data-v="${k}" ${fl ? "disabled" : ""}>${it.code ? `<span class="mono">${esc(o)}</span>` : esc(o)}</button>`;
+      }).join("")}</div></div>`;
+}
+
+function weekCells(){
+  const s = sessions(), D = ["M","T","W","T","F","S","S"], h = Math.round(Math.min(58, 12 + s.len / 120 * 46));
+  return D.map((d, i) => `<div class="day"><i class="${s.days.includes(i) ? "" : "off"}" style="${s.days.includes(i) ? `height:${h}px` : ""}"></i><span>${d}</span></div>`).join("");
+}
+
+function goalCard(g, i, sel){
+  const ev = EVAL[g.ev], w = weeksTo(g.rung);
+  const top = `<span class="k"><span class="eyebrow">${esc(kindLabel(g))}</span><span class="eyebrow">${g.rung > S.baseline ? `~${w} wk` : ""}</span></span><span class="g">${esc(g.title)}</span>`;
+  if (!sel) return `<button type="button" class="goal" data-act="goal" data-v="${i}">${top}<span class="proof">${icon(ev.i)}<span>${esc(g.proof)}</span></span></button>`;
+  const f = feas(g), R = pack().rungs;
+  return `<section class="goal sel" id="chosen" aria-label="Chosen milestone">${top}
+    ${g.kind === "custom" ? `<div class="note">${icon("spark")}<span>Matched to <b>${esc(R[g.rung].t)}</b>${g.guessed ? ". Best guess: open the ladder to adjust." : ""}</span></div>` : ""}
+    <div class="proofbox"><span class="eyebrow">How we'll know you did it</span>
+      <div class="proof">${icon(ev.i)}<span><b>${esc(ev.t)}</b><br>${esc(g.proof)}</span></div></div>
+    <div class="row"><span class="pill ${f.kind}">${esc(f.label)}</span>${g.rung > S.baseline ? `<span class="mono" style="font-size:13px;color:var(--muted)">${hrs(S.minutes)} h/wk · done ~${fmtDate(w)}</span>` : ""}</div>
+    ${f.msg ? `<div class="stone"><span>${esc(f.msg)}</span>${f.stone != null ? `<button class="btn" type="button" data-act="stone" data-v="${f.stone}">${icon("flag")} Use the stepping stone</button>` : ""}</div>` : ""}
+    ${S.later ? `<div class="note">${icon("flag")}<span>Then: <b>${esc(S.later.title)}</b> by week ${weeksTo(S.later.rung)}</span></div>` : ""}
+  </section>`;
+}
+
+function ladder(){
+  const R = pack().rungs, b = S.baseline, m = S.milestone;
+  return `<div class="ladder">${R.map((r, i) => {
+    const cls = [i < b && "done", i === b && "here", m && m.rung === i && "target"].filter(Boolean).join(" ");
+    const meta = i === b ? `<span class="you">You</span>` : i < b ? "" : `~${weeksTo(i)} wk`;
+    return `<button type="button" class="rung ${cls}" data-act="rung" data-v="${i}" ${i <= b ? "disabled" : ""}><span class="h"></span><span class="t">${esc(r.t)}</span><span class="m">${meta}</span></button>`;
+  }).reverse().join("")}</div>`;
+}
+
+function route(){
+  const R = pack().rungs, b = S.baseline, m = S.milestone, later = S.later, rows = [];
+  for (let i = later ? later.rung : m.rung; i >= b; i--){
+    const cls = [i === b && "here", m.rung === i && "target", later && later.rung === i && "next"].filter(Boolean).join(" ");
+    const title = m.rung === i ? m.title : later && later.rung === i ? later.title : R[i].t;
+    const meta = i === b ? `<span class="you">Now</span>` : `${m.rung === i ? icon("flag", "ic sm") : ""}week ${weeksTo(i)}`;
+    rows.push(`<div class="rung ${cls}"><span class="h"></span><span class="t">${esc(title)}</span><span class="m">${meta}</span></div>`);
+  }
+  return `<div class="ladder">${rows.join("")}</div>`;
+}
+
+function profile(){
+  const p = pack(), R = p.rungs, m = S.milestone, ses = sessions(), DAY = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const d = Object.assign({}, S.diag); delete d.raw; delete d.flash;
+  const ms = [m].concat(S.later ? [S.later] : []).map(x => {
+    const w = weeksTo(x.rung);
+    return {goal:x.title, ladderStep:R[x.rung].t, proof:{evaluator:x.ev, pass:x.proof}, estimateWeeks:w,
+      targetDate:futureDate(w).toISOString().slice(0, 10), feasibility:x === m ? feas(m).label : "next"};
+  });
+  const mix = focusMix();
+  return {
+    skill:p.name, pack:S.skillId,
+    intent:{why:S.why.map(whyLabel), afterwards:afterText()},
+    baseline:{step:R[S.baseline].l || R[S.baseline].t, evidence:d, adjustedByLearner:S.adjust},
+    constraints:{minutesPerWeek:S.minutes, deadlineWeeks:deadlineW(), access:S.access, injuries:S.injuries},
+    milestones:ms,
+    focus:Object.fromEntries(mix.f.map(x => [x.k, x.v])),
+    checkins:{sessionsPerWeek:ses.n, minutesEach:ses.len, days:ses.days.map(i => DAY[i])}
+  };
+}
+
+/* ---------- frame ---------- */
+function frame(){
+  const scr = cur(), list = screens();
+  const per = SECTIONS.map((_, s) => list.filter(x => x.sec === s));
+  const bars = SECTIONS.map((_, s) => {
+    const items = per[s], pos = items.indexOf(scr);
+    const fill = s < scr.sec ? 1 : s > scr.sec ? 0 : (pos + 1) / Math.max(items.length, 1);
+    return `<span><i style="transform:scaleX(${fill})"></i></span>`;
+  }).join("");
+  $("#bar").innerHTML = `<button class="iconbtn" type="button" aria-label="Back" data-act="back" ${S.idx === 0 ? "disabled" : ""}>${icon("back")}</button>
+    <div class="progress" aria-hidden="true">${bars}</div><span class="secname">${SECTIONS[scr.sec]}</span>`;
+  const rib = [];
+  if (S.skillId && scr.sec > 0) rib.push([0, pack().icon, pack().name]);
+  if (S.why.length && scr.sec > 1) rib.push([1, "heart", whyLabel(S.why[0]) + (S.why.length > 1 ? " +1" : "")]);
+  if (afterText() && scr.sec > 2) rib.push([2, "image", afterText()]);
+  if (S.baseline != null && scr.sec > 3) rib.push([3, "target", "Start: " + (pack().rungs[S.baseline].l || pack().rungs[S.baseline].t)]);
+  if (scr.sec > 4) rib.push([4, "clock", `${hrs(S.minutes)} h/wk` + (deadlineW() ? ` · ${DEADLINES.find(d => d.id === S.deadline).t}` : "")]);
+  $("#ribbon").innerHTML = rib.map(([s, ic, t]) => `<button class="rib" type="button" data-act="jump" data-v="${s}" aria-label="Change: ${esc(t)}">${icon(ic)}${esc(t)}</button>`).join("");
+}
+
+function ctaState(){
+  const scr = cur(), d = S.diag;
+  let label = "Continue", ok = true, alt = "";
+  switch (scr.id){
+    case "skill": ok = !!S.skillId; break;
+    case "why": ok = S.why.length > 0; break;
+    case "after": ok = !!S.after || S.afterCustom.trim().length > 2; break;
+    case "probe": {
+      const pr = pack().probes[scr.n];
+      if (pr.type === "chords"){ if (!(d.chords || []).length) label = "None of these yet"; }
+      else if (pr.type === "single") ok = d[pr.id] != null;
+      else if (pr.type === "holds") ok = d.grade != null;
+      else if (pr.type === "quiz") ok = !!(d.quiz && d.quiz.done);
+      else if (pr.type === "multi"){ if (!(d[pr.id] || []).length) label = "Skip"; }
+      else if (pr.type === "beat"){ if (!d.rhythm) label = "Skip"; if (RT) ok = false; }
+      else if (pr.type === "clip"){ if (!d.clip) label = "Skip"; }
+      if (scr.n === 0) alt = `<button class="linkbtn" type="button" data-act="fresh">I'm completely new to this</button>`;
+      break;
+    }
+    case "place": label = "Looks right"; break;
+    case "around": if (!S.access.length && !S.injuries.length) label = "Nothing to add"; break;
+    case "goal": ok = !!S.milestone && S.milestone.rung > S.baseline; label = ok ? "Build my plan" : "Pick a milestone"; break;
+    case "plan": label = "Start session 1"; alt = `<button class="linkbtn" type="button" data-act="restart">Start over</button>`; break;
+  }
+  const btn = $("#next"); btn.disabled = !ok; btn.textContent = label;
+  $("#alt").innerHTML = alt;
+}
+
+function render(dir){
+  if (S.mode !== "onboard") return renderLoop(dir);
+  let scr = cur();
+  if (["place","time","around","goal","plan"].includes(scr.id)) computeBaseline();
+  if (scr.id === "plan" && !(S.milestone && S.milestone.rung > S.baseline)){ S.idx = screens().findIndex(x => x.id === "goal"); scr = cur(); }
+  frame();
+  const main = $("#screen");
+  main.innerHTML = VIEWS[scr.id](scr);
+  ctaState();
+  save();
+  if (dir){
+    main.classList.remove("enter", "back"); void main.offsetWidth;
+    main.classList.add("enter"); if (dir < 0) main.classList.add("back");
+    window.scrollTo(0, 0);
+    const h = main.querySelector("h1"); if (h) h.focus({preventScroll:true});
+  }
+}
+
+function goTo(i, dir){
+  stopRhythm();
+  const n = screens().length;
+  if (i < 0 || i >= n) return;
+  S.idx = i;
+  if (cur().id === "goal" && S.milestone && S.milestone.rung <= S.baseline){ S.milestone = null; S.later = null; }
+  render(dir || (i > S.idx ? 1 : -1));
+}
+const next = () => goTo(S.idx + 1, 1);
+let advTimer = null;
+function autoAdvance(){ clearTimeout(advTimer); advTimer = setTimeout(next, 260); }
+
+let toastTimer = null;
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+}
+const scrollChosen = () => { const c = $("#chosen"); if (c) c.scrollIntoView({behavior:"smooth", block:"center"}); };
+const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : arr.concat(v);
+
+/* ---------- beat test ---------- */
+let RT = null;
+function stopRhythm(){
+  if (!RT) return;
+  RT.timers.forEach(clearTimeout);
+  try { RT.ctx && RT.ctx.close(); } catch (e) {}
+  RT = null;
+}
+function click(soft){
+  const c = RT && RT.ctx; if (!c) return;
+  try {
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+    o.frequency.value = soft ? 820 : 1320;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.5, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.08);
+  } catch (e) {}
+}
+function rhythmStart(){
+  stopRhythm();
+  let ctx = null;
+  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); ctx.resume && ctx.resume(); } catch (e) {}
+  const ib = 60000 / 90, COUNT = 4, N = 8;
+  RT = {ctx, ib, count:COUNT, n:N, beats:[], taps:[], timers:[]};
+  $("#rhythm").innerHTML = `<div class="row"><span class="mono" id="rh-status">Get ready</span><div class="dots" id="rh-dots">${"<i></i>".repeat(N)}</div></div>
+    <button class="pad" id="pad" type="button">Listen</button>`;
+  ctaState();
+  const t0 = performance.now() + 700;
+  for (let i = 0; i < COUNT + N; i++) RT.timers.push(setTimeout(() => tick(i), t0 + i * ib - performance.now()));
+  RT.timers.push(setTimeout(rhythmEnd, t0 + (COUNT + N - 0.5) * ib + 300 - performance.now()));
+}
+function tick(i){
+  if (!RT) return;
+  const now = performance.now();
+  click(i < RT.count);
+  const pad = $("#pad"), st = $("#rh-status");
+  if (i < RT.count){ if (pad) pad.textContent = String(RT.count - i); if (st) st.textContent = "Count-in"; }
+  else {
+    RT.beats.push(now);
+    if (pad) pad.textContent = "Tap";
+    if (st) st.textContent = `Beat ${i - RT.count + 1} of ${RT.n}`;
+    const dots = $("#rh-dots"); if (dots && dots.children[i - RT.count]) dots.children[i - RT.count].classList.add("on");
+  }
+  if (pad){ pad.classList.remove("pulse"); void pad.offsetWidth; pad.classList.add("pulse"); }
+}
+function rhythmEnd(){
+  if (!RT) return;
+  const {beats, taps, ib} = RT;
+  const offs = beats.map(b => {
+    let best = null;
+    for (const t of taps){ const d = t - b; if (Math.abs(d) <= ib / 2 && (best === null || Math.abs(d) < Math.abs(best))) best = d; }
+    return best === null ? null : Math.round(best);
+  });
+  const hit = offs.filter(o => o !== null);
+  S.diag.rhythm = {offs, ms:hit.length ? Math.round(hit.reduce((a, o) => a + Math.abs(o), 0) / hit.length) : 999, missed:offs.length - hit.length};
+  stopRhythm();
+  render();
+}
+
+/* ---------- learning loop: first session, Today, Progress ---------- */
+const BLOCKS = ["Warm-up", "Learn", "Practice", "Perform", "Wrap-up"];
+
+/* Pack-specific session 1 content. Every pack fills the same slots; the screens are shared. */
+function loopContent(){
+  const id = S.skillId, noun = pack().noun;
+  if (id === "bouldering") return {
+    focus:"Hips close to the wall", nodes:["Silent feet", "Straight arms", "Hips close to the wall", "Flagging", "Reading sequences"], fi:2,
+    reason:"Picked because it's the biggest gap between you and your milestone.",
+    warmup:["Easy traverse, 3 minutes", "Shoulder circles and wrist rolls", "Two V0s with open-hand grips"],
+    learn:[
+      {type:"predict", q:"Which hip position puts less weight on your arms?", visOpts:[climber({hip:34}), climber({hip:88})], o:["Hips in", "Hips out"], a:0, why:"Hips in. Your feet take the load."},
+      {type:"sim", sim:"lean", q:"Drag your hips. Watch your arms."}
+    ],
+    practice:[
+      {type:"choice", q:"Which climber is resting best?", visOpts:[climber({hip:40, bend:16}), climber({hip:40}), climber({hip:85, bend:10})], o:["Bent arms", "Straight arms", "Hips out"], a:1, why:"Straight arms hang on bone, not muscle."}
+    ],
+    perform:{ev:"video", prompt:"Film one V2 attempt", how:"Side-on at 45°, about 4 m back, phone at hip height.", accept:"video/*",
+      steps:["Recording is usable", "Body points, 33 per frame", "6 moves found", "Mistake check"]},
+    fb:{fix:"Hips drift out on moves 3 to 5", praise:"Arms straight on 5 of 6 rests", vis:a => hipBars(a), why:() => climber({hip:34, line:true}) + climber({hip:88, line:true, mark:true})},
+    fix:{type:"choice", q:"Turn into the wall. Which frame has hips in?", visOpts:[climber({hip:32}), climber({hip:70})], o:["Frame A", "Frame B"], a:0, why:"Hip turned in, knee dropped toward the wall.", drill:"Hips-in traverse, 3 laps"},
+    metric:{name:"Moves with hips close", fmt:v => `${v} of 6`, a1:3, a2:5}
+  };
+  if (id === "guitar") return {
+    focus:"Strumming pattern D DU UDU", nodes:["Open chords", "Changes on the beat", "Strumming pattern", "Full song", "Barre chords"], fi:2,
+    reason:"Picked because your milestone needs this pattern.",
+    warmup:["Finger stretches, 1 minute", "Wrist circles", "Each open chord slowly, once"],
+    learn:[
+      {type:"predict", q:"In D DU UDU, when do the up strums land?", o:["On the 'and' counts", "On the numbers", "Anywhere"], a:0, why:"Down on the beat, up on the 'and'."},
+      {type:"demo", demo:"strum", q:"Press play. Follow the arrows."}
+    ],
+    practice:[
+      {type:"choice", q:"Which grid is D DU UDU?", visOpts:[strumGrid("D_D_D_D_"), strumGrid("DUDUDUDU"), strumGrid("D_DU_UDU")], o:["A", "B", "C"], a:2, why:"Down on 1, 2 and 4. Up on the 'and' of 2, 3 and 4."}
+    ],
+    perform:{ev:"audio", prompt:"Record 4 bars of the pattern on G", how:"70 bpm click in your headphones, phone about 1 m away.", accept:"audio/*",
+      steps:["Recording is usable", "Output delay calibrated", "32 strums found", "Timing check"]},
+    fb:{fix:"Up strums rush by about 60 ms", praise:"Down strums steady, within 20 ms", vis:a => strumTimeline(a === 1 ? 60 : 22), why:() => strumGrid("D_DU_UDU")},
+    fix:{type:"choice", q:"Where should the up strum land?", visOpts:[upPlace(0.3), upPlace(0.5), upPlace(0.7)], o:["Early", "Halfway", "Late"], a:1, why:"Exactly halfway between two beats.", drill:"Up strums only, with the click, 1 minute"},
+    metric:{name:"Up strum timing", fmt:v => `${v} ms early`, a1:60, a2:22, lower:true}
+  };
+  if (id === "spanish") return {
+    focus:"Ordering: Quisiera ___, por favor", nodes:["Greetings", "Ordering food", "Numbers and prices", "Asking directions"], fi:1,
+    reason:"Picked because ordering comes up first on any trip.",
+    learn:[
+      {type:"predict", q:"How many vowel sounds does Spanish have?", o:["5", "12", "20"], a:0, why:"Five, and they never glide."},
+      {type:"demo", demo:"vowels", q:"Tap a vowel to hear it."},
+      {type:"demo", demo:"order", q:"One pattern orders almost anything. Tap to swap."}
+    ],
+    practice:[
+      {type:"choice", say:"Quisiera un café, por favor", q:"What did you hear?", o:["I'd like a coffee, please", "A coffee costs one euro", "Where is the café?"], a:0, why:"Quisiera = I'd like."},
+      {type:"choice", say:"La cuenta, por favor", q:"What did you hear?", o:["The menu, please", "The bill, please", "The table, please"], a:1, why:"La cuenta = the bill."}
+    ],
+    perform:{ev:"speech", prompt:"Order a coffee and a pastry", how:"The coach plays the waiter. Answer out loud.", accept:"audio/*",
+      steps:["Recording is usable", "Transcript", "Sounds lined up", "Pronunciation check"]},
+    fb:{fix:"Your 'e' in cuenta slides into 'ay'", praise:"Clear tapped r in quisiera", vis:a => vowelBars(a), why:() => glideLines()},
+    fix:{type:"choice", q:"Which line is a pure Spanish 'e'?", visOpts:[glideLine(false), glideLine(true)], o:["A", "B"], a:0, why:"Flat line: the mouth holds still.", drill:"Shadow: mesa, cuenta, leche", say:"mesa, cuenta, leche"},
+    metric:{name:"'e' pronunciation", fmt:v => `${v}/100`, a1:52, a2:78}
+  };
+  if (id === "python"){
+    const r1 = S.sess && S.sess.run1, fails = r1 ? r1.filter(t => !t.ok).length : 2;
+    return {
+    focus:"Functions that return values", nodes:["Variables", "Loops", "Functions", "Strings", "Files"], fi:2,
+    reason:"Picked because your milestone is built from small functions.",
+    learn:[
+      {type:"predict", code:'def double(n):\n    return n * 2\n\nx = double(4)\nprint(x)', q:"What does print(x) show?", o:["8", "4", "None"], a:0, why:"The function hands 8 back to x."},
+      {type:"demo", demo:"trace", q:"Step through it. Watch the values."}
+    ],
+    practice:[
+      {type:"choice", code:'def greet(name):\n    print("Hi " + name)\n\nx = greet("Ana")\nprint(x)', q:"What does the last line print?", o:["Hi Ana", "None", "Error"], a:1, why:"No return, so x is None."}
+    ],
+    perform:{ev:"code", prompt:"Write count_words(text)", how:"Return how many words are in text. Hidden tests run when you press Run.",
+      steps:["Code runs", "3 hidden tests", "Trace the failing case"]},
+    fb:{fix:fails === 0 ? "All 3 tests pass. Now make it shorter" : fails === 1 ? "Fails one edge case" : "Fails on empty text and double spaces", praise:"Works on normal sentences", vis:a => testTable(S.sess["run" + a]), why:() => `<pre class="code">"".split(" ")  →  ['']\n"".split()     →  []</pre>`},
+    fix:{type:"choice", code:'print(len("".split(" ")))\nprint(len("".split()))', q:"What do these print?", o:["0 then 0", "1 then 0", "1 then 1"], a:1, why:'split(" ") keeps an empty piece. split() drops it.', drill:"Predict: split() vs split(\" \")"},
+    metric:{name:"Hidden tests passed", fmt:v => `${v} of 3`, a1:null, a2:null}
+  }; }
+  return {
+    focus:"Practice that sticks", nodes:["First session", "Basics", "First real result", "Comfortable"], fi:0,
+    reason:"Picked because good practice habits come first.",
+    learn:[
+      {type:"predict", q:"Which sticks better?", o:["One 3-hour session", "Three 40-minute sessions"], a:1, why:"Spread out. Memory gets a refresh each time."},
+      {type:"sim", sim:"spacing", q:"Drag the gap between sessions."}
+    ],
+    practice:[
+      {type:"choice", q:"Best way to fix a hard part?", o:["Repeat the whole piece", "Isolate it, slow it down", "Skip it"], a:1, why:"Small and slow first, then full speed."}
+    ],
+    perform:{ev:"coach", prompt:`Make one ${noun} attempt and add a photo`, how:"Good light, the whole piece in frame.", accept:"image/*",
+      steps:["Photo is usable", "Rubric: 3 criteria", "Coach review"]},
+    fb:{fix:"The second half looks rushed", praise:"Strong, careful start", vis:a => rubricBars(a), why:() => rubricBars(2)},
+    fix:{type:"choice", q:"How do you stop rushing the end?", o:["Go faster to finish", "Set a timer per section", "Stop halfway"], a:1, why:"Equal time per section keeps quality even.", drill:"Two timed sections, same length"},
+    metric:{name:"Rubric criteria met", fmt:v => `${v} of 3`, a1:2, a2:3}
+  };
+}
+
+/* ---- visuals ---- */
+function climber(o){
+  const W = 20, hip = o.hip == null ? 45 : o.hip, bend = o.bend || 0;
+  const hx = hip, hy = 122, sx = W + (hip - W) * 0.45 + 8, sy = 72;
+  const hand = [W + 5, 26], foot = [W + 5, 186];
+  const ex = (sx + hand[0]) / 2 + bend, ey = (sy + hand[1]) / 2;
+  const kx = (hx + foot[0]) / 2 + 18, ky = (hy + foot[1]) / 2;
+  return `<svg viewBox="0 0 120 200" class="fig" aria-hidden="true">
+    <line class="wall" x1="${W}" y1="4" x2="${W}" y2="196"/>
+    <ellipse class="hold" cx="${hand[0]}" cy="${hand[1] - 3}" rx="7" ry="4"/><ellipse class="hold" cx="${foot[0]}" cy="${foot[1] + 4}" rx="7" ry="4"/>
+    ${o.line ? `<line class="gap" x1="${W}" y1="${hy}" x2="${hx}" y2="${hy}"/>` : ""}
+    <path class="limb" d="M${hx} ${hy} L${kx} ${ky} L${foot[0]} ${foot[1]}"/>
+    <path class="limb torso" d="M${hx} ${hy} L${sx} ${sy}"/>
+    <path class="limb" d="M${sx} ${sy} L${ex} ${ey} L${hand[0]} ${hand[1]}"/>
+    <circle class="head" cx="${sx + 3}" cy="${sy - 17}" r="10"/>
+    ${o.mark ? `<circle class="mark" cx="${hx}" cy="${hy}" r="9"/>` : ""}
+  </svg>`;
+}
+function hipBars(a){
+  const v = a === 1 ? [18, 20, 41, 46, 38, 22] : [17, 19, 24, 33, 21, 18], T = 30, H = 110, max = 50;
+  const y = cm => 14 + (1 - cm / max) * (H - 30);
+  let s = `<svg viewBox="0 0 300 ${H}" class="chart" role="img" aria-label="Hip distance from the wall per move">`;
+  v.forEach((cm, i) => {
+    const x = 34 + i * 44;
+    s += `<rect class="${cm > T ? "bad" : "ok"}" x="${x}" y="${y(cm)}" width="26" height="${y(0) - y(cm)}" rx="4"/>`;
+    s += `<text class="lbl" x="${x + 13}" y="${H - 2}" text-anchor="middle">move ${i + 1}</text>`;
+  });
+  s += `<line class="thr" x1="26" y1="${y(T)}" x2="296" y2="${y(T)}"/><text class="lbl" x="2" y="${y(T) + 3}">30 cm</text>`;
+  return s + `<line class="base" x1="26" y1="${y(0)}" x2="296" y2="${y(0)}"/></svg>`;
+}
+function strumGrid(pat, hl){
+  const C = ["1", "&", "2", "&", "3", "&", "4", "&"];
+  return `<div class="grid8" aria-hidden="true">${pat.split("").map((c, i) => `<span class="${c === "_" ? "rest" : ""} ${hl === i ? "hl" : ""}"><b>${c === "D" ? "↓" : c === "U" ? "↑" : "·"}</b><small>${C[i]}</small></span>`).join("")}</div>`;
+}
+function strumTimeline(early){
+  const pat = "D_DU_UDU", W = 300, x0 = 16, step = (W - 32) / 8;
+  let s = `<svg viewBox="0 0 ${W} 70" class="chart" role="img" aria-label="Strum timing against the click">`;
+  for (let i = 0; i <= 8; i++) s += `<line class="${i % 2 ? "grid" : "beat"}" x1="${x0 + i * step}" y1="10" x2="${x0 + i * step}" y2="50"/>`;
+  pat.split("").forEach((c, i) => {
+    if (c === "_") return;
+    const off = c === "U" ? -early / 214 * step : 0;
+    s += `<circle class="${c === "U" && early > 40 ? "bad" : "ok"}" cx="${(x0 + i * step + off).toFixed(1)}" cy="30" r="6"/>`;
+  });
+  ["1", "2", "3", "4"].forEach((n, k) => { s += `<text class="lbl" x="${x0 + k * 2 * step}" y="64" text-anchor="middle">${n}</text>`; });
+  return s + `</svg>`;
+}
+function upPlace(f){
+  return `<svg viewBox="0 0 120 50" class="chart" aria-hidden="true"><line class="beat" x1="12" y1="8" x2="12" y2="40"/><line class="beat" x1="108" y1="8" x2="108" y2="40"/><line class="grid" x1="60" y1="8" x2="60" y2="40"/><circle class="ok" cx="12" cy="24" r="5"/><circle class="up" cx="${12 + 96 * f}" cy="24" r="5"/></svg>`;
+}
+function vowelBars(a){
+  const v = {a:88, e:a === 1 ? 52 : 78, i:90, o:84, u:86};
+  return `<div class="vbars">${Object.entries(v).map(([k, n]) => `<div><i class="${n < 70 ? "bad" : "ok"}" style="height:${n * 0.7}px"></i><b>${k}</b><small class="mono">${n}</small></div>`).join("")}</div>`;
+}
+function glideLine(g){ return `<svg viewBox="0 0 120 60" class="chart" aria-hidden="true"><path class="tone" d="${g ? "M10 40 C50 40 70 38 110 14" : "M10 30 L110 30"}"/></svg>`; }
+function glideLines(){ return `<div class="pair"><div>${glideLine(false)}<small>Spanish e: flat</small></div><div>${glideLine(true)}<small>English "ay": slides</small></div></div>`; }
+function rubricBars(a){
+  const r = [["Accuracy", 80], ["Consistency", a === 1 ? 45 : 75], ["Finish", 70]];
+  return `<div class="rubric">${r.map(([k, n]) => `<div><span>${k}</span><i><b class="${n < 60 ? "bad" : "ok"}" style="width:${n}%"></b></i></div>`).join("")}</div>`;
+}
+function testTable(run){
+  if (!run) return "";
+  return `<div class="tests">${run.map(t => `<div class="${t.ok ? "ok" : "bad"}"><span class="mono">${esc(t.t)}</span><span class="mono">${t.ok ? "✓" : `expected ${esc(t.exp)}, got ${esc(t.got)}`}</span></div>`).join("")}</div>`;
+}
+function ring(p, size){
+  const r = 15, c = 2 * Math.PI * r;
+  return `<svg viewBox="0 0 40 40" width="${size || 40}" height="${size || 40}" class="ring" aria-hidden="true"><circle cx="20" cy="20" r="${r}" class="track"/><circle cx="20" cy="20" r="${r}" class="fill" stroke-dasharray="${(c * p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 20 20)"/></svg>`;
+}
+function leanSim(hip){
+  const load = Math.round(20 + (hip - 30) / 65 * 70);
+  return `<div class="simfig">${climber({hip, line:true})}</div>
+    <div class="readout"><span class="eyebrow">Weight on your arms</span><b class="mono">${load}%</b><i><b style="width:${load}%" class="${load > 60 ? "bad" : "ok"}"></b></i><small>Illustrative model</small></div>`;
+}
+function spacingSim(gap){
+  const W = 300, H = 110, days = 30, X = d => 10 + d / days * (W - 20), Y = r => 10 + (1 - r) * (H - 30);
+  const reviews = gap === 0 ? [0] : Array.from({length:Math.floor(days / gap) + 1}, (_, k) => k * gap).filter(d => d < days).slice(0, 6);
+  let pts = [], k = 0, last = 0, St = 2.5;
+  for (let d = 0; d <= days; d += 0.5){
+    if (k < reviews.length && d >= reviews[k]){ last = reviews[k]; St = 2.5 * Math.pow(2, k); k++; }
+    pts.push(`${X(d).toFixed(1)},${Y(Math.exp(-(d - last) / St)).toFixed(1)}`);
+  }
+  const end = Math.round(Math.exp(-(days - last) / St) * 100);
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Memory over 30 days"><line class="base" x1="10" y1="${Y(0)}" x2="${W - 10}" y2="${Y(0)}"/>
+    <polyline class="curve" points="${pts.join(" ")}"/>${reviews.map(d => `<circle class="ok" cx="${X(d)}" cy="${Y(1)}" r="3.5"/>`).join("")}
+    <text class="lbl" x="10" y="${H - 4}">day 0</text><text class="lbl" x="${W - 10}" y="${H - 4}" text-anchor="end">day 30</text></svg>
+    <div class="row"><span>Sessions: <b class="mono">${reviews.length}</b></span><span>Kept after a month: <b class="mono">${end}%</b></span></div>`;
+}
+const TRACE = [
+  {l:3, v:{}, out:"", note:"Call double(4)"}, {l:0, v:{n:4}, out:"", note:"n is 4"}, {l:1, v:{n:4}, out:"", note:"Return 8"},
+  {l:3, v:{x:8}, out:"", note:"x is 8"}, {l:4, v:{x:8}, out:"8", note:"Print x"}
+];
+function traceView(i){
+  const code = ["def double(n):", "    return n * 2", "", "x = double(4)", "print(x)"], t = TRACE[i];
+  return `<pre class="code trace">${code.map((ln, k) => `<span class="${k === t.l ? "on" : ""}">${esc(ln) || " "}</span>`).join("\n")}</pre>
+    <div class="row"><span class="mono">${Object.entries(t.v).map(([k, v]) => `${k} = ${v}`).join("  ") || "–"}</span><span class="mono">${t.out ? `output: ${t.out}` : ""}</span></div>
+    <div class="row"><span>${esc(t.note)}</span><button class="btn" type="button" data-act="l-step">${i < TRACE.length - 1 ? "Step" : "Restart"}</button></div>`;
+}
+
+/* ---- audio helpers ---- */
+let LA = null;
+const actx = () => { try { if (!LA) LA = new (window.AudioContext || window.webkitAudioContext)(); LA.resume && LA.resume(); } catch (e) {} return LA; };
+function strumSound(up){
+  const c = actx(); if (!c) return;
+  try {
+    const len = 0.14, buf = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = buf; f.type = "bandpass"; f.frequency.value = up ? 2400 : 1100; f.Q.value = 0.8; g.gain.value = up ? 0.5 : 0.8;
+    src.connect(f).connect(g).connect(c.destination); src.start();
+  } catch (e) {}
+}
+let strumTimer = null;
+function playStrum(){
+  clearInterval(strumTimer);
+  const pat = "D_DU_UDU"; let i = 0;
+  strumTimer = setInterval(() => {
+    const k = i % 8, el = $("#strum"); if (!el || i >= 16){ clearInterval(strumTimer); if (el) el.innerHTML = strumGrid(pat); return; }
+    el.innerHTML = strumGrid(pat, k);
+    if (pat[k] !== "_") strumSound(pat[k] === "U");
+    i++;
+  }, 340);
+}
+function speak(text){
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "es-ES"; u.rate = 0.85;
+    const v = speechSynthesis.getVoices().find(x => /^es/i.test(x.lang)); if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) { toast("This device can't play speech. The text is shown instead."); }
+}
+
+/* ---- session steps ---- */
+function sessSteps(){
+  const L = loopContent(), st = [];
+  if (L.warmup && (S.skillId === "bouldering" || S.injuries.length)) st.push({b:0, id:"warmup"});
+  L.learn.forEach((_, n) => st.push({b:1, id:"learn", n}));
+  L.practice.forEach((_, n) => st.push({b:2, id:"practice", n}));
+  st.push({b:3, id:"capture", a:1}, {b:3, id:"analyze", a:1}, {b:3, id:"feedback"}, {b:3, id:"fix"}, {b:3, id:"capture", a:2}, {b:3, id:"analyze", a:2}, {b:4, id:"wrap"});
+  return st;
+}
+const STARTER = 'def count_words(text):\n    return len(text.split(" "))\n';
+function startSession(){
+  stopRhythm();
+  S.mode = "session";
+  S.sess = {i:0, ans:{}, ticks:[], sim:60, gap:0, tr:0, code:STARTER, run1:null, run2:null, cap:{}, disputed:false, whyOpen:false};
+  render(1);
+}
+function runTests(code){
+  const hasFn = /def\s+count_words\s*\(/.test(code);
+  const split = /\.split\(\s*\)/.test(code), guard = /if\s+not\s+text|==\s*["']{2}|len\(\s*text\s*\)\s*==\s*0/.test(code);
+  if (!hasFn) return [{t:'count_words("hello world")', exp:"2", got:"NameError", ok:false}, {t:'count_words("")', exp:"0", got:"NameError", ok:false}, {t:'count_words("a  b")', exp:"2", got:"NameError", ok:false}];
+  return [
+    {t:'count_words("hello world")', exp:"2", got:"2", ok:true},
+    {t:'count_words("")', exp:"0", got:split || guard ? "0" : "1", ok:split || guard},
+    {t:'count_words("a  b")', exp:"2", got:split ? "2" : "3", ok:split}
+  ];
+}
+const passed = run => run ? run.filter(t => t.ok).length : null;
+function metricVals(L){
+  if (S.skillId === "python") return {a1:passed(S.sess && S.sess.run1), a2:passed(S.sess && S.sess.run2)};
+  return {a1:L.metric.a1, a2:L.metric.a2};
+}
+const improved = L => { const m = metricVals(L); if (S.skillId === "python") return m.a2 === 3; return L.metric.lower ? m.a2 < m.a1 : m.a2 > m.a1; };
+
+function choiceView(c, key){
+  const pick = S.sess.ans[key], done = pick != null;
+  const opts = c.visOpts
+    ? `<div class="visopts n${c.visOpts.length}">${c.visOpts.map((svg, k) => `<button type="button" class="visopt ${done ? (k === c.a ? "right" : k === pick ? "wrong" : "") : ""}" data-act="l-pick" data-k="${key}" data-v="${k}" ${done ? "disabled" : ""}>${svg}<span>${esc(c.o[k])}</span></button>`).join("")}</div>`
+    : `<div class="opts">${c.o.map((o, k) => `<button type="button" class="opt ${done ? (k === c.a ? "right" : k === pick ? "wrong" : "") : ""}" data-act="l-pick" data-k="${key}" data-v="${k}" ${done ? "disabled" : ""}>${c.code ? `<span class="mono">${esc(o)}</span>` : esc(o)}</button>`).join("")}</div>`;
+  const listen = c.say ? `<div class="row"><button class="btn" type="button" data-act="l-say" data-v="${esc(c.say)}">${icon("mic", "ic sm")} Play</button>${S.sess.ans[key + "-txt"] ? `<span lang="es">${esc(c.say)}</span>` : `<button class="linkbtn" type="button" data-act="l-txt" data-v="${key}">Show the text</button>`}</div>` : "";
+  const reveal = done ? `<div class="reveal ${pick === c.a ? "good" : "warn"}">${icon(pick === c.a ? "check" : "spark")}<span><b>${pick === c.a ? "Right." : "Not quite."}</b> ${esc(c.why)}</span></div>` : "";
+  return `${c.code ? `<pre class="code">${esc(c.code)}</pre>` : ""}${listen}${opts}${reveal}`;
+}
+
+const SVIEWS = {
+  warmup(L){
+    return `<span class="eyebrow">Warm-up${S.injuries.length ? ` · adjusted for ${esc(S.injuries.join(", ").toLowerCase())}` : ""}</span>
+      <h1 tabindex="-1">Warm up first</h1>
+      <div class="checklist">${L.warmup.map((w, k) => `<button type="button" class="tick" data-act="l-tick" data-v="${k}" aria-pressed="${S.sess.ticks.includes(k)}">${icon("check")}<span>${esc(w)}</span></button>`).join("")}</div>`;
+  },
+  learn(L, st){
+    const c = L.learn[st.n];
+    let body = "";
+    if (c.type === "predict") body = choiceView(c, "l" + st.n);
+    else if (c.sim === "lean") body = `<div class="panel" id="simwrap">${leanSim(S.sess.sim)}</div><input type="range" id="l-sim" min="30" max="95" value="${S.sess.sim}" aria-label="Hip distance from the wall">`;
+    else if (c.sim === "spacing") body = `<div class="panel" id="simwrap">${spacingSim(S.sess.gap)}</div><input type="range" id="l-gap" min="0" max="7" value="${S.sess.gap}" aria-label="Days between sessions"><div class="rangehint"><span>all at once</span><span>weekly</span></div>`;
+    else if (c.demo === "strum") body = `<div class="panel"><div id="strum">${strumGrid("D_DU_UDU")}</div><button class="btn primary" type="button" data-act="l-strum">${icon("mic", "ic sm")} Play at 88 bpm</button></div>`;
+    else if (c.demo === "vowels") body = `<div class="vowels">${[["a", "casa"], ["e", "mesa"], ["i", "sí"], ["o", "solo"], ["u", "luna"]].map(([v, w]) => `<button type="button" class="vowel" data-act="l-say" data-v="${w}"><b>${v}</b><small lang="es">${w}</small></button>`).join("")}</div>`;
+    else if (c.demo === "order"){ const items = ["un café", "una tostada", "agua", "la cuenta"], k = S.sess.ord || 0;
+      body = `<div class="panel"><div class="prompt" lang="es">Quisiera <span class="swap">${items[k]}</span>, por favor</div>
+        <div class="chips">${items.map((x, j) => `<button type="button" class="chip" aria-pressed="${j === k}" data-act="l-ord" data-v="${j}" lang="es">${x}</button>`).join("")}</div>
+        <button class="btn" type="button" data-act="l-say" data-v="Quisiera ${items[k]}, por favor">${icon("mic", "ic sm")} Hear it</button></div>`; }
+    else if (c.demo === "trace") body = `<div class="panel" id="trace">${traceView(S.sess.tr)}</div>`;
+    return `<span class="eyebrow">Learn · ${esc(L.focus)}</span><h1 tabindex="-1">${esc(c.q)}</h1>${body}`;
+  },
+  practice(L, st){
+    const c = L.practice[st.n];
+    return `<span class="eyebrow">Practice · ${st.n + 1} of ${L.practice.length}</span><h1 tabindex="-1">${esc(c.q)}</h1>${choiceView(c, "p" + st.n)}`;
+  },
+  capture(L, st){
+    const P = L.perform, a = st.a;
+    const head = `<span class="eyebrow">Perform · attempt ${a}${a === 2 ? ` · focus: ${esc(lc1(L.fb.fix))}` : ""}</span><h1 tabindex="-1">${esc(P.prompt)}</h1><p class="sub">${esc(P.how)}</p>`;
+    if (P.ev === "code"){
+      const run = S.sess["run" + a];
+      return head + `<textarea id="l-code" class="editor" spellcheck="false" aria-label="Your code">${esc(S.sess.code)}</textarea>
+        <button class="btn" type="button" data-act="l-run">${icon("code", "ic sm")} Run tests</button>
+        ${run ? testTable(run) : `<p class="hint">Tests run in your browser. Nothing is uploaded.</p>`}`;
+    }
+    const cap = S.sess.cap[a];
+    const frameVis = P.ev === "video" ? `<div class="framing">${climber({hip:40})}<span>Whole body in the outline</span></div>` : `<div class="framing mic">${icon("mic")}<span>${P.ev === "speech" ? "Waiter: ¿Qué desea?" : "Click: 70 bpm"}</span></div>`;
+    return head + frameVis + (cap
+      ? `<div class="note">${icon("check")}<span><b>${esc(cap)}</b> ready to check</span></div>`
+      : `<button class="recbtn" type="button" data-act="l-rec">${icon(P.ev === "video" ? "cam" : P.ev === "coach" ? "image" : "mic")} ${P.ev === "coach" ? "Use a sample photo" : "Record (simulated)"}</button>
+         <label class="linkbtn" for="l-file" style="align-self:center">or pick a file</label><input type="file" id="l-file" accept="${P.accept}" hidden>`);
+  },
+  analyze(L, st){
+    return `<span class="eyebrow">Checking attempt ${st.a}</span><h1 tabindex="-1">Analyzing on your device</h1>
+      <ul class="pipe">${L.perform.steps.map((s, k) => `<li id="pipe${k}">${icon("check")}<span>${esc(s)}</span></li>`).join("")}</ul>
+      <p class="hint">Prototype: sample results, not a real analysis.</p>`;
+  },
+  feedback(L){
+    const F = L.fb;
+    return `<span class="eyebrow">Feedback · attempt 1</span>
+      <section class="fixcard"><span class="eyebrow">One fix</span><h1 tabindex="-1">${esc(F.fix)}</h1><div class="evidence">${F.vis(1)}</div>
+        ${S.sess.whyOpen ? `<div class="why">${F.why()}</div>` : `<button class="linkbtn" type="button" data-act="l-why">Why does this matter?</button>`}</section>
+      <div class="praise">${icon("heart")}<span><b>Good:</b> ${esc(F.praise)}</span></div>
+      ${S.sess.disputed ? `<p class="hint">Noted. This correction is muted for this attempt.</p>` : `<button class="linkbtn" type="button" data-act="l-dispute" style="align-self:flex-start">That's not right</button>`}`;
+  },
+  fix(L){
+    const c = L.fix;
+    return `<span class="eyebrow">Fix drill · ${esc(c.drill)}</span><h1 tabindex="-1">${esc(c.q)}</h1>${choiceView(c, "fix")}
+      ${c.say ? `<button class="btn" type="button" data-act="l-say" data-v="${esc(c.say)}">${icon("mic", "ic sm")} Hear: ${esc(c.say)}</button>` : ""}`;
+  },
+  wrap(L){
+    const m = metricVals(L), up = improved(L), mast = up ? 0.45 : 0.3, ses = sessions(), F = L.fb;
+    const nextDay = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][ses.days[1 % ses.days.length]];
+    const fmt = v => v == null ? "–" : L.metric.fmt(v);
+    return `<span class="eyebrow">Wrap-up</span><h1 tabindex="-1">Session 1 done</h1>
+      <div class="ba"><div><span class="eyebrow">Attempt 1</span><b class="mono">${fmt(m.a1)}</b></div><span class="arrow">→</span><div class="${up ? "up" : ""}"><span class="eyebrow">Attempt 2</span><b class="mono">${fmt(m.a2)}</b></div></div>
+      <p class="sub" style="margin-top:-8px">${esc(L.metric.name)}${up ? "" : ". Not there yet, so it's first up next session."}</p>
+      <div class="mastery">${ring(mast, 52)}<div><b>${esc(L.focus)}</b><span>${Math.round(mast * 100)}% mastered${S.sess.disputed ? " · 1 correction disputed" : ""}</span></div></div>
+      <ul class="checks">
+        <li>${icon("repeat")}<span>3 review cards added for ${nextDay}.</span></li>
+        <li>${icon("clock")}<span>Next: session 2 on ${nextDay}, ${ses.len} min${up ? "" : `, starting with ${esc(lc1(F.fix))}`}.</span></li>
+      </ul>`;
+  }
+};
+
+/* ---- Today and Progress ---- */
+function appState(){ return S.app || (S.app = {view:"today", checkin:null}); }
+function todayView(L){
+  const A = appState(), ses = sessions(), m = S.milestone, up = S.sess ? improved(L) : false;
+  const nodeM = i => i < L.fi ? 0.85 : i === L.fi ? (up ? 0.45 : 0.3) : 0.05;
+  const pct = Math.round(L.nodes.reduce((t, _, i) => t + nodeM(i), 0) / L.nodes.length * 100);
+  const D = ["M","T","W","T","F","S","S"];
+  const inj = S.injuries[0];
+  const q = inj ? `How do your ${inj.toLowerCase()} feel after session 1?` : "How did session 1 feel?";
+  const opts = inj ? ["Fine", "A bit sore", "Painful"] : ["Too easy", "About right", "Too hard"];
+  const resp = {Painful:`Session 2 is lighter: no hard pulls on your ${(inj || "").toLowerCase()}. If it still hurts in a week, see a physio.`, "A bit sore":"Normal. Session 2 keeps the same load.", Fine:"Great. Session 2 adds one harder drill.",
+    "Too easy":"Session 2 starts one level higher.", "About right":"Session 2 keeps the same level.", "Too hard":"Session 2 starts one level lower and adds a longer warm-up."};
+  const nextFocus = up ? L.nodes[Math.min(L.fi + 1, L.nodes.length - 1)] : L.focus;
+  return `<h1 tabindex="-1">Today</h1>
+    <section class="next"><span class="eyebrow">Next session · ${ses.len} min</span><b>Session 2: ${esc(nextFocus)}</b>
+      <span class="hint" style="margin:0">${up ? `${esc(L.focus)} is improving. Moving on, with a quick check of it.` : `Picked because ${esc(lc1(L.fb.fix))} on your last attempt.`}</span>
+      ${A.checkin && resp[A.checkin] ? `<span class="pill ${A.checkin === "Painful" || A.checkin === "Too hard" ? "warn" : "info"}" style="align-self:flex-start">${esc(resp[A.checkin])}</span>` : ""}</section>
+    ${A.checkin ? "" : `<section class="panel"><span class="eyebrow">Check-in</span><b>${esc(q)}</b><div class="chips">${opts.map(o => chip(o, false, `data-act="l-checkin" data-v="${o}"`)).join("")}</div></section>`}
+    <button class="cardbtn" type="button" data-act="l-reviews">${icon("repeat")}<span><b>3 reviews due</b><small>About 1 minute</small></span></button>
+    <section class="panel"><span class="eyebrow">Milestone</span><b>${esc(m.title)}</b>
+      <div class="meter"><i style="width:${pct}%"></i></div><div class="row"><span class="mono">${pct}% of the skills</span><span class="mono">proof ~${fmtDate(weeksTo(m.rung))}</span></div></section>
+    <section class="panel"><span class="eyebrow">This week</span>
+      <div class="weekdots">${D.map((d, i) => { const k = ses.days.indexOf(i); return `<div><i class="${k === 0 ? "done" : k > 0 ? "plan" : ""}"></i><span>${d}</span></div>`; }).join("")}</div>
+      <span class="hint" style="margin:0">Weekly review on Sunday, 5 minutes with your coach.</span></section>`;
+}
+function progressView(L){
+  const up = S.sess ? improved(L) : false, m = metricVals(L);
+  const nodeM = i => i < L.fi ? 0.85 : i === L.fi ? (up ? 0.45 : 0.3) : 0.05;
+  const mix = focusMix();
+  return `<h1 tabindex="-1">Progress</h1>
+    <h2>Your route</h2>${route()}
+    <h2>Skills for this milestone</h2>
+    <div class="nodes">${L.nodes.map((n, i) => `<div>${ring(nodeM(i), 36)}<span>${esc(n)}</span></div>`).join("")}</div>
+    <h2>${esc(L.metric.name)}</h2>
+    <div class="ba"><div><span class="eyebrow">First attempt</span><b class="mono">${m.a1 == null ? "–" : L.metric.fmt(m.a1)}</b></div><span class="arrow">→</span><div class="${up ? "up" : ""}"><span class="eyebrow">Latest</span><b class="mono">${m.a2 == null ? "–" : L.metric.fmt(m.a2)}</b></div></div>
+    <h2>Practice mix <small>· planned</small></h2>
+    <div class="mix">${mix.f.map((x, i) => `<i style="width:${x.v}%;background:var(--seg${i + 1})"></i>`).join("")}</div>
+    <div class="legend">${mix.f.map((x, i) => `<span><i style="background:var(--seg${i + 1})"></i>${esc(x.k)} <b>${x.v}%</b></span>`).join("")}</div>
+    <h2>Proof check</h2>
+    <div class="proofbox"><div class="proof">${icon(EVAL[S.milestone.ev].i)}<span><b>${esc(S.milestone.proof)}</b><br>Opens when your skills for this step reach 80%.</span></div></div>`;
+}
+
+/* ---- render + events for the loop ---- */
+function renderLoop(dir){
+  const L = loopContent(), main = $("#screen");
+  $("#ribbon").innerHTML = "";
+  if (S.mode === "session"){
+    const steps = sessSteps(); if (S.sess.i >= steps.length) S.sess.i = steps.length - 1;
+    const st = steps[S.sess.i], present = BLOCKS.map((_, b) => steps.filter(x => x.b === b)).map((items, b) => ({b, items})).filter(x => x.items.length);
+    const bars = present.map(({b, items}) => { const pos = items.indexOf(st); const fill = b < st.b ? 1 : b > st.b ? 0 : (pos + 1) / items.length; return `<span><i style="transform:scaleX(${fill})"></i></span>`; }).join("");
+    $("#bar").innerHTML = `<button class="iconbtn" type="button" aria-label="Back" data-act="l-back" ${S.sess.i === 0 ? "disabled" : ""}>${icon("back")}</button>
+      <div class="progress" aria-hidden="true">${bars}</div><button class="secname linkbtn" type="button" data-act="l-exit">Exit</button>`;
+    main.innerHTML = SVIEWS[st.id](L, st);
+    loopCTA(L, st);
+    if (st.id === "analyze") runPipe(L, st);
+  } else {
+    const A = appState();
+    $("#bar").innerHTML = `<span class="rib">${icon(pack().icon)}${esc(pack().name)}</span>
+      <div class="tabs" role="tablist">${["today", "progress"].map(v => `<button type="button" role="tab" aria-selected="${A.view === v}" data-act="l-tab" data-v="${v}">${v === "today" ? "Today" : "Progress"}</button>`).join("")}</div><span></span>`;
+    main.innerHTML = A.view === "today" ? todayView(L) : progressView(L);
+    loopCTA(L, null);
+  }
+  save();
+  if (dir){
+    main.classList.remove("enter", "back"); void main.offsetWidth;
+    main.classList.add("enter"); if (dir < 0) main.classList.add("back");
+    window.scrollTo(0, 0);
+    const h = main.querySelector("h1"); if (h) h.focus({preventScroll:true});
+  }
+}
+function loopCTA(L, st){
+  const btn = $("#next"); let label = "Continue", ok = true, alt = "";
+  if (!st){
+    label = "Start session 2";
+    alt = `<button class="linkbtn" type="button" data-act="l-replay">Replay session 1</button> · <button class="linkbtn" type="button" data-act="restart">Start over</button>`;
+  } else {
+    const a = S.sess.ans;
+    if (st.id === "warmup"){ ok = S.sess.ticks.length === L.warmup.length; label = ok ? "Warm-up done" : "Tick each one off"; }
+    else if (st.id === "learn"){ const c = L.learn[st.n]; if (c.type === "predict") ok = a["l" + st.n] != null; }
+    else if (st.id === "practice") ok = a["p" + st.n] != null;
+    else if (st.id === "fix"){ ok = a.fix != null; label = ok ? "Try again" : "Continue"; }
+    else if (st.id === "capture"){ ok = L.perform.ev === "code" ? !!S.sess["run" + st.a] : !!S.sess.cap[st.a]; label = ok ? "Check it" : L.perform.ev === "code" ? "Run the tests first" : "Record first"; }
+    else if (st.id === "analyze"){ ok = false; label = "Checking…"; }
+    else if (st.id === "feedback") label = "Try the fix drill";
+    else if (st.id === "wrap") label = "Done";
+  }
+  btn.disabled = !ok; btn.textContent = label; $("#alt").innerHTML = alt;
+}
+let pipeTimers = [];
+function runPipe(L, st){
+  pipeTimers.forEach(clearTimeout); pipeTimers = [];
+  const n = L.perform.steps.length;
+  for (let k = 0; k < n; k++) pipeTimers.push(setTimeout(() => { const li = $("#pipe" + k); if (li) li.classList.add("done"); }, 450 * (k + 1)));
+  pipeTimers.push(setTimeout(() => { if (S.mode === "session" && sessSteps()[S.sess.i] === undefined) return; sessGo(1); }, 450 * n + 450));
+}
+function sessGo(d){
+  pipeTimers.forEach(clearTimeout); clearInterval(strumTimer);
+  const steps = sessSteps(); let i = S.sess.i + d;
+  while (steps[i] && steps[i].id === "analyze" && d < 0) i += d;
+  if (i < 0) return;
+  if (i >= steps.length){ S.mode = "app"; const A = appState(); A.view = "today"; A.done = true; A.checkin = null; render(1); return; }
+  S.sess.i = i; render(d);
+}
+function loopClick(act, v, el){
+  const L = loopContent();
+  switch (act){
+    case "next":
+      if (S.mode === "app"){ toast("Session 2 isn't in this prototype. Session 1 shows the whole loop."); return; }
+      sessGo(1); return;
+    case "l-back": sessGo(-1); return;
+    case "l-exit": pipeTimers.forEach(clearTimeout); clearInterval(strumTimer); S.mode = S.app && S.app.done ? "app" : "onboard"; render(-1); return;
+    case "l-replay": startSession(); return;
+    case "restart": stopRhythm(); S = clone(DEFAULT); render(-1); return;
+    case "l-tab": appState().view = v; render(); return;
+  }
+  switch (act){
+    case "l-pick": S.sess.ans[el.dataset.k] = +v; break;
+    case "l-tick": S.sess.ticks = S.sess.ticks.includes(+v) ? S.sess.ticks.filter(x => x !== +v) : S.sess.ticks.concat(+v); break;
+    case "l-strum": actx(); playStrum(); return;
+    case "l-say": speak(v); return;
+    case "l-txt": S.sess.ans[v + "-txt"] = true; break;
+    case "l-ord": S.sess.ord = +v; speak(`Quisiera ${["un café", "una tostada", "agua", "la cuenta"][+v]}, por favor`); break;
+    case "l-step": S.sess.tr = (S.sess.tr + 1) % TRACE.length; $("#trace").innerHTML = traceView(S.sess.tr); return;
+    case "l-rec": {
+      const a = sessSteps()[S.sess.i].a, b = $(".recbtn");
+      if (b){ b.disabled = true; let t = 3; b.textContent = `Recording… ${t}`; const iv = setInterval(() => { t--; if (t > 0) b.textContent = `Recording… ${t}`; else { clearInterval(iv); S.sess.cap[a] = L.perform.ev === "coach" ? "Sample photo" : `Attempt ${a} · 0:${a === 1 ? "48" : "44"}`; render(); } }, 700); }
+      return;
+    }
+    case "l-run": { const a = sessSteps()[S.sess.i].a, ta = $("#l-code"); if (ta) S.sess.code = ta.value; S.sess["run" + a] = runTests(S.sess.code); break; }
+    case "l-why": S.sess.whyOpen = true; break;
+    case "l-dispute": S.sess.disputed = true; break;
+    case "l-checkin": appState().checkin = v; break;
+    case "l-reviews": toast("Reviews open at the start of session 2 in this prototype."); return;
+    default: return;
+  }
+  render();
+}
+
+function loopInput(t){
+  if (t.id === "l-sim"){ S.sess.sim = +t.value; $("#simwrap").innerHTML = leanSim(S.sess.sim); }
+  else if (t.id === "l-gap"){ S.sess.gap = +t.value; $("#simwrap").innerHTML = spacingSim(S.sess.gap); }
+  else if (t.id === "l-code"){ S.sess.code = t.value; }
+  save();
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (!el || el.disabled) return;
+  const act = el.dataset.act, v = el.dataset.v;
+  if (S.mode !== "onboard"){ loopClick(act, v, el); return; }
+  const scr = cur();
+  switch (act){
+    case "back": goTo(S.idx - 1, -1); return;
+    case "next":
+      if (scr.id === "plan"){ startSession(); return; }
+      next(); return;
+    case "jump": goTo(screens().findIndex(x => x.sec === +v), -1); return;
+    case "restart": stopRhythm(); S = clone(DEFAULT); render(-1); return;
+    case "pick-skill": setSkill(v); render(); autoAdvance(); return;
+    case "why":
+      S.why = S.why.includes(v) ? S.why.filter(x => x !== v) : S.why.concat(v).slice(-2);
+      S.milestone = null; render();
+      if (S.why.length === 2) autoAdvance();
+      return;
+    case "after":
+      S.after = v; S.afterCustom = ""; S.milestone = null; S.later = null;
+      S.access = S.access.filter(a => accessOptions().includes(a));
+      render(); autoAdvance(); return;
+    case "chord": S.diag.chords = toggle(S.diag.chords || [], v); delete S.diag.fresh; break;
+    case "single": { const pr = pack().probes[scr.n]; S.diag[pr.id] = pr.options[+v].v; delete S.diag.fresh; render(); autoAdvance(); return; }
+    case "hold": S.diag.grade = +v; delete S.diag.fresh; render(); autoAdvance(); return;
+    case "multi": { const pr = pack().probes[scr.n]; S.diag[pr.id] = toggle(S.diag[pr.id] || [], v); break; }
+    case "fresh": S.diag = {fresh:true}; goTo(screens().findIndex(x => x.id === "place"), 1); return;
+    case "rhythm-start": rhythmStart(); return;
+    case "answer": {
+      if (S.diag.flash) return;
+      const pr = pack().probes[scr.n], q = S.diag.quiz, k = +v, right = k === pr.items[q.i].a;
+      q.hist.push(right); if (right) q.c++; else q.w++;
+      S.diag.flash = {pick:k}; delete S.diag.fresh;
+      render();
+      setTimeout(() => {
+        delete S.diag.flash; q.i++;
+        if (q.w >= 2 || q.i >= pr.items.length) q.done = true;
+        render();
+      }, 650);
+      return;
+    }
+    case "quiz-reset": S.diag.quiz = {i:0, c:0, w:0, done:false, hist:[]}; break;
+    case "adjust": S.adjust += +v; computeBaseline(); break;
+    case "deadline": S.deadline = v; break;
+    case "access": S.access = toggle(S.access, v); break;
+    case "injury": S.injuries = toggle(S.injuries, v); break;
+    case "goal": S.milestone = GOALS[+v]; S.later = null; render(); scrollChosen(); return;
+    case "rung": S.milestone = mk("rung", +v); S.later = null; render(); scrollChosen(); return;
+    case "stone": S.later = S.milestone; S.milestone = mk("stone", +v); render(); scrollChosen(); return;
+    case "ladder": S.showLadder = !S.showLadder; break;
+    case "copy": {
+      const txt = JSON.stringify(profile(), null, 2);
+      const fallback = () => { const r = document.createRange(); r.selectNodeContents($("#json")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Selected. Copy it from here."); };
+      try { navigator.clipboard.writeText(txt).then(() => toast("Copied"), fallback); } catch (err) { fallback(); }
+      return;
+    }
+    default: return;
+  }
+  render();
+});
+
+document.addEventListener("pointerdown", e => { if (RT && e.target.closest("#pad")){ e.preventDefault(); RT.taps.push(performance.now()); } });
+document.addEventListener("keydown", e => { if (RT && (e.code === "Space" || e.key === " ")){ e.preventDefault(); RT.taps.push(performance.now()); } });
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (S.mode !== "onboard"){ loopInput(t); return; }
+  if (t.id === "skill-input"){
+    setSkill(t.value);
+    $("#skill-note").textContent = S.skillId ? pack().blurb : "Every skill gets its own ladder of goals.";
+    $("#skill-go").disabled = !S.skillId;
+    $$("#quick .tile").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.v.toLowerCase() === t.value.trim().toLowerCase())));
+  } else if (t.id === "after-input"){
+    S.afterCustom = t.value;
+    if (t.value.trim()){ S.after = null; $$('[data-act="after"]').forEach(b => b.setAttribute("aria-pressed", "false")); }
+    S.milestone = null; S.later = null;
+  } else if (t.id === "minutes"){
+    S.minutes = +t.value;
+    $("#hrs").textContent = hrs(S.minutes);
+    $("#week").innerHTML = weekCells();
+  } else if (t.id === "custom"){
+    S.custom = t.value;
+  }
+  ctaState(); save();
+});
+
+document.addEventListener("change", e => {
+  if (e.target.id === "l-file" && e.target.files && e.target.files[0]){
+    const st = sessSteps()[S.sess.i]; S.sess.cap[st.a] = e.target.files[0].name; render(); return;
+  }
+  if (e.target.id === "clip" && e.target.files && e.target.files[0]){
+    const f = e.target.files[0];
+    S.diag.clip = `${f.name} · ${(f.size / 1048576).toFixed(1)} MB`;
+    render();
+  }
+});
+
+document.addEventListener("submit", e => {
+  e.preventDefault();
+  const f = e.target.dataset.form;
+  if (f === "skill"){ if (S.skillId) next(); return; }
+  if (f === "after"){ if (S.afterCustom.trim().length > 2) next(); return; }
+  if (f === "custom"){
+    const v = S.custom.trim(); if (v.length < 3) return;
+    const p = pack(), top = p.rungs.length - 1;
+    let rung = matchCustom(S.skillId, v), guessed = false;
+    if (rung == null){ guessed = true; rung = Math.min(S.baseline + 1, top); }
+    S.milestone = {kind:"custom", rung, title:v, proof:p.rungs[rung].proof || p.rungs[Math.min(rung + 1, top)].proof, ev:p.ev, guessed};
+    S.later = null;
+    render(); scrollChosen();
+  }
+});
+
+if (S.idx >= screens().length) S.idx = 0;
+render(1);
+})();
+</script>
