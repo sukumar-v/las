@@ -1,8 +1,9 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { FeedbackView } from "@las/schema";
 import type { LasContext } from "../../context.js";
-import { compareToReference, getAnalysis, requestCapture, runCodeTests, startProofCheck, submitRubricGrade } from "../../core/evaluate.js";
+import { compareToReference, getAnalysis, gradingRequest, requestCapture, runCodeTests, startProofCheck, submitRubricGrade, type GradingRequest } from "../../core/evaluate.js";
 import { ok } from "../result.js";
 import { view } from "../widgets.js";
 import { guard } from "./onboard.js";
@@ -10,6 +11,14 @@ import { guard } from "./onboard.js";
 export function feedbackText(f: FeedbackView): string {
   if (f.reRecord) return `Record again: ${f.reRecord}`;
   return [`${f.headline}${f.evidence.label ? ` (${f.evidence.label})` : ""}.`, f.praise ? `Done well: ${f.praise.headline}.` : "", f.fixDrillTitle ? `Try this: ${f.fixDrillTitle}.` : "", f.compare?.metric && f.compare.before !== undefined ? `${f.compare.metric}: ${f.compare.before} → ${f.compare.after}${f.compare.unit ? ` ${f.compare.unit}` : ""}.` : "", f.precision !== "full" ? `This check is ${f.precision === "reduced" ? "less precise" : "self-reported"}.` : ""].filter(Boolean).join(" ");
+}
+
+/** get_analysis for a picture still waiting for grades: the image itself, the rubric and what to call next. */
+export function gradingResult(ctx: LasContext, attemptId: string, sk: string, g: GradingRequest, analysis?: unknown): CallToolResult {
+  const text = [g.instruction, g.imageNote ?? "", g.prompt].filter(Boolean).join("\n\n");
+  const r = view(ctx, { view: "capture", title: "Grade this work", data: { attemptId, analysis, grading: { prompt: g.prompt, instruction: g.instruction, imageLink: g.imageLink, imageAttached: !!g.image } }, text, studioPath: `/app/feedback/${attemptId}`, sk });
+  if (g.image) r.content.push({ type: "image", data: g.image.data, mimeType: g.image.mimeType });
+  return r;
 }
 
 export function registerEvaluateTools(server: McpServer, ctx: LasContext): void {
@@ -33,7 +42,7 @@ export function registerEvaluateTools(server: McpServer, ctx: LasContext): void 
     },
     guard(async (spec) => {
       const r = await requestCapture(ctx, spec);
-      return view(ctx, { view: "capture", title: spec.prompt, data: { attemptId: r.attempt.id, attempt: r.attempt, how: r.how, phone: r.phone, rubricPrompt: r.rubricPrompt }, text: `Attempt ${r.attempt.id}: ${spec.prompt}.${r.phone ? " It opens on the paired phone." : ""}${r.rubricPrompt ? `\nGrade with submit_rubric_grade using:\n${r.rubricPrompt}` : ""}`, studioPath: r.studioPath, sk: r.attempt.enrollmentId });
+      return view(ctx, { view: "capture", title: spec.prompt, data: { attemptId: r.attempt.id, attempt: r.attempt, how: r.how, phone: r.phone, rubricPrompt: r.rubricPrompt }, text: `Attempt ${r.attempt.id}: ${spec.prompt}.${r.phone ? " It opens on the paired phone." : ""}${r.rubricPrompt ? `\nOnce the learner has sent the picture, call get_analysis: it returns the image with this rubric. Then grade with submit_rubric_grade using:\n${r.rubricPrompt}` : ""}`, studioPath: r.studioPath, sk: r.attempt.enrollmentId });
     })
   );
 
@@ -41,10 +50,16 @@ export function registerEvaluateTools(server: McpServer, ctx: LasContext): void 
     "get_analysis",
     {
       title: "The analysis of an attempt",
-      description: "The engine's Analysis plus the one-fix feedback card (top mistake with evidence, one thing done well, fix drill, why) or a re-record request. Grade only from this, and quote its evidence.",
+      description: "The engine's Analysis plus the one-fix feedback card (top mistake with evidence, one thing done well, fix drill, why) or a re-record request. Grade only from this, and quote its evidence. For a picture still waiting for rubric grades it returns the image and the rubric instead: look at it and call submit_rubric_grade.",
       inputSchema: { attemptId: z.string() }
     },
     guard(async ({ attemptId }) => {
+      // a picture waiting for the agent's grades: hand over the image before any feedback is built (or marked as coached)
+      const grading = await gradingRequest(ctx, attemptId);
+      if (grading) {
+        const a = ctx.store.getAttempt(attemptId)!;
+        return gradingResult(ctx, attemptId, a.enrollmentId, grading, a.analysis);
+      }
       const r = getAnalysis(ctx, attemptId);
       if (!r.analysis) return view(ctx, { view: "capture", title: "Waiting for the recording", data: { attemptId, attempt: r.attempt, analyzed: false }, text: `Attempt ${attemptId} hasn't been analyzed yet.`, studioPath: `/app/capture/${attemptId}`, sk: r.attempt.enrollmentId });
       const proofText = r.proof ? `\nProof: ${r.proof.passed ? "passed" : "not yet"}: ${r.proof.criteria.map((c) => `${c.label} ${c.passed ? "✓" : "✗"}`).join(", ")}` : "";

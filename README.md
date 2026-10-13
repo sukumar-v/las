@@ -10,10 +10,10 @@ Design docs: [docs/DESIGN.md](docs/DESIGN.md), starting with [docs/design/any-sk
 git clone https://github.com/sukumar-v/las && cd las
 pnpm install
 pnpm build
-node packages/cli/bin/las-agents.js setup      # shows every change, backs up, asks, then installs
+npx las-agents setup      # or: pnpm las:setup. Shows every change, backs up, asks, then installs
 ```
 
-`setup` finds the agents you have, adds the `las` MCP server to each and copies the `learn-any-skill` skill where the agent has a skills folder. `--dry-run` shows the changes and writes nothing. `--yes` approves everything. `--client codex` names one agent. The server entry points at this checkout, so keep the folder where it is. `npx las-agents setup` is the same command once the package is published to npm; it is not published yet.
+`setup` finds the agents you have, adds the `las` MCP server to each and copies the `learn-any-skill` skill where the agent has a skills folder. `--dry-run` shows the changes and writes nothing. `--yes` approves everything. `--client codex` names one agent. The server entry points at this checkout, so keep the folder where it is. Inside the clone, `pnpm install` links the `las-agents` command, so `npx las-agents setup` and `pnpm las:setup` run this checkout's CLI (the package is not on npm yet). If neither works, `node packages/cli/bin/las-agents.js setup` is the same command.
 
 Restart your agent, then say:
 

@@ -26,7 +26,7 @@ sequenceDiagram
   A->>L: a few words + a visual (render_* tools)
 ```
 
-- **Inline when possible:** if the client renders MCP Apps, sessions, drills and progress appear inside the chat. Otherwise tools return a studio link (`http://localhost:4711/s/<id>`, or the hosted URL).
+- **Inline when possible:** if the client renders MCP Apps, sessions, drills and progress appear inside the chat. Otherwise tools return a studio link to the same screen (`http://127.0.0.1:4711/app/...`, e.g. `/app/today`, `/app/capture/<attemptId>`, `/app/feedback/<attemptId>`).
 - **The server is the source of truth.** The agent never keeps learner state in its own memory; it reads it back through tools and resources.
 
 **Studio JSON routes.** The studio and the widgets call the same core functions as the tools, over a small JSON API on `127.0.0.1:4711` (`packages/server/src/http`). Events go through one route, `POST /api/events`.
@@ -96,10 +96,10 @@ The tools in [Theming §7](theming.md#7-tools-and-data): `draft_theme`, `validat
 | Tool | Input | Output |
 |---|---|---|
 | `request_capture` | `attemptSpec` | Recording widget or studio link (opens on the phone if paired) |
-| `get_analysis` | `attemptId` | `Analysis` ([evaluation §1](evaluation.md#1-evaluator-contract)) + key frames |
+| `get_analysis` | `attemptId` | `Analysis` ([evaluation §1](evaluation.md#1-evaluator-contract)) + the feedback card (and the `ProofResult` for a proof attempt). For a visual attempt still waiting for rubric grades with an uploaded picture: the picture as an MCP image block (up to 1.5 MB; larger ones are linked), the rubric prompt and the instruction to call `submit_rubric_grade` |
 | `run_code_tests` | `TestSpec, files` | Test results from the best available runner (asks the learner before a runner's first use) |
-| `compare_to_reference` | `attemptId, reference` | Similarity over time to a reference clip, recording or score |
-| `run_proof_check` | `milestoneId` | Recording flow, then `ProofResult` |
+| `compare_to_reference` | `attemptId, reference` (`reference`: the attempt id of an analyzed reference attempt) | For movement, the engine lines up the body points with the reference's over time; otherwise similarity metric by metric against the reference attempt's analysis |
+| `run_proof_check` | `milestoneId \| sk, proceed?` | Readiness first (what's missing, if anything; `proceed: true` takes it anyway), then the recording flow; the `ProofResult` comes with `get_analysis` |
 | `submit_rubric_grade` | `attemptId, grades[]` (`criterion, level, confidence, region?, note?`) | The agent's own grades for a visual (rubric) attempt. The visual engine adds its measurements, stores the `Analysis` and returns the feedback card ([evaluation §3.1](evaluation.md#31-visual-grading-flow)) |
 
 ### Track
@@ -110,7 +110,8 @@ The tools in [Theming §7](theming.md#7-tools-and-data): `draft_theme`, `validat
 | `log_external` | `sk, minutes, note` | Logs practice done outside the app |
 | `report_pain` | `sk, area, level` | Lowers intensity now, schedules a follow-up |
 | `revisit_why` | `sk` | Why and six-month questions again |
-| `export_data` / `delete_data` | `scope` | A file / confirmation |
+| `export_data` | `scope` (`sk` or `all`) | A file |
+| `delete_data` | `scope` (`sk` or `all`), `confirm: true` | Deletes the skill's (or all) data and media files. Without `confirm: true` it refuses and says it can't be undone; the agent asks the learner first |
 
 ## 3. Resources and prompts
 
@@ -156,23 +157,37 @@ The studio sends events to the server. The server updates models and schedules; 
 
 ## 6. Data model (SQLite)
 
+The tables the migration creates (packages/store/src/migrations.ts). JSON columns hold TEXT.
+
 ```
 learner(id, name, timezone, quiet_hours, nudge_limits, created_at)
-skill_model(id, skill, source[generated|curated], based_on_pack, pack_version, version, json, validated_at)
+skill_model(id, skill, source[generated|curated], based_on_pack, pack_version, version, json, validated_at, created_at)
 enrollment(id, learner_id, skill_model_id, status[active|paused|done], created_at)
-theme(id, learner_id, name, source_kind, json, validated_at)
-theme_scope(learner_id, enrollment_id, theme_id)                            -- enrollment_id null = all skills
-intent(enrollment_id, why_json, afterwards, revisited_at)
-constraint(enrollment_id, minutes_per_week, deadline, access_json, injuries_json)
-milestone(id, enrollment_id, title, ladder_step, proof_json, target_date, status, achieved_at, self_reported)
-node_mastery(enrollment_id, node_id, p_known, attempts, updated_at)           -- BKT
-review_card(id, enrollment_id, node_id, fsrs_state_json, due_at)               -- FSRS
-session(id, enrollment_id, planned_at, started_at, ended_at, plan_json, location)
-attempt(id, session_id, drill_id, kind, media_ref, analysis_json, created_at)  -- media_ref points to a file on the device
-mistake_state(enrollment_id, mistake_id, state, last_seen_at, disputed_count)
-checkin(id, enrollment_id, kind, due_at, sent_at, answered_at, answer)
-plan_change(id, enrollment_id, reason, option, created_at)                      -- every re-plan, logged
+theme(id, learner_id, name, source_kind, json, validated_at, created_at)
+theme_scope(learner_id, enrollment_id, theme_id)                              -- enrollment_id '' = all skills
+intake(id, learner_id, skill_model_id, answers, step, placement, enrollment_id, created_at, completed_at)
+intent(enrollment_id, why, afterwards, revisited_at)
+constraints(enrollment_id, minutes_per_week, deadline, access, injuries, schedule, location)
+milestone(id, enrollment_id, title, ladder_step, proof, target_date, status, achieved_at, self_reported, kind, estimate_weeks, feasibility, created_at)
+node_mastery(enrollment_id, node_id, p_known, attempts, started, updated_at)    -- BKT
+review_card(id, enrollment_id, node_id, fsrs_state, due_at)                      -- FSRS
+session(id, enrollment_id, planned_at, started_at, ended_at, plan, location, minutes, summary, status)
+attempt(id, session_id, enrollment_id, drill_id, milestone_id, kind, engine, spec_id, attempt_no, media_ref, analysis, spec, prompt, created_at, analyzed_at)
+mistake_state(enrollment_id, mistake_id, state, last_seen_at, disputed_count, clean_streak, seen_count)
+checkin(id, enrollment_id, kind, due_at, sent_at, answered_at, answer, payload)
+plan_change(id, enrollment_id, reason, option, created_at)                        -- every re-plan, logged
+event(id, enrollment_id, type, json, created_at)                                  -- studio and loop events
+planner_log(id, session_id, json, created_at)                                     -- why each block was chosen
+time_log(id, enrollment_id, minutes, category, source, note, created_at)
+setting(key, value)                                                               -- consents, baselines, preferences
+pairing(token, created_at, used_at, device, expires_at)                           -- phone pairing
+push_subscription(id, learner_id, json, created_at)
+dispute(id, enrollment_id, attempt_id, mistake_id, metrics, consent, created_at)
+proof(id, enrollment_id, milestone_id, attempt_id, result, clip_ref, created_at)
+metric_history(id, enrollment_id, metric_id, value, attempt_id, created_at)
 ```
+
+`media_ref` points to a file on the device. Derived evidence (body points, pitch tracks, transcripts, test results) is kept next to it as `evidence.json`.
 
 Media files stay on the device under `~/.las/media/<attempt>`. The database only stores references and derived data.
 

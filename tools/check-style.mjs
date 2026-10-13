@@ -2,13 +2,13 @@
 /**
  * Fails the build on any hard-coded color, font, radius or shadow in component stylesheets.
  * Component CSS may only use theme tokens (var(--las-*)), structural values and variant selectors.
- * The base theme and the token-to-CSS generator are the only places allowed to carry raw values.
+ * The token-to-CSS generator is the only file here allowed to carry raw values (the base theme lives in @las/schema).
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOTS = ["packages/ui/src", "packages/studio/src"];
-const ALLOW = new Set(["packages/ui/src/theme/base.ts", "packages/ui/src/theme/css.ts"]);
+const ALLOW = new Set(["packages/ui/src/theme/css.ts"]);
 const TOKEN = String.raw`var\(--las-`;
 const COLOR_OK = String.raw`(?:${TOKEN}|transparent|currentColor|inherit|none|0\b|color-mix\(|(?:repeating-)?(?:linear|radial)-gradient\(|url\(#)`;
 const CHECKS = [

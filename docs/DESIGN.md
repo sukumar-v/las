@@ -108,7 +108,7 @@ The tree above is the product as the learner installs it. The repository is a pn
 | `plan` | `get_today`, `next_session`, `reschedule`, `replan` |
 | `teach` | `render_lesson`, `render_sim`, `render_mechanism` (anatomy), `render_diagram`, `explain_mistake` |
 | `practice` | `start_drill`, `review_cards` (FSRS) |
-| `evaluate` | `request_capture`, `get_analysis`, `run_code_tests`, `compare_to_reference`, `run_proof_check` |
+| `evaluate` | `request_capture`, `get_analysis`, `run_code_tests`, `compare_to_reference`, `run_proof_check`, `submit_rubric_grade` (the agent's own rubric grades for a picture, which `get_analysis` hands it) |
 | `track` | `get_progress`, `get_session_summary`, `log_external`, `report_pain`, `revisit_why`, `export_data`, `delete_data` |
 
 Lesson tools take **structured specs** and reject text over budget, so the tool shapes leave no room for an essay. Inputs, outputs, agent rules and events: [MCP and data](design/mcp-and-data.md).
@@ -342,7 +342,7 @@ Verified from each project's LICENSE file or model card on 2026-10-12 and 2026-1
 | | web-push | MPL-2.0 |
 | | mkcert, Headscale | BSD-3-Clause |
 | | Tailscale client | BSD-3-Clause (some platform GUIs are not open source) |
-| Fonts | Any family a theme picks, if its license is allowed (usually SIL OFL 1.1 or Apache-2.0), checked per family and cached locally. The prototype's demo fonts (Gabarito, Atkinson Hyperlegible, DM Mono) are OFL 1.1 | Per font |
+| Fonts | Any family a theme picks, if its license is one of OFL-1.1, Apache-2.0, MIT, UFL-1.0, CC0-1.0 or public domain, or it is a system font (`FONT_LICENSES` in packages/schema/src/theme/schema.ts); checked per family and cached locally. The prototype's demo fonts (Gabarito, Atkinson Hyperlegible, DM Mono) are OFL 1.1 | Per font |
 
 #### What the repository depends on today
 
@@ -404,6 +404,7 @@ Because evaluators turn practice into numbers, a text-only open model can coach 
 | python-chess, chessground | GPL-3.0 | chess.js, cm-chessboard |
 | Stockfish, Lc0 | GPL-3.0 | Optional external only, over UCI. Fallback: tactics quizzes with chess.js |
 | espeak-ng, phonemizer, Piper TTS | GPL-3.0 | Optional external only. Use gruut or epitran for phonemes and Kokoro for speech |
+| FFmpeg | LGPL-2.1+ (GPL in most builds) | Optional external only, as a separate process: when the learner has it on `PATH`, the server decodes a non-WAV recording with it for whisper.cpp. Fallback: WAV is decoded in node, and the studio transcribes in the browser |
 | Qwen2.5-VL-3B | Research license (⚠ reported) | Qwen2.5-VL-7B, SmolVLM, Florence-2, moondream2 |
 | Moondream 3 Preview | BSL 1.1 (source-available) | moondream2 |
 
