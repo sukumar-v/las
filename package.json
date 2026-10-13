@@ -1,0 +1,33 @@
+{
+  "name": "las-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Learn Any Skill: an open-source MCP server, agent skill and studio that coach anyone through any skill",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=22.13" },
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && node tools/check-style.mjs",
+    "test": "vitest run",
+    "test:engines": "vitest run --project engines --project runners",
+    "test:themes": "vitest run --project ui",
+    "test:evals": "vitest run --project evals",
+    "test:e2e": "playwright test -c packages/studio/playwright.config.ts",
+    "licenses": "node tools/check-licenses.mjs",
+    "smoke": "node tools/smoke-inspector.mjs",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm licenses"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^22.19.0",
+    "esbuild": "^0.27.0",
+    "eslint": "^9.39.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^4.1.0",
+    "@playwright/test": "1.56.1"
+  }
+}

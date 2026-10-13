@@ -1,0 +1,4 @@
+{ "name": "@las/cli", "version": "0.1.0", "private": true, "type": "module", "license": "MIT",
+  "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" } },
+  "scripts": { "build": "echo ok", "test": "vitest run" },
+  "dependencies": { "@las/schema": "workspace:*" }, "devDependencies": { "vitest": "^4.1.0" } }

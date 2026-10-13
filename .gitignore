@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+test-results/
+playwright-report/
+coverage/
+*.db
+*.db-journal
+.DS_Store
+.env
+packages/ui/test/__snapshots__/**/*.actual.*
