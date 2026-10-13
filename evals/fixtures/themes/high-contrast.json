@@ -80,32 +80,6 @@
     },
     "density": "comfortable"
   },
-  "dark": {
-    "color": {
-      "bg": "#111113",
-      "surface": "#1C1C20",
-      "ink": "#F4F4F5",
-      "muted": "#B4B4BC",
-      "line": "#3F3F46",
-      "accent": "#93B4FF",
-      "on_accent": "#0B1020",
-      "good": "#4ADE80",
-      "warn": "#FBBF24",
-      "bad": "#F87171",
-      "focus": "#93B4FF",
-      "data": [
-        "#93B4FF",
-        "#FDBA74",
-        "#2DD4BF",
-        "#F9A8D4",
-        "#A1A1AA"
-      ]
-    },
-    "shadow": {
-      "card": "none",
-      "raised": "0 2px 8px rgba(0,0,0,0.5)"
-    }
-  },
   "components": {
     "card": "outlined",
     "button": "square",
