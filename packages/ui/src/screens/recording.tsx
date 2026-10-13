@@ -14,7 +14,7 @@ export interface FramingState {
 }
 
 /** The recording screen: a live framing guide, the record button that stays disabled until the guide is satisfied, and live meters. */
-export function Recording({ engine, prompt, how, angle, durationS, framing, recording, elapsed, onRecord, onStop, onUpload, meters, landmarks, media, voice, children }: { engine: string; prompt: string; how?: string; angle?: string; durationS?: number; framing?: FramingState; recording?: boolean; elapsed?: number; onRecord?: () => void; onStop?: () => void; onUpload?: () => void; meters?: { pitch?: { cents: number; note?: string }; beats?: { offsetsMs: (number | null)[]; beats: number }; level?: number; tests?: { label: string; pass?: boolean }[] }; landmarks?: Record<string, [number, number, number?]>; media?: ComponentChildren; voice?: Voice; children?: ComponentChildren }) {
+export function Recording({ engine, prompt, how, angle, durationS, framing, recording, elapsed, onRecord, onStop, onUpload, meters, landmarks, media, voice, aspect, children }: { engine: string; prompt: string; how?: string; angle?: string; durationS?: number; framing?: FramingState; recording?: boolean; elapsed?: number; onRecord?: () => void; onStop?: () => void; onUpload?: () => void; meters?: { pitch?: { cents: number; note?: string }; beats?: { offsetsMs: (number | null)[]; beats: number }; level?: number; tests?: { label: string; pass?: boolean }[] }; landmarks?: Record<string, [number, number, number?]>; media?: ComponentChildren; voice?: Voice; /** width / height of the camera stream (videoWidth / videoHeight); default 3/4 */ aspect?: number; children?: ComponentChildren }) {
   const needsCamera = engine === "movement" || engine === "visual";
   const needsMic = engine === "audio" || engine === "speech";
   const ready = framing?.ready ?? !needsCamera;
@@ -26,7 +26,7 @@ export function Recording({ engine, prompt, how, angle, durationS, framing, reco
         {how ? <p class="las-sub">{how}</p> : null}
       </div>
       {needsCamera ? (
-        <div class="las-media" aria-label="Camera preview">
+        <div class="las-media" aria-label="Camera preview" style={aspect && aspect > 0 ? { "--las-media-aspect": String(aspect) } : undefined}>
           {media ?? <Icon name="cam" />}
           <PoseOverlay landmarks={landmarks} marks={marks} label="Framing guide" />
           {!recording ? (
