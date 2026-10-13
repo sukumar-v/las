@@ -4,7 +4,7 @@ import { currentRoute, onNavigate, type RouteMatch } from "./router.js";
 import { VoiceContext, onThemeChange, currentTheme } from "./theme.js";
 import { Home, TodayPage, ReviewPage, DrillPage, CapturePage, ReplayPage, ProgressPage, SummaryPage, ProofPage, ThemePage } from "./screens/loop.js";
 import { OnboardNew, OnboardScreen } from "./screens/onboard.js";
-import { SessionRunner } from "./screens/session.js";
+import { SessionRoute } from "./screens/live.js";
 import { SettingsPage } from "./screens/settings.js";
 import { PairPage } from "./screens/pair.js";
 import { SnapshotPage } from "./snapshots/page.js";
@@ -24,7 +24,7 @@ export function screenFor(r: RouteMatch | undefined) {
     case "today":
       return sk ? <TodayPage key={sk} sk={sk} /> : <Home />;
     case "session":
-      return <SessionRunner key={r.params.id} id={r.params.id} query={q} />;
+      return <SessionRoute key={r.params.id} id={r.params.id} query={q} />;
     case "capture":
       return <CapturePage key={r.params.attemptId} attemptId={r.params.attemptId} query={q} />;
     case "replay":

@@ -38,14 +38,8 @@ export interface SessionHandlers {
   onReview?: () => void;
 }
 
-export function SessionScreen({ plan, step, state, h = {}, voice, children }: { plan: SessionPlan; step: SessionStep; state: Record<string, any>; h?: SessionHandlers; voice?: Voice; children?: preact.ComponentChildren }) {
-  const block = plan.blocks[step.blockIndex];
-  const item = block.items[step.itemIndex];
-  const steps = sessionSteps(plan);
-  const idx = steps.findIndex((s) => s.blockIndex === step.blockIndex && s.itemIndex === step.itemIndex && s.phase === step.phase);
-  const sections = plan.blocks.map((b) => BLOCK_LABELS[b.kind]);
-  const inBlock = steps.filter((s) => s.blockIndex === step.blockIndex);
-  const pos = inBlock.findIndex((s) => s === steps[idx]);
+/** What one session item draws, and its main button: shared by the planned runner and the live coach's screens. */
+export function itemBody({ item, block, phase, state, h = {}, voice, children }: { item: SessionItem; block: { title: string; reason?: string }; phase?: string; state: Record<string, any>; h?: SessionHandlers; voice?: Voice; children?: preact.ComponentChildren }): { body: preact.ComponentChildren; cta: { label: string; enabled: boolean } } {
   let cta = { label: copy(voice, "continue"), enabled: true };
   let body: preact.ComponentChildren = null;
   switch (item.type) {
@@ -112,7 +106,7 @@ export function SessionScreen({ plan, step, state, h = {}, voice, children }: { 
       break;
     }
     case "capture": {
-      if (step.phase === "capture") {
+      if (phase === "capture") {
         const captured = !!state.captured?.[item.attemptSpecId];
         cta = { label: captured ? copy(voice, "checkIt") : item.engine === "code" ? copy(voice, "runFirst") : copy(voice, "recordFirst"), enabled: captured };
         body = (
@@ -125,7 +119,7 @@ export function SessionScreen({ plan, step, state, h = {}, voice, children }: { 
             )}
           </>
         );
-      } else if (step.phase === "analyze") {
+      } else if (phase === "analyze") {
         const done = (state.pipeline?.[item.attemptSpecId] as number) ?? 0;
         const stepsList = (state.pipelineSteps?.[item.attemptSpecId] as string[]) ?? ["Recording is usable", "Features extracted", "Metrics", "Mistake check"];
         cta = { label: copy(voice, "checking"), enabled: false };
@@ -152,6 +146,18 @@ export function SessionScreen({ plan, step, state, h = {}, voice, children }: { 
       );
       break;
   }
+  return { body, cta };
+}
+
+export function SessionScreen({ plan, step, state, h = {}, voice, children }: { plan: SessionPlan; step: SessionStep; state: Record<string, any>; h?: SessionHandlers; voice?: Voice; children?: preact.ComponentChildren }) {
+  const block = plan.blocks[step.blockIndex];
+  const item = block.items[step.itemIndex];
+  const steps = sessionSteps(plan);
+  const idx = steps.findIndex((s) => s.blockIndex === step.blockIndex && s.itemIndex === step.itemIndex && s.phase === step.phase);
+  const sections = plan.blocks.map((b) => BLOCK_LABELS[b.kind]);
+  const inBlock = steps.filter((s) => s.blockIndex === step.blockIndex);
+  const pos = inBlock.findIndex((s) => s === steps[idx]);
+  const { body, cta } = itemBody({ item, block, phase: step.phase, state, h, voice, children });
   return (
     <Frame sections={sections} sectionIndex={step.blockIndex} sectionFill={(pos + 1) / Math.max(inBlock.length, 1)} onBack={h.onBack} canBack={idx > 0} exit="Exit" onExit={h.onExit} cta={{ ...cta, onClick: h.onNext }}>
       {body}

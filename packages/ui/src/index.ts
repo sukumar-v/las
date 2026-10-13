@@ -19,3 +19,5 @@ export * from "./screens/replay.js";
 export * from "./screens/progress.js";
 export * from "./screens/theme-preview.js";
 export * from "./screens/widget.js";
+export * from "./components/coach.js";
+export * from "./screens/live.js";

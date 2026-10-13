@@ -10,6 +10,7 @@ import { api, type AttemptInfo, type DrillStepView, type ReviewCard, type StateV
 import { navigate, buildPath } from "../router.js";
 import { loadTheme, setActiveTheme, useT, useVoice } from "../theme.js";
 import { onStream } from "../stream.js";
+import { startSession } from "../live/director.js";
 import { Page, Loading, Failed } from "./common.js";
 import { CaptureView } from "./capture.js";
 import { ReplayView } from "./replay.js";
@@ -66,7 +67,8 @@ export function TodayPage({ sk }: { sk: string }) {
   if (!view) return <Loading />;
   const start = async () => {
     try {
-      const id = view.nextSession?.id ?? (await api.nextSession(sk)).sessionId;
+      // a live session: the coach's screens when a coach is here, the fallback screens when not
+      const { id } = await startSession(api, sk, view.nextSession?.id);
       navigate(buildPath("/app/session/:id", { id }));
     } catch (e) {
       setError((e as Error).message);

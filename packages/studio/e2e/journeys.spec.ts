@@ -7,7 +7,7 @@ import { audioModel } from "./fixtures/models/audio.js";
 import { speechModel } from "./fixtures/models/speech.js";
 import { codeModel } from "./fixtures/models/code.js";
 import { visualModel } from "./fixtures/models/visual.js";
-import { fixtureEvidence, fixtureThemes, guardNetwork, seed } from "./helpers.js";
+import { answerDrill, capture, cta, fixtureEvidence, fixtureThemes, guardNetwork, onboard, seed } from "./helpers.js";
 
 /**
  * Onboarding → session 1 → Today for five skills on five different engines, each in a different fixture theme.
@@ -30,101 +30,11 @@ const JOURNEYS = [
   { engine: "visual", model: visualModel, theme: "monochrome-serif" }
 ] as const;
 
-const cta = (page: Page) => page.locator("footer.las-cta .las-btn.primary");
-
 async function expectTheme(page: Page, themeId: string) {
   const theme = themes[themeId];
   const html = page.locator("html");
   await expect(html).toHaveAttribute("data-theme-id", themeId);
   for (const k of ["card", "button", "chip", "tile", "progress", "route", "meter"]) await expect(html).toHaveAttribute(`data-${k}`, theme.components[k]);
-}
-
-async function onboard(page: Page, name: string) {
-  await page.goto("/app/onboard/new");
-  await page.locator(".las-tile", { hasText: name }).click();
-  await page.waitForURL(/\/app\/onboard\/int_/);
-  // why: chips, then continue
-  await expect(page.locator(".las-h1")).toContainText("pulling you toward");
-  await page.locator(".las-chip", { hasText: "For fun" }).click();
-  await cta(page).click();
-  // picture: one tile moves on by itself
-  await expect(page.locator(".las-h1")).toContainText("Six months from now");
-  await page.locator(".las-tile", { hasText: "Doing it every week" }).click();
-  // the level probe
-  await expect(page.locator(".las-h1")).toContainText("How much have you done?");
-  await page.locator(".las-tile", { hasText: "A few times" }).click();
-  // placement: too easy, then too hard, then looks right
-  await expect(page.locator(".las-h1")).toContainText("Here's where you start");
-  await page.getByRole("button", { name: "Too easy" }).click();
-  await expect(page.getByRole("button", { name: "Too hard" })).toBeEnabled();
-  await page.getByRole("button", { name: "Too hard" }).click();
-  await expect(page.locator(".las-rung.here")).toContainText("Brand new");
-  await cta(page).click();
-  // time: slider and a deadline
-  await expect(page.locator(".las-h1")).toContainText("How much time");
-  await page.locator("input#minutes").fill("240");
-  await expect(page.locator(".las-bignum")).toContainText("4 hours");
-  await page.locator(".las-chip", { hasText: "3 months" }).click();
-  await cta(page).click();
-  // around
-  await expect(page.locator(".las-h1")).toContainText("plan around");
-  await page.locator(".las-chip", { hasText: "A quiet room" }).click();
-  await cta(page).click();
-  // milestone: the quick win
-  await expect(page.locator(".las-h1")).toContainText("first milestone");
-  await page.locator(".las-tile", { hasText: "First clean attempt" }).click();
-  await expect(cta(page)).toHaveText(/Build my plan/);
-  await cta(page).click();
-  // the plan, then Start
-  await expect(page.locator(".las-hero .las-h1")).toBeVisible();
-  await expect(cta(page)).toHaveText(/Start session 1/);
-  await cta(page).click();
-  await page.waitForURL(/\/app\/today\?sk=/);
-}
-
-/** One capture on the shared Recording screen, then "Check it". */
-async function capture(page: Page, engine: string) {
-  const rec = page.locator(`[data-engine="${engine}"]`).first();
-  await expect(rec).toBeVisible();
-  if (engine === "code") {
-    await expect(page.locator(".las-textarea")).toHaveValue(/function add/);
-    await page.getByRole("button", { name: "Run the tests", exact: true }).click();
-    await expect(page.locator(".las-testlist li.fail").first()).toBeVisible();
-  } else if (engine === "visual") {
-    const take = page.getByRole("button", { name: "Record", exact: true });
-    await expect(take).toBeEnabled({ timeout: 20_000 });
-    await take.click();
-    await page.locator(".las-tapimg").click({ position: { x: 40, y: 40 } });
-  } else {
-    const record = page.getByRole("button", { name: "Record", exact: true });
-    await expect(record).toBeEnabled({ timeout: 20_000 });
-    await record.click();
-    const stop = page.getByRole("button", { name: /^Stop/ });
-    await expect(stop).toBeVisible();
-    await page.waitForTimeout(1200);
-    await stop.click();
-  }
-  await expect(cta(page)).toHaveText("Check it");
-  await cta(page).click();
-  // analysis on the device, then the feedback card
-  await expect(page.locator(".las-feedback .headline").first()).toBeVisible({ timeout: 30_000 });
-}
-
-async function answerDrill(page: Page) {
-  const drill = page.locator("[data-drill]");
-  await expect(drill.locator(".las-opt").first()).toBeVisible();
-  // every fixture item's right answer is the first option
-  for (let i = 0; i < 6; i++) {
-    if (/Drill done/.test((await drill.textContent()) ?? "")) break;
-    const before = (await drill.locator(".las-prompt").first().textContent().catch(() => "")) ?? "";
-    await drill.locator(".las-opt").first().click();
-    await expect.poll(async () => {
-      const text = (await drill.textContent()) ?? "";
-      const now = (await drill.locator(".las-prompt").first().textContent({ timeout: 200 }).catch(() => "")) ?? "";
-      return /Drill done/.test(text) || now !== before;
-    }).toBe(true);
-  }
-  await expect(drill).toContainText(/Drill done/);
 }
 
 for (const j of JOURNEYS) {

@@ -28,7 +28,7 @@ function draw(): void {
   const open = () => {
     if (payload?.studioLink) void (app as unknown as { openLink?: (p: { url: string }) => Promise<unknown> }).openLink?.({ url: payload.studioLink });
   };
-  render(<Widget payload={{ ...payload, theme }} handlers={{ onStart: open, onReview: open, onProgress: open, onProof: open, onTry: open, onReRecord: open, onCheckin: open, onNext: open, onRetry: open }} />, root);
+  render(<Widget payload={{ ...payload, theme }} handlers={{ onStart: open, onReview: open, onProgress: open, onProof: open, onTry: open, onReRecord: open, onCheckin: open, onNext: open, onRetry: open, onChoose: open, onCapture: open }} />, root);
 }
 
 app.ontoolresult = (r) => {

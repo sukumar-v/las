@@ -20,7 +20,7 @@ export function Recording({ engine, prompt, how, angle, durationS, framing, reco
   const ready = framing?.ready ?? !needsCamera;
   const marks: OverlayMark[] = [];
   return (
-    <div class="las-stack" data-engine={engine}>
+    <div class="las-stack" data-engine={engine} data-recording={recording ? "true" : undefined}>
       <div class="las-q">
         <h1 class="las-h1" tabIndex={-1}>{prompt}</h1>
         {how ? <p class="las-sub">{how}</p> : null}

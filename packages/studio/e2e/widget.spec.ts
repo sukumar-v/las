@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { today, feedback } from "../src/snapshots/fixtures.js";
+import { today, feedback, liveScreens, coachMessage } from "../src/snapshots/fixtures.js";
 import { fixtureThemes } from "./helpers.js";
 
 /**
@@ -23,7 +23,9 @@ window.addEventListener("message", (e) => {
 
 for (const c of [
   { theme: "glass", mode: "dark", view: "today", data: today },
-  { theme: "brutalist", mode: "light", view: "feedback", data: feedback }
+  { theme: "brutalist", mode: "light", view: "feedback", data: feedback },
+  // a coach_show result: the live screen with the coach's message over it
+  { theme: "dark-neon", mode: "dark", view: "coach", data: { liveSessionId: "ses_1", sk: "sk_test", state: "live", coachPresent: true, screen: liveScreens.lesson, message: coachMessage } as any }
 ]) {
   test(`widget renders ${c.view} in ${c.theme} (${c.mode} host)`, async ({ page }) => {
     const theme = fixtureThemes().find((t) => t.id === c.theme)!.theme;
@@ -39,7 +41,12 @@ for (const c of [
     await page.goto("/__host");
     const w = page.frameLocator("#w");
     if (c.view === "today") await expect(w.locator(".las-h1")).toHaveText("Today");
-    else await expect(w.locator(".las-feedback .headline").first()).toHaveText(c.data.headline as string);
+    else if (c.view === "coach") {
+      await expect(w.locator('.las-presence[data-presence="here"]')).toBeVisible();
+      await expect(w.locator(".las-coachmsg-text")).toHaveText(coachMessage.text);
+      await expect(w.locator('[data-live-kind="lesson"] .las-card').first()).toBeVisible();
+      await expect(w.locator(".las-ask")).toHaveCount(0);
+    } else await expect(w.locator(".las-feedback .headline").first()).toHaveText(c.data.headline as string);
     const html = w.locator("html");
     await expect(html).toHaveAttribute("data-card", theme.components.card);
     await expect(html).toHaveAttribute("data-theme-id", c.theme);

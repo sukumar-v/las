@@ -11,6 +11,7 @@ import { Route } from "../components/route.js";
 import { DrillView, AnalysisSummary } from "./session.js";
 import { ThemePreview } from "./theme-preview.js";
 import type { Voice } from "../copy.js";
+import { LiveScreen, coachWidgetModel } from "./live.js";
 
 export interface WidgetPayload {
   view: string;
@@ -159,6 +160,17 @@ export function Widget({ payload, handlers = {} }: { payload: WidgetPayload; han
           </main>
         </div>
       );
+    case "coach": {
+      // the live coach's screen inside the chat: cards and plan options work here; anything that needs a device or
+      // the session's own state opens the studio (the host relays actions as for every other view)
+      const m = coachWidgetModel(d);
+      return (
+        <div class="las-widget-coach">
+          <LiveScreen screen={m.screen} presence={m.presence} message={m.message} summary={m.summary} voice={voice} readOnly h={{ onChoose: handlers.onChoose, onTry: handlers.onTry, onReRecord: handlers.onReRecord, onReview: handlers.onReview, onCapture: handlers.onCapture }} />
+          {link ? <div class="las-app">{link}</div> : null}
+        </div>
+      );
+    }
     case "theme-preview":
       return <ThemePreview sample={d.sample} screen={d.screen} voice={voice} />;
     case "capabilities":

@@ -21,7 +21,16 @@ export const SNAPSHOT_SCREENS = [
   "feedback",
   "progress",
   "widget-today",
-  "widget-feedback"
+  "widget-feedback",
+  "live-lesson",
+  "live-away",
+  "live-thinking",
+  "live-feedback",
+  "live-plan",
+  "live-pause",
+  "live-left",
+  "live-ended",
+  "widget-coach"
 ] as const;
 
 export type SnapshotScreen = (typeof SNAPSHOT_SCREENS)[number];

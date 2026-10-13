@@ -129,3 +129,36 @@ export const progress: ProgressView = {
 export const summary: SummaryView = { sessionId: "ses_1", sk: "sk_test", skill: "Test skill", minutes: 38, changed: [{ nodeId: "depth", name: "Depth", before: 0.3, after: 0.45 }], oneFix: { headline: "Reps stop above parallel", mistakeId: "shallow", fixDrillTitle: "Five deep reps" }, praise: "Five reps found, steady tempo", next: { title: "Session 2: Depth", focus: "Hips back first, then down", when: "Thu" }, metric: { label: "Reps to depth", before: 1, after: 3, unit: " of 5" } };
 
 export const proof: ProofResultView = { milestoneId: "ms_1", title: "Ten reps in a row", passed: true, criteria: [{ id: "depth", label: "Deep enough", passed: true, evidence: "9 of 10 reps to 95°" }, { id: "count", label: "Ten reps", passed: true, evidence: "10 reps found" }], attemptId: "att_9", precision: "full" };
+
+// ------------------------------------------------------------------ the live coach (live-coach §7)
+
+import type { CoachMessageView, PlanProposalView } from "@las/schema";
+import type { LiveScreenModel } from "../../src/screens/live.js";
+
+export const coachMessage: CoachMessageView = { type: "message", screenId: "scr_msg", text: "Nice prediction. Watch the knee line on this one.", figure: { kind: "figure", points: { hip: [50, 40], knee: [60, 70], ankle: [50, 95] }, segments: [["hip", "knee"], ["knee", "ankle"]], marks: [{ at: "knee", label: "95°", role: "good" }] }, leaving: false, at: "2026-10-13T10:00:00Z" };
+export const coachLeaving: CoachMessageView = { type: "message", screenId: "scr_bye", text: "I have to go. The next screens are ready for you.", leaving: true, at: "2026-10-13T10:20:00Z" };
+
+export const planProposal: PlanProposalView = {
+  type: "plan",
+  screenId: "scr_plan",
+  sk: "sk_test",
+  question: "Depth is coming fast. Move the proof check a week earlier?",
+  reason: "Three sessions in a row above target.",
+  options: [
+    { id: "earlier", label: "A week earlier", detail: "Proof check on Oct 27" },
+    { id: "keep", label: "Keep Nov 3" },
+    { id: "later", label: "Give me more time", detail: "Proof check on Nov 10" }
+  ]
+};
+
+const lessonItem = session.blocks[2].items[0];
+const drillItem = session.blocks[3].items[0];
+
+export const liveScreens: Record<string, LiveScreenModel> = {
+  lesson: { id: "scr_1", kind: "lesson", block: "learn", source: "coach", item: lessonItem },
+  drill: { id: "scr_2", kind: "drill", block: "practice", source: "fallback", item: drillItem },
+  feedback: { id: "scr_3", kind: "feedback", block: "perform", source: "coach", item: { type: "feedback", view: feedback } },
+  plan: { id: "scr_plan", kind: "plan", block: "wrapup", source: "coach", item: planProposal },
+  pause: { id: "scr_p", kind: "pause", block: "practice", source: "fallback", item: { type: "pause", pausedAt: "2026-10-13T10:10:00Z" } },
+  wrapup: { id: "scr_w", kind: "wrapup", block: "wrapup", source: "fallback", item: summary }
+};

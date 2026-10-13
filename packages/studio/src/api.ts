@@ -2,7 +2,7 @@
  * The studio's client for the local server's JSON API (packages/server/src/http). One function per route;
  * errors come back as ApiError with the server's learner-safe message.
  */
-import type { Analysis, Capabilities, FeedbackView, IntakeView, ProgressView, ProofResultView, SessionPlan, StudioEvent, SummaryView, Theme, TodayView, Drill } from "@las/schema";
+import type { Analysis, Capabilities, CoachScreen, FeedbackView, IntakeView, LiveState, LiveView, ProgressView, ProofResultView, SessionPlan, StudioEvent, SummaryView, Theme, TodayView, Drill } from "@las/schema";
 
 export class ApiError extends Error {
   constructor(
@@ -74,6 +74,20 @@ export interface PairInfo {
   ips?: string[];
 }
 
+/** `POST /api/live/:id/advance`: the next screen, or wait for the coach until `until`. */
+export interface AdvanceResult {
+  screen?: CoachScreen;
+  waiting?: true;
+  until?: string;
+  view: LiveView;
+}
+
+export interface PingResult {
+  ok: boolean;
+  coachPresent: boolean;
+  state: LiveState;
+}
+
 export function createApi(fetchImpl: FetchLike = (i, init) => fetch(i, init), base = "") {
   async function call<T>(method: string, path: string, body?: unknown, raw?: { body: BodyInit; type: string }): Promise<T> {
     const init: RequestInit = { method, headers: {} };
@@ -138,6 +152,13 @@ export function createApi(fetchImpl: FetchLike = (i, init) => fetch(i, init), ba
     summary: (sessionId: string) => get<SummaryView>(`/api/summary/${q(sessionId)}`),
     checkins: (sk: string) => get<{ checkins: any[] }>(`/api/checkins?sk=${q(sk)}`),
     event: (ev: StudioEvent) => post<{ ok: boolean; result: any }>("/api/events", ev),
+    liveFor: (sk: string) => get<{ live: LiveView | null }>(`/api/live?sk=${q(sk)}`),
+    liveStart: (body: { sk: string; minutes?: number; location?: string }) => post<LiveView>("/api/live/start", body),
+    live: (id: string) => get<LiveView>(`/api/live/${q(id)}`),
+    liveAdvance: (id: string, body: { screenId: string; seconds?: number }) => post<AdvanceResult>(`/api/live/${q(id)}/advance`, body),
+    livePing: (id: string) => post<PingResult>(`/api/live/${q(id)}/ping`),
+    /** the URL a page-hide beacon posts events to */
+    eventsUrl: () => `${base}/api/events`,
     proofStart: (body: { sk?: string; milestoneId?: string; proceed?: boolean }) => post<{ ready: boolean; attempt?: { id: string }; studioPath?: string; milestoneId: string; message: string; checklist: { id: string; label: string }[] }>("/api/proof/start", body),
     deleteData: (scope: string) => post<{ deleted: boolean }>("/api/delete", { scope, confirm: true }),
     exportUrl: (scope = "all") => `${base}/api/export?scope=${q(scope)}`,

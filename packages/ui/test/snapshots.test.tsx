@@ -3,8 +3,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { render } from "preact-render-to-string";
 import { BASE_THEME, COMPONENT_VARIANTS, ThemeSchema, validateTheme, type Theme } from "@las/schema";
-import { themeToCss, themeAttrs, Onboarding, Today, SessionScreen, Recording, Replay, ProgressScreen, Summary, ProofResult, Widget, ThemePreview, sessionSteps } from "../src/index.js";
-import { intakeSteps, today, session, feedback, analysis, progress, summary, proof } from "./fixtures/views.js";
+import { themeToCss, themeAttrs, Onboarding, Today, SessionScreen, Recording, Replay, ProgressScreen, Summary, ProofResult, Widget, ThemePreview, sessionSteps, LiveScreen, CoachMessage, PlanProposal, Presence, AskCoach, PauseScreen, coachWidgetModel, clampWords, copy, type Voice } from "../src/index.js";
+import { intakeSteps, today, session, feedback, analysis, progress, summary, proof, coachMessage, coachLeaving, planProposal, liveScreens } from "./fixtures/views.js";
 
 const fixturesDir = join(import.meta.dirname, "../../../evals/fixtures/themes");
 const fixtures: Theme[] = readdirSync(fixturesDir).filter((f) => f.endsWith(".json")).map((f) => ThemeSchema.parse(JSON.parse(readFileSync(join(fixturesDir, f), "utf8"))));
@@ -39,6 +39,17 @@ function screens(theme: Theme): Record<string, string> {
   out["widget:capture"] = render(<Widget payload={{ view: "capture", title: "Record", data: { engine: "movement", prompt: "Film five reps" }, theme, studioLink: "http://127.0.0.1:4711/s/x" }} />);
   out["widget:diagram"] = render(<Widget payload={{ view: "diagram", title: "Order", data: { text: "Subject, verb, object.", figure: { kind: "mermaid", source: "graph LR; s[Subject] --> v[Verb] --> o[Object]" } }, theme }} />);
   out["theme-preview"] = render(<ThemePreview sample={sample} voice={voice} />);
+  // the live coach: every screen kind, each presence, a message over a screen, a plan, the pause and the end
+  out["live:lesson:here+message"] = render(<LiveScreen screen={liveScreens.lesson} presence="here" message={coachMessage} state={{ cards: {} }} voice={voice} />);
+  out["live:drill:away"] = render(<LiveScreen screen={liveScreens.drill} presence="away" state={{ drills: {} }} voice={voice} />);
+  out["live:feedback"] = render(<LiveScreen screen={liveScreens.feedback} presence="here" voice={voice} />);
+  out["live:plan"] = render(<LiveScreen screen={liveScreens.plan} presence="here" chosen="keep" voice={voice} />);
+  out["live:pause"] = render(<LiveScreen screen={liveScreens.pause} presence="away" seconds={754} voice={voice} />);
+  out["live:thinking"] = render(<LiveScreen screen={liveScreens.drill} presence="thinking" waiting voice={voice} />);
+  out["live:left"] = render(<LiveScreen screen={liveScreens.drill} presence="left" message={coachLeaving} state={{ drills: {} }} voice={voice} />);
+  out["live:ended"] = render(<LiveScreen screen={liveScreens.wrapup} presence="away" summary={summary} voice={voice} />);
+  out["widget:coach"] = render(<Widget payload={{ view: "coach", title: "Coach", data: { liveSessionId: "ses_1", state: "live", coachPresent: true, screen: liveScreens.lesson, message: coachMessage }, theme, studioLink: "http://127.0.0.1:4711/app/session/ses_1" }} />);
+  out["widget:coach-plan"] = render(<Widget payload={{ view: "coach", title: "Coach", data: liveScreens.plan, theme }} />);
   return out;
 }
 
@@ -87,6 +98,54 @@ describe("theme fixtures", () => {
       const attrs = themeAttrs(t);
       for (const comp of Object.keys(COMPONENT_VARIANTS)) expect(attrs[`data-${comp}`]).toBe((t.components as any)[comp]);
     }
+  });
+});
+
+describe("the live coach's pieces", () => {
+  const voices: Voice[] = ["plain", "warm", "playful", "terse"];
+  const keys = ["coachHere", "coachAway", "coachThinking", "coachLeft", "coachMessage", "askLabel", "askPlaceholder", "askSend", "askHelp", "askHelpAway", "askSent", "reply", "dismiss", "pause", "resume", "pausedTitle", "timeSoFar", "planChange", "planChosen", "backToToday", "offline"];
+  it("has every live copy key in every voice", () => {
+    for (const v of voices) for (const k of keys) expect(copy(v, k), `${v}.${k}`).not.toBe(k);
+    // the voices differ
+    expect(new Set(voices.map((v) => copy(v, "coachHere"))).size).toBe(4);
+  });
+  it("draws presence from the state and says where the asked words go", () => {
+    expect(render(<Presence status="here" />)).toMatch(/data-presence="here"[^>]*>.*Coach here/);
+    expect(render(<Presence status="thinking" />)).toMatch(/Coach is thinking/);
+    expect(render(<AskCoach />)).toMatch(/Your words go to your coach/);
+    expect(render(<AskCoach away />)).toMatch(/answer when back/);
+    expect(render(<AskCoach />)).toMatch(/maxlength="280"/i);
+  });
+  it("keeps a message within its budget, with reply and dismiss, and a leaving message says the session goes on", () => {
+    const long = render(<CoachMessage view={{ ...coachMessage, text: Array.from({ length: 40 }, (_, i) => `w${i}`).join(" ") }} onDismiss={() => undefined} onReply={() => undefined} />);
+    expect(long).toMatch(/w24…/);
+    expect(long).not.toMatch(/w25/);
+    expect(long).toMatch(/aria-label="Dismiss"/);
+    expect(long).toMatch(/Reply/);
+    expect(render(<CoachMessage view={coachLeaving} />)).toMatch(/session goes on/);
+    expect(clampWords("a b c", 2)).toBe("a b…");
+  });
+  it("offers 2–4 plan options as tiles and marks the one picked", () => {
+    const html = render(<PlanProposal view={planProposal} chosen="keep" />);
+    expect(html.match(/class="las-tile"/g)?.length).toBe(3);
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[\s\S]*Keep Nov 3/);
+  });
+  it("shows the time so far on the pause screen and Resume as the main button", () => {
+    expect(render(<PauseScreen seconds={754} />)).toMatch(/12:34/);
+    expect(render(<LiveScreen screen={liveScreens.pause} presence="away" seconds={60} />)).toMatch(/las-cta[\s\S]*Resume/);
+  });
+  it("hides the ask box and pause in the read-only widget and on the summary", () => {
+    expect(render(<LiveScreen screen={liveScreens.lesson} presence="here" readOnly />)).not.toMatch(/las-ask/);
+    const ended = render(<LiveScreen screen={liveScreens.wrapup} presence="away" summary={summary} />);
+    expect(ended).not.toMatch(/las-ask/);
+    expect(ended).toMatch(/data-live-kind="ended"/);
+  });
+  it("reads the coach view from a LiveView, a {screen, state} result or a bare screen", () => {
+    expect(coachWidgetModel({ liveSessionId: "x", state: "coach-away", coachPresent: false, leftOnPurpose: true, screen: liveScreens.lesson })).toMatchObject({ presence: "left", screen: { id: "scr_1" } });
+    expect(coachWidgetModel({ screen: liveScreens.drill, state: { state: "live" } })).toMatchObject({ presence: "here", screen: { id: "scr_2" } });
+    expect(coachWidgetModel(liveScreens.plan).screen?.id).toBe("scr_plan");
+    expect(coachWidgetModel({ id: "m", kind: "message", item: coachMessage })).toMatchObject({ screen: undefined, message: { screenId: "scr_msg" } });
+    expect(coachWidgetModel({ state: "ended", summary }).summary?.sessionId).toBe("ses_1");
   });
 });
 

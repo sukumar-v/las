@@ -8,10 +8,10 @@ import { Progress, Button } from "./primitives.js";
  * a row of answer chips (tap to edit), one question and one answer component,
  * and one sticky main button with a secondary action under it.
  */
-export function Frame({ sections, sectionIndex, sectionFill, ribbon, onRibbon, onBack, canBack, exit, onExit, cta, children, entering }: { sections?: string[]; sectionIndex?: number; sectionFill?: number; ribbon?: RibbonItem[]; onRibbon?: (id: string) => void; onBack?: () => void; canBack?: boolean; exit?: string; onExit?: () => void; cta?: { label: string; enabled?: boolean; onClick?: () => void; secondary?: ComponentChildren; hidden?: boolean }; children?: ComponentChildren; entering?: boolean }) {
+export function Frame({ sections, sectionIndex, sectionFill, ribbon, onRibbon, onBack, canBack, exit, onExit, cta, children, entering, status, aside, liveKind, liveScreen }: { sections?: string[]; sectionIndex?: number; sectionFill?: number; ribbon?: RibbonItem[]; onRibbon?: (id: string) => void; onBack?: () => void; canBack?: boolean; exit?: string; onExit?: () => void; cta?: { label: string; enabled?: boolean; onClick?: () => void; secondary?: ComponentChildren; hidden?: boolean }; children?: ComponentChildren; entering?: boolean; /** a row under the bar that stays in view (the live session's presence, pause and coach message) */ status?: ComponentChildren; /** after the screen's content (the ask-the-coach box) */ aside?: ComponentChildren; /** the live screen's kind and id, for tests */ liveKind?: string; liveScreen?: string }) {
   const segments = sections ? sections.map((_, i) => (sectionIndex === undefined ? 0 : i < sectionIndex ? 1 : i === sectionIndex ? Math.max(0.15, sectionFill ?? 0.5) : 0)) : undefined;
   return (
-    <div class="las-app">
+    <div class="las-app" data-live-kind={liveKind} data-live-screen={liveScreen}>
       <header class="las-top">
         <div class="las-bar">
           <button type="button" class="las-iconbtn" aria-label="Back" onClick={onBack} disabled={!canBack}>
@@ -38,8 +38,12 @@ export function Frame({ sections, sectionIndex, sectionFill, ribbon, onRibbon, o
             ))}
           </div>
         ) : null}
+        {status}
       </header>
-      <main class={["las-main", entering && "las-enter"].filter(Boolean).join(" ")}>{children}</main>
+      <main class={["las-main", entering && "las-enter"].filter(Boolean).join(" ")}>
+        {children}
+        {aside}
+      </main>
       {cta && !cta.hidden ? (
         <footer class="las-cta">
           <Button primary big disabled={cta.enabled === false} onClick={cta.onClick}>
