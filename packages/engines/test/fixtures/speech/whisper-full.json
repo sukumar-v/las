@@ -1,0 +1,25 @@
+{
+  "systeminfo": "fixture",
+  "model": { "type": "base" },
+  "params": { "language": "es" },
+  "result": { "language": "es" },
+  "transcription": [
+    {
+      "timestamps": { "from": "00:00:00,000", "to": "00:00:02,400" },
+      "offsets": { "from": 0, "to": 2400 },
+      "text": " Hola, ¿cómo estás?",
+      "tokens": [
+        { "text": "[_BEG_]", "offsets": { "from": 0, "to": 0 }, "id": 50364, "p": 0.99 },
+        { "text": " Hola", "offsets": { "from": 100, "to": 520 }, "id": 1, "p": 0.97 },
+        { "text": ",", "offsets": { "from": 520, "to": 560 }, "id": 2, "p": 0.9 },
+        { "text": " ¿", "offsets": { "from": 700, "to": 720 }, "id": 3, "p": 0.8 },
+        { "text": "c", "offsets": { "from": 720, "to": 800 }, "id": 4, "p": 0.6 },
+        { "text": "ómo", "offsets": { "from": 800, "to": 1100 }, "id": 5, "p": 0.8 },
+        { "text": " est", "offsets": { "from": 1700, "to": 1900 }, "id": 6, "p": 0.9 },
+        { "text": "ás", "offsets": { "from": 1900, "to": 2200 }, "id": 7, "p": 0.7 },
+        { "text": "?", "offsets": { "from": 2200, "to": 2250 }, "id": 8, "p": 0.95 },
+        { "text": "[_TT_120]", "offsets": { "from": 2400, "to": 2400 }, "id": 50484, "p": 0.5 }
+      ]
+    }
+  ]
+}

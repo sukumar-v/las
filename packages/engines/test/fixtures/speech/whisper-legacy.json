@@ -1,0 +1,7 @@
+{
+  "result": { "language": "zh" },
+  "transcription": [
+    { "offsets": { "from": 0, "to": 600 }, "text": " 你好" },
+    { "offsets": { "from": 900, "to": 1300 }, "text": " 谢谢" }
+  ]
+}
