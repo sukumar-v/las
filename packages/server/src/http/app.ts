@@ -5,6 +5,7 @@ import { StudioEventSchema, type StudioEvent } from "@las/schema";
 import type { LasContext } from "../context.js";
 import { activeTheme, readCachedFontCss } from "../core/theme.js";
 import { Router, wrap } from "./router.js";
+import { mountLoopRoutes } from "./loop-routes.js";
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -118,6 +119,7 @@ export function createHttpApp(ctx: LasContext, sink?: EventSink): { server: Serv
     const attempt = ctx.store.getAttempt(req.params.attemptId);
     if (!attempt?.mediaRef || !serveFile(res.raw, attempt.mediaRef)) res.text("not found", 404);
   });
+  mountLoopRoutes(router, ctx);
   router.get("/api/models/*", (req, res) => {
     const rel = normalize(req.params["*"]).replace(/^(\.\.[/\\])+/, "");
     const file = resolve(ctx.config.modelsDir, rel);
