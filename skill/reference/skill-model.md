@@ -4,6 +4,13 @@ A skill model is one JSON object: everything LAS needs for one skill. You write 
 
 Start from `draft_skill_model` (skeleton, available engines, any previous or curated model). Keep it general: the same screens, answer types and drill types serve every skill. The snippets below use a made-up physical skill called "the skill" with neutral ids. Replace everything with content for the real skill.
 
+## Scaffold and fallback content
+
+From v0.2 you coach live ([live coach](../../docs/design/live-coach.md)): during a session you write each lesson, drill, feedback headline and message for this learner, now. The skill model is then two things:
+
+- **The scaffold** (required): the ladder and proofs, the skill graph with its BKT and review cards, drills with their types, specs, needs, success, difficulty and intensity, engine specs, mistakes with detectors and fix drills, warm-ups, safety, access, injuries, focus, key metrics, and the onboarding data (why, pictures, probes, placement). Onboarding, the planner, the engines and the safety rules run on it, and your live screens must reference it (`coach_show` can't invent a metric spec or a drill type mid-session).
+- **The fallback content** (optional in the schema, but write all of it): lesson cards, practice-only knowledge items and drill prompts, mistake `headline` and `explain`. The studio shows it only when no coach is present, or when you miss the screen deadline. `validate_skill_model` warns about each gap and names what the studio will skip; with no fallback it never invents text (it skips to the next screen the scaffold can build and uses the mistake's `name` as a headline). A session must never block on a model, so the evals require full fallback content.
+
 ## Conventions
 
 - **Ids** are lowercase: `^[a-z0-9][a-z0-9-_.]*$`. If an id appears in an expression (metric names, rubric criteria, probe ids), use only letters, digits and `_`, because `-` is subtraction there.

@@ -20,6 +20,8 @@ Every scenario runs twice:
 - **real**: this machine's capabilities, detected once per run;
 - **fallback**: the scenario's main engine is reported missing (`withUnavailable`), the way `get_capabilities` reports it. The model must record what replaces it, following the routing table: movement, audio, speech, visual and interaction → self-report; sensor → movement; code → knowledge predict-output items; game → knowledge tactics quiz (and the game spec keeps `fallback_items`); speech → self-report against a reference recording; visual → self-report with a photo plus tapped measurements.
 
+The model must carry full **fallback content** (lesson cards, drill prompts and items, mistake headlines and explanations) even though the schema makes those fields optional from v0.2: the live coach writes screens on top of the scaffold, and the fallback is what the studio shows when no coach is present ([skill models §3.1](../docs/design/skill-packs.md#31-scaffold-and-fallback-content)). A model with gaps passes validation with warnings, and fails the evals.
+
 The checks (all in `src/harness.ts`, each returns a list of problems):
 
 | Check | Holds when |
