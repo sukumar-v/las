@@ -1,0 +1,118 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/** Python for automating office work: files, lists, dicts and small scripts, run with Pyodide in the browser or python3. */
+export const python: Scenario = {
+  id: "python",
+  skill: "Python",
+  notes: "Accountant. Spends hours renaming files and merging CSVs. Has never programmed.",
+  expect: { engines: ["code"], main: "code", fallback: "knowledge", physical: false, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "Python",
+    name: "Python",
+    noun: "Python",
+    source: "generated",
+    physical: false,
+    engines: ["code", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { code: "knowledge" }),
+    why: [
+      { id: "automate", label: "Automate boring tasks" },
+      { id: "data", label: "Work with data" },
+      { id: "career", label: "A new skill for my CV" }
+    ],
+    pictures: [
+      { id: "csv", label: "Merging monthly CSVs in one click", why: ["automate", "data"], ladderStep: 5, milestone: "A script that merges and totals CSV rows", proof: "CSV tests pass, hidden files included", focus: { Fundamentals: 30, Writing: 50, Reading: 20 } },
+      { id: "rename", label: "Renaming hundreds of files", why: ["automate"], ladderStep: 3, milestone: "Build new file names from old ones", proof: "Renaming tests pass", focus: { Fundamentals: 40, Writing: 45, Reading: 15 } },
+      { id: "cv", label: "Python on my CV", why: ["career", "data"], ladderStep: 4, milestone: "Summaries with dictionaries", proof: "Dictionary tests pass", focus: { Fundamentals: 35, Writing: 45, Reading: 20 } }
+    ],
+    probes: [
+      { id: "level", type: "scale", question: "How much have you programmed?", options: [{ value: 0, label: "Never" }, { value: 1, label: "Spreadsheet formulas" }, { value: 2, label: "A little Python" }, { value: 3, label: "Scripts of my own" }] },
+      { id: "basics", type: "quiz", question: "What does this print?", spec: "py-predict" },
+      { id: "try", type: "code", question: "Write one small function. Optional.", spec: "add-vat", optional: true }
+    ],
+    placement: [
+      { when: "!fresh && level >= 3 && quiz.correct >= 3", step: 3, evidence: "Writes scripts already" },
+      { when: "level >= 2 || quiz.correct >= 2", step: 1, evidence: "Some Python" }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new", hours: [0, 0] },
+      { id: "values", label: "Numbers, strings and functions", hours: [2, 5], nodes: ["functions"],
+        proof: { engine: "code", spec: "add-vat", label: "add_vat passes every test, rounding included", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }], fallback: "knowledge", fallback_spec: "py-predict" } },
+      { id: "lists", label: "Lists and loops", hours: [3, 6], nodes: ["lists"],
+        proof: { engine: "code", spec: "list-tests", label: "Totals and filters over lists pass", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }], fallback: "knowledge", fallback_spec: "py-predict" } },
+      { id: "strings", label: "Building file names", hours: [3, 6], nodes: ["strings"],
+        proof: { engine: "code", spec: "rename-tests", label: "new_name builds clean file names from old ones", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }, { id: "hidden", label: "Hidden cases pass", check: "hidden_passed >= 1" }], fallback: "knowledge", fallback_spec: "py-predict" } },
+      { id: "dicts", label: "Dictionaries for summaries", hours: [4, 8], nodes: ["dicts"],
+        proof: { engine: "code", spec: "dict-tests", label: "Totals per client with a dict pass", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }], fallback: "knowledge", fallback_spec: "py-predict" } },
+      { id: "csv", label: "Merging CSV files", hours: [6, 12], nodes: ["files"],
+        proof: { engine: "code", spec: "csv-tests", label: "merge_csvs combines files and totals the amount column", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }, { id: "hidden", label: "Hidden files pass", check: "hidden_passed >= 1" }], fallback: "knowledge", fallback_spec: "py-predict" } }
+    ],
+    nodes: [
+      { id: "functions", name: "Functions", lesson: "functions-lesson", drills: ["fn-predict", "vat-build"], mistakes: ["print-not-return"], review: { prompt: "print or return: which gives a value back?", kind: "choice", options: ["return", "print"], answer: 0 }, focus: "Fundamentals" },
+      { id: "lists", name: "Lists and loops", requires: ["functions"], lesson: "lists-lesson", drills: ["list-predict", "list-build"], mistakes: ["off-by-one"], review: { prompt: "range(3) gives...", kind: "choice", options: ["0, 1, 2", "1, 2, 3"], answer: 0 }, focus: "Fundamentals" },
+      { id: "strings", name: "Strings", requires: ["lists"], lesson: "strings-lesson", drills: ["rename-build"], review: { prompt: "'a-b'.split('-') gives...", kind: "choice", options: ["['a', 'b']", "'ab'"], answer: 0 }, focus: "Writing" },
+      { id: "dicts", name: "Dictionaries", requires: ["lists"], lesson: "dicts-lesson", drills: ["dict-build"], review: { prompt: "d.get('x', 0) on a missing key gives...", kind: "choice", options: ["0", "An error"], answer: 0 }, focus: "Writing" },
+      { id: "files", name: "Files and CSV", requires: ["strings", "dicts"], lesson: "files-lesson", drills: ["csv-build"], review: { prompt: "Which module reads CSV files?", kind: "choice", options: ["csv", "math"], answer: 0 }, focus: "Writing" }
+    ],
+    lessons: [
+      { id: "functions-lesson", title: "Functions", nodes: ["functions"], cards: [
+        { type: "predict", text: "A function that only prints. What does it return?", options: ["None", "The printed text"], answer: 0 },
+        { type: "compare", text: "Tap the function you can't use in a sum.", left: { kind: "code", language: "python", source: "def add_vat(x):\n    return round(x * 1.2, 2)" }, right: { kind: "code", language: "python", source: "def add_vat(x):\n    print(round(x * 1.2, 2))" }, answer: "right" }
+      ] },
+      { id: "lists-lesson", title: "Lists and loops", nodes: ["lists"], cards: [
+        { type: "predict", text: "for i in range(3): how many times?", options: ["3", "4"], answer: 0 },
+        { type: "diagram", text: "Watch total grow.", figure: { kind: "code", language: "python", source: "total = 0\nfor amount in [10, 20, 5]:\n    total += amount", trace: [{ line: 1, vars: { amount: "-", total: "0" } }, { line: 3, vars: { amount: "10", total: "10" } }, { line: 3, vars: { amount: "20", total: "30" } }, { line: 3, vars: { amount: "5", total: "35" } }] } }
+      ] },
+      { id: "strings-lesson", title: "Strings", nodes: ["strings"], cards: [
+        { type: "predict", text: "'Invoice 03.pdf'.lower().replace(' ', '_') gives...", options: ["'invoice_03.pdf'", "'Invoice_03.pdf'"], answer: 0 },
+        { type: "demo", text: "Split, clean, join.", figure: { kind: "code", language: "python", source: "parts = 'ACME - March.pdf'.split(' - ')\nname = parts[0].lower() + '_' + parts[1].lower()", trace: [{ line: 1, vars: { parts: "['ACME', 'March.pdf']", name: "-" } }, { line: 2, vars: { parts: "['ACME', 'March.pdf']", name: "'acme_march.pdf'" } }] }, playback: "steps" }
+      ] },
+      { id: "dicts-lesson", title: "Dictionaries", nodes: ["dicts"], cards: [
+        { type: "predict", text: "To total amounts per client, use a...", options: ["Dictionary", "List of lists"], answer: 0 },
+        { type: "diagram", text: "Each client name points to its running total.", figure: { kind: "graph", nodes: [{ id: "a", label: "'acme' → 30" }, { id: "b", label: "'bolt' → 5" }], edges: [] } }
+      ] },
+      { id: "files-lesson", title: "CSV files", nodes: ["files"], cards: [
+        { type: "predict", text: "csv.DictReader gives each row as...", options: ["A dictionary", "One long string"], answer: 0 },
+        { type: "diagram", text: "Read each file, add its rows, write one file.", figure: { kind: "graph", nodes: [{ id: "j", label: "jan.csv" }, { id: "f", label: "feb.csv" }, { id: "m", label: "merge" }, { id: "o", label: "all.csv" }], edges: [["j", "m"], ["f", "m"], ["m", "o"]] } }
+      ] }
+    ],
+    drills: [
+      { id: "fn-predict", type: "predict-output", title: "What prints?", prompt: "Pick what prints.", nodes: ["functions"], spec: "py-predict", minutes: 3, intensity: 1, focus: "Reading" },
+      { id: "vat-build", type: "build", title: "add_vat", prompt: "Return the amount with 20% VAT, rounded to cents.", nodes: ["functions"], spec: "add-vat", success: "pass_rate >= 1", difficulty: { param: "tests", levels: ["basic", "rounding", "hidden"] }, minutes: 6, intensity: 1, focus: "Writing", fixes: ["print-not-return"] },
+      { id: "list-predict", type: "predict-output", title: "Loop output", prompt: "Pick what prints.", nodes: ["lists"], spec: "py-predict", minutes: 3, intensity: 1, focus: "Reading" },
+      { id: "list-build", type: "build", title: "Big invoices", prompt: "Return the invoices over a limit, and their total.", nodes: ["lists"], spec: "list-tests", success: "pass_rate >= 1", minutes: 8, intensity: 1, focus: "Writing", fixes: ["off-by-one"] },
+      { id: "rename-build", type: "build", title: "new_name", prompt: "Turn 'ACME - March.pdf' into 'acme_march.pdf'.", nodes: ["strings"], spec: "rename-tests", success: "pass_rate >= 1", minutes: 10, intensity: 1, focus: "Writing" },
+      { id: "dict-build", type: "build", title: "Totals per client", prompt: "Sum amounts per client into a dictionary.", nodes: ["dicts"], spec: "dict-tests", success: "pass_rate >= 1", minutes: 10, intensity: 1, focus: "Writing" },
+      { id: "csv-build", type: "build", title: "merge_csvs", prompt: "Merge the CSV files and total the amount column.", nodes: ["files"], spec: "csv-tests", success: "pass_rate >= 1", minutes: 15, intensity: 1, focus: "Writing" }
+    ],
+    specs: {
+      "add-vat": { kind: "test", language: "python", entry: "main.py", tests: [{ call: "add_vat(10)", expect: "12.0" }, { call: "add_vat(0)", expect: "0.0" }, { call: "add_vat(9.99)", expect: "11.99", hidden: true }], runner: ["browser", "local"], starter: { "main.py": "def add_vat(amount):\n    pass\n" } },
+      "list-tests": { kind: "test", language: "python", entry: "invoices.py", tests: [{ call: "big_invoices([50, 200, 120], 100)", expect: "[200, 120]" }, { call: "total([50, 200, 120])", expect: "370" }, { call: "big_invoices([], 100)", expect: "[]", hidden: true }], runner: ["browser", "local"] },
+      "rename-tests": { kind: "test", language: "python", entry: "rename.py", tests: [{ call: "new_name('ACME - March.pdf')", expect: "acme_march.pdf" }, { call: "new_name('Bolt Ltd - Q1 Report.pdf')", expect: "bolt_ltd_q1_report.pdf", hidden: true }], runner: ["browser", "local"] },
+      "dict-tests": { kind: "test", language: "python", entry: "totals.py", tests: [{ call: "totals([('acme', 10), ('bolt', 5), ('acme', 20)])", expect: "{'acme': 30, 'bolt': 5}" }, { call: "totals([])", expect: "{}" }], runner: ["browser", "local"] },
+      "csv-tests": { kind: "test", language: "python", entry: "merge.py", tests: [{ native: "test_merge.py", label: "Two files, header once, amounts summed" }, { native: "test_merge_hidden.py", hidden: true, label: "Empty file and extra spaces" }], runner: ["browser", "local"], starter: { "jan.csv": "client,amount\nacme,10\n", "feb.csv": "client,amount\nbolt,5\nacme,20\n" } },
+      "py-predict": {
+        kind: "items",
+        stop_after_wrong: 2,
+        items: [
+          { type: "predict-output", id: "p1", prompt: "What prints?", code: "def f():\n    print(1)\nx = f()\nprint(x)", language: "python", options: ["1 then None", "1 then 1"], answer: 0, difficulty: 1, nodes: ["functions"] },
+          { type: "predict-output", id: "p2", prompt: "What prints?", code: "total = 0\nfor n in [1, 2, 3]:\n    total += n\nprint(total)", language: "python", options: ["6", "3"], answer: 0, difficulty: 2, nodes: ["lists"] },
+          { type: "predict-output", id: "p3", prompt: "What prints?", code: "print('a-b-c'.split('-')[1])", language: "python", options: ["b", "a", "-"], answer: 0, difficulty: 3, nodes: ["strings"] },
+          { type: "predict-output", id: "p4", prompt: "What prints?", code: "d = {}\nfor k in ['x', 'y', 'x']:\n    d[k] = d.get(k, 0) + 1\nprint(d['x'])", language: "python", options: ["2", "1", "KeyError"], answer: 0, difficulty: 4, nodes: ["dicts"] }
+        ],
+        pass: "accuracy >= 0.75"
+      }
+    },
+    mistakes: [
+      { id: "print-not-return", name: "Print instead of return", nodes: ["functions"], engine: "code", detector: { metric: "pass_rate", when: "pass_rate == 0" }, severity: 2, explain: { lesson: "functions-lesson", card: 1 }, fix_drill: "vat-build", headline: "The function prints but returns None" },
+      { id: "off-by-one", name: "Off by one", nodes: ["lists"], engine: "code", detector: { metric: "pass_rate", when: "pass_rate < 1 && pass_rate > 0" }, severity: 1, explain: { lesson: "lists-lesson", card: 1 }, fix_drill: "list-build", headline: "The loop skips an item" }
+    ],
+    access: ["A computer with a browser"],
+    focus: { Fundamentals: 35, Writing: 45, Reading: 20 },
+    key_metrics: [
+      { id: "pass", label: "Tests passing", engine: "code", metric: "pass_rate", unit: "%", better: "higher", format: "percent" },
+      { id: "reading", label: "Code reading", engine: "knowledge", metric: "accuracy", unit: "%", better: "higher", format: "percent" }
+    ],
+    copy: { placeholder: "Python, automation, pandas", blurb: "From first function to merged CSVs" },
+    notes: "Engines: code runs tests in the browser (Pyodide) with no install, or python3 locally if the learner prefers. Tests have no network and only touch files in the workspace. If no runner exists, each proof falls back to predict-output items in Python. Hours are estimates from general beginner course pacing for adults with no programming background, shown as ranges."
+  })
+};

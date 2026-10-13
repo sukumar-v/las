@@ -1,0 +1,1107 @@
+{
+  "schemaVersion": 1,
+  "skill": "C programming",
+  "name": "C",
+  "noun": "C",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "code",
+    "knowledge",
+    "self-report"
+  ],
+  "why": [
+    {
+      "id": "embedded",
+      "label": "Program microcontrollers"
+    },
+    {
+      "id": "understand",
+      "label": "Understand how computers work"
+    },
+    {
+      "id": "course",
+      "label": "A systems course"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "firmware",
+      "label": "Writing my own firmware",
+      "why": [
+        "embedded"
+      ],
+      "ladderStep": 5,
+      "milestone": "A ring buffer with no memory errors",
+      "proof": "Ring buffer tests pass under the sanitizer",
+      "focus": {
+        "Fundamentals": 30,
+        "Writing": 50,
+        "Reading": 20
+      }
+    },
+    {
+      "id": "pointers",
+      "label": "Pointers finally make sense",
+      "why": [
+        "understand",
+        "course"
+      ],
+      "ladderStep": 2,
+      "milestone": "Swap and walk arrays with pointers",
+      "proof": "Pointer tests pass",
+      "focus": {
+        "Fundamentals": 50,
+        "Writing": 30,
+        "Reading": 20
+      }
+    },
+    {
+      "id": "strings",
+      "label": "Handling strings safely",
+      "why": [
+        "course",
+        "embedded"
+      ],
+      "ladderStep": 3,
+      "milestone": "String functions with no overflow",
+      "proof": "String tests pass, hidden edge cases too",
+      "focus": {
+        "Fundamentals": 35,
+        "Writing": 45,
+        "Reading": 20
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "langs",
+      "type": "multi",
+      "question": "Which have you used?",
+      "options": [
+        {
+          "value": "arduino",
+          "label": "Arduino sketches"
+        },
+        {
+          "value": "python",
+          "label": "Python or JavaScript"
+        },
+        {
+          "value": "c",
+          "label": "Some C"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "basics",
+      "type": "quiz",
+      "question": "What does this C print?",
+      "spec": "c-predict",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && contains(langs, 'c') && quiz.correct >= 3",
+      "step": 2,
+      "evidence": "Reads C and pointers"
+    },
+    {
+      "when": "count(langs) >= 1",
+      "step": 1,
+      "evidence": "Has programmed before"
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new to C",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "basics",
+      "label": "Functions, types and loops",
+      "hours": [
+        4,
+        8
+      ],
+      "nodes": [
+        "types"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "sum-array",
+        "label": "sum_array compiles without warnings and passes",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1 && compiled"
+          },
+          {
+            "id": "warn",
+            "label": "No warnings",
+            "check": "lint_findings == 0"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "c-predict"
+      }
+    },
+    {
+      "id": "pointers",
+      "label": "Pointers and addresses",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "pointers"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "swap",
+        "label": "swap and reverse with pointers pass their tests",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "c-predict"
+      }
+    },
+    {
+      "id": "strings",
+      "label": "Strings without overflows",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "strings"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "str-tests",
+        "label": "my_strlen and safe copy pass hidden edge cases",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          },
+          {
+            "id": "hidden",
+            "label": "Hidden edge cases",
+            "check": "hidden_passed >= 2"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "c-predict"
+      }
+    },
+    {
+      "id": "memory",
+      "label": "malloc and free",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "memory"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "dyn-array",
+        "label": "A growable array with no leaks under the sanitizer",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "c-predict"
+      }
+    },
+    {
+      "id": "structs",
+      "label": "Structs: a ring buffer",
+      "hours": [
+        8,
+        16
+      ],
+      "nodes": [
+        "structs"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "ring-buffer",
+        "label": "Ring buffer push and pop pass, wraparound included",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "c-predict"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "types",
+      "name": "Types and loops",
+      "requires": [],
+      "lesson": "types-lesson",
+      "drills": [
+        "types-predict",
+        "sum-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What is 7 / 2 with ints?",
+        "kind": "choice",
+        "options": [
+          "3",
+          "3.5"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "pointers",
+      "name": "Pointers",
+      "requires": [
+        "types"
+      ],
+      "lesson": "pointers-lesson",
+      "drills": [
+        "pointer-predict",
+        "swap-build"
+      ],
+      "mistakes": [
+        "no-deref"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What does *p give?",
+        "kind": "choice",
+        "options": [
+          "The value at p",
+          "The address"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "strings",
+      "name": "C strings",
+      "requires": [
+        "pointers"
+      ],
+      "lesson": "strings-lesson",
+      "drills": [
+        "str-build"
+      ],
+      "mistakes": [
+        "missing-nul"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "How does a C string end?",
+        "kind": "choice",
+        "options": [
+          "With '\\0'",
+          "With its length"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "memory",
+      "name": "Heap memory",
+      "requires": [
+        "pointers"
+      ],
+      "lesson": "memory-lesson",
+      "drills": [
+        "dyn-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Every malloc needs a...",
+        "kind": "choice",
+        "options": [
+          "free",
+          "printf"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "structs",
+      "name": "Structs",
+      "requires": [
+        "memory",
+        "strings"
+      ],
+      "lesson": "structs-lesson",
+      "drills": [
+        "ring-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "p->x is the same as...",
+        "kind": "choice",
+        "options": [
+          "(*p).x",
+          "p.x"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "types-lesson",
+      "title": "Types",
+      "nodes": [
+        "types"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "int x = 7 / 2; what is x?",
+          "options": [
+            "3",
+            "3.5"
+          ],
+          "answer": 0,
+          "reveal": "Integer division drops the fraction."
+        },
+        {
+          "type": "diagram",
+          "text": "Each type has a size in memory.",
+          "figure": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Bytes",
+                "values": [
+                  1,
+                  4,
+                  8,
+                  8
+                ]
+              }
+            ],
+            "labels": [
+              "char",
+              "int",
+              "double",
+              "pointer"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pointers-lesson",
+      "title": "Pointers",
+      "nodes": [
+        "pointers"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "swap(a, b) without pointers changes the caller's values?",
+          "options": [
+            "No, it gets copies",
+            "Yes"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "Pass addresses; write through them.",
+          "figure": {
+            "kind": "code",
+            "language": "c",
+            "source": "void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}",
+            "trace": [
+              {
+                "line": 2,
+                "vars": {
+                  "t": "1",
+                  "*a": "1",
+                  "*b": "2"
+                }
+              },
+              {
+                "line": 3,
+                "vars": {
+                  "t": "1",
+                  "*a": "2",
+                  "*b": "2"
+                }
+              },
+              {
+                "line": 4,
+                "vars": {
+                  "t": "1",
+                  "*a": "2",
+                  "*b": "1"
+                }
+              }
+            ]
+          },
+          "playback": "steps"
+        },
+        {
+          "type": "compare",
+          "text": "Tap the swap that changes nothing.",
+          "left": {
+            "kind": "code",
+            "language": "c",
+            "source": "void swap(int *a, int *b)"
+          },
+          "right": {
+            "kind": "code",
+            "language": "c",
+            "source": "void swap(int a, int b)"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "strings-lesson",
+      "title": "C strings",
+      "nodes": [
+        "strings"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "\"hi\" takes how many bytes?",
+          "options": [
+            "3",
+            "2"
+          ],
+          "answer": 0,
+          "reveal": "Two letters plus the terminating zero."
+        },
+        {
+          "type": "compare",
+          "text": "Tap the buffer with no room for '\\0'.",
+          "left": {
+            "kind": "code",
+            "language": "c",
+            "source": "char buf[3];\nstrcpy(buf, \"hi\");"
+          },
+          "right": {
+            "kind": "code",
+            "language": "c",
+            "source": "char buf[2];\nstrcpy(buf, \"hi\");"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "memory-lesson",
+      "title": "Heap memory",
+      "nodes": [
+        "memory"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Forgetting free() causes...",
+          "options": [
+            "A memory leak",
+            "A compile error"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "malloc, use, free: once each.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "m",
+                "label": "malloc"
+              },
+              {
+                "id": "u",
+                "label": "use"
+              },
+              {
+                "id": "f",
+                "label": "free"
+              }
+            ],
+            "edges": [
+              [
+                "m",
+                "u"
+              ],
+              [
+                "u",
+                "f"
+              ]
+            ],
+            "direction": "LR"
+          }
+        }
+      ]
+    },
+    {
+      "id": "structs-lesson",
+      "title": "Structs",
+      "nodes": [
+        "structs"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "A ring buffer that's full: the next push...",
+          "options": [
+            "Fails or overwrites, by design",
+            "Grows"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Head and tail chase each other around.",
+          "figure": {
+            "kind": "figure",
+            "points": {
+              "head": [
+                70,
+                30
+              ],
+              "tail": [
+                30,
+                70
+              ],
+              "center": [
+                50,
+                50
+              ]
+            },
+            "segments": [
+              [
+                "center",
+                "head"
+              ],
+              [
+                "center",
+                "tail"
+              ]
+            ],
+            "marks": [
+              {
+                "at": "head",
+                "label": "head",
+                "role": "good"
+              },
+              {
+                "at": "tail",
+                "label": "tail",
+                "role": "reference"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "types-predict",
+      "type": "predict-output",
+      "title": "Integer math",
+      "prompt": "Pick what prints.",
+      "nodes": [
+        "types"
+      ],
+      "spec": "c-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "sum-build",
+      "type": "build",
+      "title": "sum_array",
+      "prompt": "Sum an int array given its length. No warnings with -Wall.",
+      "nodes": [
+        "types"
+      ],
+      "spec": "sum-array",
+      "needs": [],
+      "success": "pass_rate >= 1 && lint_findings == 0",
+      "minutes": 8,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "pointer-predict",
+      "type": "predict-output",
+      "title": "Pointer output",
+      "prompt": "Pick what prints.",
+      "nodes": [
+        "pointers"
+      ],
+      "spec": "c-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "swap-build",
+      "type": "build",
+      "title": "swap and reverse",
+      "prompt": "Write swap with pointers, then reverse an array in place.",
+      "nodes": [
+        "pointers"
+      ],
+      "spec": "swap",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 12,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "no-deref"
+      ]
+    },
+    {
+      "id": "str-build",
+      "type": "build",
+      "title": "Strings",
+      "prompt": "Write my_strlen and a copy that never overflows its buffer.",
+      "nodes": [
+        "strings"
+      ],
+      "spec": "str-tests",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "difficulty": {
+        "param": "tests",
+        "levels": [
+          "basic",
+          "empty and full buffers",
+          "hidden"
+        ],
+        "start": 0
+      },
+      "minutes": 15,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "missing-nul"
+      ]
+    },
+    {
+      "id": "dyn-build",
+      "type": "build",
+      "title": "Growable array",
+      "prompt": "Push ints into an array that doubles with realloc; free it all.",
+      "nodes": [
+        "memory"
+      ],
+      "spec": "dyn-array",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 15,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "ring-build",
+      "type": "build",
+      "title": "Ring buffer",
+      "prompt": "Implement push and pop on a fixed-size ring buffer struct.",
+      "nodes": [
+        "structs"
+      ],
+      "spec": "ring-buffer",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 20,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "sum-array": {
+      "kind": "test",
+      "language": "c",
+      "entry": "sum.c",
+      "tests": [
+        {
+          "call": "sum_array((int[]){1, 2, 3}, 3)",
+          "expect": "6",
+          "hidden": false
+        },
+        {
+          "call": "sum_array(NULL, 0)",
+          "expect": "0",
+          "hidden": false,
+          "label": "Empty array"
+        },
+        {
+          "call": "sum_array((int[]){-5, 5}, 2)",
+          "expect": "0",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "lint": [
+        "gcc -Wall -Wextra"
+      ],
+      "starter": {
+        "sum.c": "int sum_array(const int *xs, int n) {\n    return 0;\n}\n"
+      }
+    },
+    "swap": {
+      "kind": "test",
+      "language": "c",
+      "entry": "swap.c",
+      "tests": [
+        {
+          "native": "test_swap.c",
+          "hidden": false,
+          "label": "swap exchanges two ints"
+        },
+        {
+          "stdin": "4\n1 2 3 4\n",
+          "stdout": "4 3 2 1\n",
+          "hidden": false
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "lint": [
+        "gcc -Wall -Wextra"
+      ]
+    },
+    "str-tests": {
+      "kind": "test",
+      "language": "c",
+      "entry": "str.c",
+      "tests": [
+        {
+          "call": "my_strlen(\"hello\")",
+          "expect": "5",
+          "hidden": false
+        },
+        {
+          "call": "my_strlen(\"\")",
+          "expect": "0",
+          "hidden": false
+        },
+        {
+          "native": "test_copy_full_buffer.c",
+          "hidden": true
+        },
+        {
+          "native": "test_copy_empty.c",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "lint": [
+        "gcc -Wall -Wextra"
+      ]
+    },
+    "dyn-array": {
+      "kind": "test",
+      "language": "c",
+      "entry": "vec.c",
+      "tests": [
+        {
+          "native": "test_vec.c",
+          "hidden": false,
+          "label": "Push 1000 ints, read them back"
+        },
+        {
+          "native": "test_vec_leaks.c",
+          "hidden": true,
+          "label": "Built with -fsanitize=address"
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 20,
+        "memory_mb": 256,
+        "network": false
+      }
+    },
+    "ring-buffer": {
+      "kind": "test",
+      "language": "c",
+      "entry": "ring.c",
+      "tests": [
+        {
+          "native": "test_ring.c",
+          "hidden": false,
+          "label": "Push, pop, wraparound"
+        },
+        {
+          "native": "test_ring_full.c",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 20,
+        "memory_mb": 256,
+        "network": false
+      }
+    },
+    "c-predict": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "predict-output",
+          "id": "c1",
+          "prompt": "What prints?",
+          "code": "int x = 7 / 2;\nprintf(\"%d\\n\", x);",
+          "language": "c",
+          "options": [
+            "3",
+            "3.5",
+            "4"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "types"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "c2",
+          "prompt": "What prints?",
+          "code": "int a = 1;\nint *p = &a;\n*p = 5;\nprintf(\"%d\\n\", a);",
+          "language": "c",
+          "options": [
+            "5",
+            "1"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "pointers"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "c3",
+          "prompt": "What prints?",
+          "code": "char s[] = \"hey\";\nprintf(\"%zu\\n\", sizeof s);",
+          "language": "c",
+          "options": [
+            "4",
+            "3"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "strings"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "c4",
+          "prompt": "What prints?",
+          "code": "struct P { int x; } q = {2};\nstruct P *p = &q;\nprintf(\"%d\\n\", p->x * 3);",
+          "language": "c",
+          "options": [
+            "6",
+            "2"
+          ],
+          "answer": 0,
+          "difficulty": 4,
+          "nodes": [
+            "structs"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.75"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "no-deref",
+      "name": "Swapping copies",
+      "nodes": [
+        "pointers"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "pass_rate",
+        "when": "pass_rate < 0.5 && compiled",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "pointers-lesson",
+        "card": 2
+      },
+      "fix_drill": "swap-build",
+      "resolved_after": 3,
+      "headline": "Swap changes copies, not the originals"
+    },
+    {
+      "id": "missing-nul",
+      "name": "Missing terminator",
+      "nodes": [
+        "strings"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "hidden_passed",
+        "when": "hidden_passed < 2",
+        "min_confidence": 0.7
+      },
+      "severity": 3,
+      "explain": {
+        "lesson": "strings-lesson",
+        "card": 1
+      },
+      "fix_drill": "str-build",
+      "resolved_after": 3,
+      "headline": "No room left for '\\0'"
+    }
+  ],
+  "access": [
+    "A computer",
+    "gcc or a container runtime"
+  ],
+  "focus": {
+    "Fundamentals": 40,
+    "Writing": 45,
+    "Reading": 15
+  },
+  "key_metrics": [
+    {
+      "id": "pass",
+      "label": "Tests passing",
+      "engine": "code",
+      "metric": "pass_rate",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "warnings",
+      "label": "Compiler warnings",
+      "engine": "code",
+      "metric": "lint_findings",
+      "unit": "",
+      "better": "lower",
+      "format": "count"
+    }
+  ],
+  "copy": {
+    "placeholder": "C, C++, embedded",
+    "blurb": "Pointers, strings and memory, safely"
+  },
+  "notes": "Engines: code compiles with gcc locally (detected) or in a container, with time and memory limits and no network; warnings from -Wall count as lint findings and hidden tests use the address sanitizer. If no runner exists, each proof falls back to predict-output items in C. Hours are estimates from general introductory course pacing, shown as ranges."
+}

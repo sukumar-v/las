@@ -1,0 +1,126 @@
+{
+  "scenario": "public-speaking",
+  "skill": "public speaking",
+  "expect": {
+    "engines": [
+      "speech",
+      "movement",
+      "visual"
+    ],
+    "main": "speech",
+    "fallback": "self-report",
+    "physical": false,
+    "supervisedOnly": []
+  },
+  "runs": {
+    "real": {
+      "mode": "real",
+      "unavailable": [],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "public speaking",
+            "notes": "Has to give a five-minute talk at a team offsite in two months. Says 'um' a lot and reads from slides."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/public-speaking.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [],
+        "summary": {
+          "nodes": 5,
+          "lessons": 5,
+          "drills": 6,
+          "mistakes": 3,
+          "specs": 6,
+          "ladderSteps": 6,
+          "words": 212
+        },
+        "stored": "<id>"
+      }
+    },
+    "fallback": {
+      "mode": "fallback",
+      "unavailable": [
+        {
+          "engine": "speech",
+          "reason": "no speech model downloaded and no microphone"
+        }
+      ],
+      "transcript": [
+        {
+          "tool": "get_capabilities",
+          "args": {},
+          "ok": true
+        },
+        {
+          "tool": "draft_skill_model",
+          "args": {
+            "skill": "public speaking",
+            "notes": "Has to give a five-minute talk at a team offsite in two months. Says 'um' a lot and reads from slides."
+          },
+          "ok": true
+        },
+        {
+          "tool": "validate_skill_model",
+          "args": {
+            "model": "<models/public-speaking.fallback.json>"
+          },
+          "ok": true
+        },
+        {
+          "tool": "get_skill_model",
+          "args": {
+            "skill": "<id>"
+          },
+          "ok": true
+        }
+      ],
+      "validation": {
+        "attempts": 1,
+        "errorsPerAttempt": [
+          []
+        ],
+        "warnings": [
+          "capabilities ladder[1].proof: \"speech\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[2].proof: \"speech\" is not available now; the self-report fallback will be used and the check is less precise",
+          "capabilities ladder[5].proof: \"speech\" is not available now; the self-report fallback will be used and the check is less precise"
+        ],
+        "summary": {
+          "nodes": 5,
+          "lessons": 5,
+          "drills": 6,
+          "mistakes": 3,
+          "specs": 6,
+          "ladderSteps": 6,
+          "words": 212
+        },
+        "stored": "<id>"
+      }
+    }
+  }
+}

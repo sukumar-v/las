@@ -1,0 +1,1118 @@
+{
+  "schemaVersion": 1,
+  "skill": "drums",
+  "name": "Drums",
+  "noun": "drumming",
+  "source": "generated",
+  "physical": true,
+  "engines": [
+    "audio",
+    "interaction",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "audio": "self-report"
+  },
+  "why": [
+    {
+      "id": "songs",
+      "label": "Play along to songs"
+    },
+    {
+      "id": "band",
+      "label": "Join a band"
+    },
+    {
+      "id": "stress",
+      "label": "Let off steam"
+    },
+    {
+      "id": "timing",
+      "label": "Rock-solid timing"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "song",
+      "label": "Playing along to a rock song",
+      "why": [
+        "songs",
+        "stress"
+      ],
+      "ladderStep": 4,
+      "milestone": "A full song with one fill",
+      "proof": "One take: beat plus a fill, in time",
+      "focus": {
+        "Fundamentals": 35,
+        "Grooves": 45,
+        "Reading": 20
+      },
+      "access": [
+        "A drum kit"
+      ]
+    },
+    {
+      "id": "band",
+      "label": "Jamming with a band",
+      "why": [
+        "band",
+        "timing"
+      ],
+      "ladderStep": 5,
+      "milestone": "Steady beat at 120 for three minutes",
+      "proof": "Three minutes at 120 without drifting",
+      "focus": {
+        "Fundamentals": 30,
+        "Grooves": 50,
+        "Reading": 20
+      }
+    },
+    {
+      "id": "pad",
+      "label": "Daily practice pad time",
+      "why": [
+        "timing",
+        "stress"
+      ],
+      "ladderStep": 2,
+      "milestone": "Even eighth notes at 100",
+      "proof": "Thirty seconds of even eighths at 100",
+      "focus": {
+        "Fundamentals": 70,
+        "Grooves": 15,
+        "Reading": 15
+      },
+      "access": [
+        "A practice pad"
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How much have you drummed?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never"
+        },
+        {
+          "value": 1,
+          "label": "Tapped along to music"
+        },
+        {
+          "value": 2,
+          "label": "Played a basic beat"
+        },
+        {
+          "value": 3,
+          "label": "Played in a band"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "theory",
+      "type": "quiz",
+      "question": "Read a few rhythms.",
+      "spec": "rhythm-quiz",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 3",
+      "step": 3,
+      "evidence": "Has played in a band"
+    },
+    {
+      "when": "level >= 2 && quiz.correct >= 2",
+      "step": 2,
+      "evidence": "Plays a basic beat"
+    },
+    {
+      "when": "level >= 1",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "pulse",
+      "label": "Steady quarter notes",
+      "hours": [
+        1,
+        3
+      ],
+      "nodes": [
+        "pulse"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "quarters",
+        "label": "Quarter notes at 80 for eight bars, on the click",
+        "criteria": [
+          {
+            "id": "on_time",
+            "label": "On the click",
+            "check": "onset_share_on_time >= 0.85"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "eighths",
+      "label": "Even eighths, alternating hands",
+      "hours": [
+        3,
+        6
+      ],
+      "nodes": [
+        "sticking"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "eighths",
+        "label": "Eighth notes at 100, right-left, for eight bars",
+        "criteria": [
+          {
+            "id": "on_time",
+            "label": "On the grid",
+            "check": "onset_share_on_time >= 0.8"
+          },
+          {
+            "id": "even",
+            "label": "Even spacing",
+            "check": "onset_std_ms <= 25"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "rock-beat",
+      "label": "The basic rock beat",
+      "hours": [
+        5,
+        12
+      ],
+      "nodes": [
+        "rock-beat"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "rock-beat",
+        "label": "Rock beat at 90 for sixteen bars",
+        "criteria": [
+          {
+            "id": "on_time",
+            "label": "On the grid",
+            "check": "onset_share_on_time >= 0.8"
+          },
+          {
+            "id": "tempo",
+            "label": "No drift",
+            "check": "abs(tempo_drift_pct) <= 3"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "fill",
+      "label": "A fill and back to the beat",
+      "hours": [
+        8,
+        18
+      ],
+      "nodes": [
+        "fill"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "beat-and-fill",
+        "label": "Three bars of beat, one bar of fill, four times",
+        "criteria": [
+          {
+            "id": "on_time",
+            "label": "On the grid",
+            "check": "onset_share_on_time >= 0.75"
+          },
+          {
+            "id": "tempo",
+            "label": "No rush",
+            "check": "abs(tempo_drift_pct) <= 4"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "song",
+      "label": "Three minutes at 120",
+      "hours": [
+        12,
+        30
+      ],
+      "nodes": [
+        "endurance"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "song-length",
+        "label": "Three minutes of rock beat at 120, tempo steady",
+        "criteria": [
+          {
+            "id": "tempo",
+            "label": "Steady tempo",
+            "check": "abs(tempo_drift_pct) <= 3"
+          },
+          {
+            "id": "on_time",
+            "label": "On the grid",
+            "check": "onset_share_on_time >= 0.8"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pulse",
+      "name": "The pulse",
+      "requires": [],
+      "lesson": "pulse-lesson",
+      "drills": [
+        "tap-pulse",
+        "quarters-play"
+      ],
+      "mistakes": [
+        "rushing"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "How many quarter notes in a 4/4 bar?",
+        "kind": "choice",
+        "options": [
+          "Four",
+          "Eight"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "sticking",
+      "name": "Alternate sticking",
+      "requires": [
+        "pulse"
+      ],
+      "lesson": "sticking-lesson",
+      "drills": [
+        "eighths-play"
+      ],
+      "mistakes": [
+        "uneven-hands"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Right-left sticking starts with which hand?",
+        "kind": "choice",
+        "options": [
+          "Right",
+          "Left"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "rock-beat",
+      "name": "Rock beat",
+      "requires": [
+        "sticking"
+      ],
+      "lesson": "beat-lesson",
+      "drills": [
+        "rock-beat-play",
+        "read-beat"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "On which beats does the snare hit?",
+        "kind": "choice",
+        "options": [
+          "2 and 4",
+          "1 and 3"
+        ],
+        "answer": 0
+      },
+      "focus": "Grooves"
+    },
+    {
+      "id": "fill",
+      "name": "Fills",
+      "requires": [
+        "rock-beat"
+      ],
+      "lesson": "fill-lesson",
+      "drills": [
+        "fill-play"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Where does the crash land after a fill?",
+        "kind": "choice",
+        "options": [
+          "Beat 1",
+          "Beat 4"
+        ],
+        "answer": 0
+      },
+      "focus": "Grooves"
+    },
+    {
+      "id": "endurance",
+      "name": "Holding the groove",
+      "requires": [
+        "fill"
+      ],
+      "lesson": "fill-lesson",
+      "drills": [
+        "song-play"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What drifts first when you tire?",
+        "kind": "recall"
+      },
+      "focus": "Grooves"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "pulse-lesson",
+      "title": "The pulse",
+      "nodes": [
+        "pulse"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Excited drummers usually...",
+          "options": [
+            "Speed up",
+            "Slow down"
+          ],
+          "answer": 0,
+          "reveal": "Rushing is the most common drift."
+        },
+        {
+          "type": "diagram",
+          "text": "Four even hits per bar.",
+          "figure": {
+            "kind": "rhythm",
+            "pattern": "x.x.x.x.",
+            "subdivisions": 8,
+            "highlight": [
+              0
+            ]
+          }
+        },
+        {
+          "type": "compare",
+          "text": "Tap the rushed bar.",
+          "left": {
+            "kind": "rhythm",
+            "pattern": "x.x.x.x.",
+            "subdivisions": 8,
+            "highlight": []
+          },
+          "right": {
+            "kind": "rhythm",
+            "pattern": "x.xx.x..",
+            "subdivisions": 8,
+            "highlight": []
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "sticking-lesson",
+      "title": "Alternate sticking",
+      "nodes": [
+        "sticking"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Alternating hands makes eighths...",
+          "options": [
+            "Easier to keep even",
+            "Louder"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "R L R L R L R L.",
+          "figure": {
+            "kind": "rhythm",
+            "pattern": "RLRLRLRL",
+            "subdivisions": 8,
+            "highlight": []
+          },
+          "playback": "loop"
+        },
+        {
+          "type": "compare",
+          "text": "Tap the uneven hands.",
+          "left": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Gap ms",
+                "values": [
+                  300,
+                  300,
+                  300,
+                  300
+                ]
+              }
+            ]
+          },
+          "right": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Gap ms",
+                "values": [
+                  260,
+                  340,
+                  255,
+                  345
+                ]
+              }
+            ]
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "beat-lesson",
+      "title": "Rock beat",
+      "nodes": [
+        "rock-beat"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "In a rock beat, the snare lands on...",
+          "options": [
+            "2 and 4",
+            "1 and 3"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Hi-hat eighths; kick on 1 and 3; snare on 2 and 4.",
+          "figure": {
+            "kind": "notation",
+            "abc": "X:1\nM:4/4\nL:1/8\nK:perc\n[Fg]g [cg]g [Fg]g [cg]g |]"
+          }
+        },
+        {
+          "type": "try-it",
+          "text": "Tap the beat: kick, hat, snare, hat.",
+          "action": "tap-rhythm",
+          "pattern": "xxxxxxxx"
+        }
+      ]
+    },
+    {
+      "id": "fill-lesson",
+      "title": "Fills",
+      "nodes": [
+        "fill",
+        "endurance"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "After a fill, the crash lands on...",
+          "options": [
+            "Beat 1",
+            "Beat 4"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Three bars of beat, one bar of fill.",
+          "figure": {
+            "kind": "rhythm",
+            "pattern": "xxxxxxxxxxxxxxxx",
+            "subdivisions": 16,
+            "highlight": [
+              12,
+              13,
+              14,
+              15
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "tap-pulse",
+      "type": "tap-rhythm",
+      "title": "Tap the pulse",
+      "prompt": "Tap the space bar on every click.",
+      "nodes": [
+        "pulse"
+      ],
+      "spec": "tap-task",
+      "needs": [],
+      "success": "accuracy >= 0.9",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          60,
+          80,
+          100
+        ],
+        "start": 0
+      },
+      "minutes": 2,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": [
+        "rushing"
+      ]
+    },
+    {
+      "id": "quarters-play",
+      "type": "play-along",
+      "title": "Quarters on the pad",
+      "prompt": "Quarter notes with the click, eight bars.",
+      "nodes": [
+        "pulse"
+      ],
+      "spec": "quarters",
+      "needs": [
+        "A practice pad"
+      ],
+      "success": "onset_share_on_time >= 0.8",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          60,
+          80,
+          100
+        ],
+        "start": 0
+      },
+      "minutes": 4,
+      "intensity": 2,
+      "focus": "Fundamentals",
+      "fixes": [
+        "rushing"
+      ]
+    },
+    {
+      "id": "eighths-play",
+      "type": "play-along",
+      "title": "Even eighths",
+      "prompt": "Right-left eighths with the click.",
+      "nodes": [
+        "sticking"
+      ],
+      "spec": "eighths",
+      "needs": [
+        "A practice pad"
+      ],
+      "success": "onset_std_ms <= 30",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          70,
+          85,
+          100,
+          120
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 2,
+      "focus": "Fundamentals",
+      "fixes": [
+        "uneven-hands"
+      ]
+    },
+    {
+      "id": "rock-beat-play",
+      "type": "play-along",
+      "title": "Rock beat loop",
+      "prompt": "Rock beat with the click, sixteen bars.",
+      "nodes": [
+        "rock-beat"
+      ],
+      "spec": "rock-beat",
+      "needs": [
+        "A drum kit"
+      ],
+      "success": "onset_share_on_time >= 0.8",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          70,
+          90,
+          110
+        ],
+        "start": 0
+      },
+      "minutes": 8,
+      "intensity": 2,
+      "focus": "Grooves",
+      "fixes": []
+    },
+    {
+      "id": "read-beat",
+      "type": "match",
+      "title": "Read the beat",
+      "prompt": "Match each drum to its beats.",
+      "nodes": [
+        "rock-beat"
+      ],
+      "spec": "rhythm-quiz",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "fill-play",
+      "type": "play-along",
+      "title": "Beat and fill",
+      "prompt": "Three bars of beat, then the fill, then crash on 1.",
+      "nodes": [
+        "fill"
+      ],
+      "spec": "beat-and-fill",
+      "needs": [
+        "A drum kit"
+      ],
+      "success": "onset_share_on_time >= 0.75",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          70,
+          90,
+          110
+        ],
+        "start": 0
+      },
+      "minutes": 8,
+      "intensity": 3,
+      "focus": "Grooves",
+      "fixes": []
+    },
+    {
+      "id": "song-play",
+      "type": "play-along",
+      "title": "Song length",
+      "prompt": "Hold the beat for three minutes at 120.",
+      "nodes": [
+        "endurance"
+      ],
+      "spec": "song-length",
+      "needs": [
+        "A drum kit"
+      ],
+      "success": "abs(tempo_drift_pct) <= 4",
+      "difficulty": {
+        "param": "length",
+        "levels": [
+          "1 min",
+          "2 min",
+          "3 min"
+        ],
+        "start": 0
+      },
+      "minutes": 10,
+      "intensity": 3,
+      "focus": "Grooves",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "tap-task": {
+      "kind": "task",
+      "task": "sequence",
+      "content": [
+        "x.x.x.x.",
+        "x.x.x.x.",
+        "x.x.x.x.",
+        "x.x.x.x."
+      ],
+      "duration_s": 30,
+      "pass": "accuracy >= 0.9"
+    },
+    "quarters": {
+      "kind": "audio",
+      "reference": {
+        "pattern": "x.x.x.x.",
+        "beats_per_bar": 4,
+        "bars": 8
+      },
+      "tempo": 80,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 30,
+        "onset_ms": 40
+      },
+      "grade": [
+        "onsets",
+        "rhythm"
+      ],
+      "playback": "metronome",
+      "pass": "onset_share_on_time >= 0.85",
+      "mistakes": [
+        {
+          "id": "rushing",
+          "when": "early_share >= 0.5",
+          "severity": 2,
+          "show": "beat_timeline",
+          "fix_drill": "quarters-play"
+        }
+      ]
+    },
+    "eighths": {
+      "kind": "audio",
+      "reference": {
+        "pattern": "xxxxxxxx",
+        "beats_per_bar": 4,
+        "bars": 8
+      },
+      "tempo": 100,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 30,
+        "onset_ms": 35
+      },
+      "grade": [
+        "onsets",
+        "rhythm"
+      ],
+      "playback": "metronome",
+      "pass": "onset_share_on_time >= 0.8 && onset_std_ms <= 25",
+      "mistakes": [
+        {
+          "id": "uneven-hands",
+          "when": "abs(up_offset_ms - down_offset_ms) > 20",
+          "severity": 1,
+          "show": "beat_timeline",
+          "fix_drill": "eighths-play"
+        }
+      ]
+    },
+    "rock-beat": {
+      "kind": "audio",
+      "reference": {
+        "pattern": "xxxxxxxx",
+        "beats_per_bar": 4,
+        "bars": 16
+      },
+      "tempo": 90,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 30,
+        "onset_ms": 40
+      },
+      "grade": [
+        "onsets",
+        "rhythm",
+        "tempo"
+      ],
+      "playback": "metronome",
+      "pass": "onset_share_on_time >= 0.8 && abs(tempo_drift_pct) <= 3",
+      "mistakes": []
+    },
+    "beat-and-fill": {
+      "kind": "audio",
+      "reference": {
+        "pattern": "x.x.x.x.x.x.x.x.x.x.x.x.xxxxxxxx",
+        "beats_per_bar": 16,
+        "bars": 4
+      },
+      "tempo": 90,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 30,
+        "onset_ms": 45
+      },
+      "grade": [
+        "onsets",
+        "rhythm",
+        "tempo"
+      ],
+      "playback": "metronome",
+      "pass": "onset_share_on_time >= 0.75",
+      "mistakes": []
+    },
+    "song-length": {
+      "kind": "audio",
+      "reference": {
+        "pattern": "xxxxxxxx",
+        "beats_per_bar": 4,
+        "bars": 64
+      },
+      "tempo": 120,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 30,
+        "onset_ms": 45
+      },
+      "grade": [
+        "tempo",
+        "onsets"
+      ],
+      "playback": "metronome",
+      "pass": "abs(tempo_drift_pct) <= 3",
+      "mistakes": []
+    },
+    "rhythm-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "d1",
+          "prompt": "How many eighth notes in a 4/4 bar?",
+          "options": [
+            "Eight",
+            "Four",
+            "Sixteen"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "sticking"
+          ]
+        },
+        {
+          "type": "match",
+          "id": "d2",
+          "prompt": "Match each drum to its beats in a rock beat.",
+          "pairs": [
+            [
+              "Kick",
+              "1 and 3"
+            ],
+            [
+              "Snare",
+              "2 and 4"
+            ],
+            [
+              "Hi-hat",
+              "Every eighth"
+            ]
+          ],
+          "difficulty": 2,
+          "nodes": [
+            "rock-beat"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "d3",
+          "prompt": "After a fill, where does the crash land?",
+          "options": [
+            "Beat 1",
+            "Beat 3"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "fill"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    }
+  },
+  "mistakes": [
+    {
+      "id": "rushing",
+      "name": "Rushing",
+      "nodes": [
+        "pulse"
+      ],
+      "engine": "audio",
+      "detector": {
+        "metric": "early_share",
+        "when": "early_share >= 0.5",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "pulse-lesson",
+        "card": 2
+      },
+      "fix_drill": "quarters-play",
+      "resolved_after": 3,
+      "headline": "Hits land ahead of the click"
+    },
+    {
+      "id": "uneven-hands",
+      "name": "Uneven hands",
+      "nodes": [
+        "sticking"
+      ],
+      "engine": "audio",
+      "detector": {
+        "metric": "up_offset_ms",
+        "when": "abs(up_offset_ms - down_offset_ms) > 20",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "sticking-lesson",
+        "card": 2
+      },
+      "fix_drill": "eighths-play",
+      "resolved_after": 3,
+      "headline": "Left hand lags the right"
+    }
+  ],
+  "warmups": [
+    {
+      "id": "drum-warmup",
+      "title": "Hands and wrists",
+      "steps": [
+        "Wrist circles, ten each way",
+        "Finger stretches, gently",
+        "One minute of slow single strokes on the pad",
+        "Put in earplugs or turn the kit down"
+      ],
+      "minutes": 4
+    }
+  ],
+  "safety": {
+    "warmup": "drum-warmup",
+    "injury_questions": [
+      "Any wrist, forearm or back pain right now?",
+      "Any ringing in your ears after loud music?"
+    ],
+    "beginner_caps": {
+      "max_intensity": 3,
+      "max_minutes": 40,
+      "sessions_per_week": 5
+    },
+    "stop_criteria": [
+      "Wrist or forearm pain",
+      "Ringing in the ears",
+      "Numb fingers"
+    ],
+    "see_professional": [
+      "Wrist pain lasting more than a week",
+      "Ringing in the ears that doesn't fade by the next day"
+    ],
+    "supervised_only": []
+  },
+  "access": [
+    "A practice pad",
+    "A drum kit",
+    "Hearing protection",
+    "Headphones"
+  ],
+  "injuries": {
+    "Wrists": "Pad only, slow tempos, fifteen minutes at most for two weeks",
+    "Lower back": "Check throne height; sessions of twenty minutes with breaks"
+  },
+  "focus": {
+    "Fundamentals": 45,
+    "Grooves": 40,
+    "Reading": 15
+  },
+  "hard_focus": [
+    "Grooves"
+  ],
+  "key_metrics": [
+    {
+      "id": "on-time",
+      "label": "Hits on the grid",
+      "engine": "audio",
+      "metric": "onset_share_on_time",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "drift",
+      "label": "Tempo drift",
+      "engine": "audio",
+      "metric": "tempo_drift_pct",
+      "unit": "%",
+      "better": "lower",
+      "format": "number"
+    }
+  ],
+  "copy": {
+    "placeholder": "drums, cajón, percussion",
+    "blurb": "Even hands, a solid beat, clean fills"
+  },
+  "notes": "Engines: audio grades onsets against written patterns (one character per subdivision). Separating cymbals from drums is unreliable, so patterns grade all onsets together and voices are taught with notation and a match quiz. Interaction runs a tap-the-pulse task in the studio. Physical for wrists and hearing: earplugs are part of the warm-up. Hours are estimates from general beginner method books, shown as ranges."
+}

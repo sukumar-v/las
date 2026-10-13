@@ -1,0 +1,1017 @@
+{
+  "schemaVersion": 1,
+  "skill": "touch typing",
+  "name": "Touch typing",
+  "noun": "touch typing",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "interaction",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "interaction": "self-report"
+  },
+  "why": [
+    {
+      "id": "faster",
+      "label": "Write reports faster"
+    },
+    {
+      "id": "eyes",
+      "label": "Stop looking at the keys"
+    },
+    {
+      "id": "strain",
+      "label": "Less neck strain"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "sixty",
+      "label": "Typing reports at 60 wpm",
+      "why": [
+        "faster"
+      ],
+      "ladderStep": 5,
+      "milestone": "60 wpm at 97% accuracy",
+      "proof": "A one-minute test at 60 wpm, 97% accurate",
+      "focus": {
+        "Fundamentals": 30,
+        "Speed": 50,
+        "Accuracy": 20
+      }
+    },
+    {
+      "id": "no-look",
+      "label": "Eyes on the screen",
+      "why": [
+        "eyes",
+        "strain"
+      ],
+      "ladderStep": 2,
+      "milestone": "Home row without looking",
+      "proof": "Home-row drills at 95% accuracy",
+      "focus": {
+        "Fundamentals": 60,
+        "Speed": 10,
+        "Accuracy": 30
+      }
+    },
+    {
+      "id": "forty",
+      "label": "Faster than my two fingers",
+      "why": [
+        "faster",
+        "eyes"
+      ],
+      "ladderStep": 4,
+      "milestone": "40 wpm touch typing",
+      "proof": "A one-minute test at 40 wpm, 95% accurate",
+      "focus": {
+        "Fundamentals": 35,
+        "Speed": 40,
+        "Accuracy": 25
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "method",
+      "type": "single",
+      "question": "How do you type now?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Two fingers, looking down"
+        },
+        {
+          "value": 1,
+          "label": "Several fingers, sometimes look"
+        },
+        {
+          "value": 2,
+          "label": "All fingers, rarely look"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "speed",
+      "type": "tap",
+      "question": "Type one sentence as you normally do.",
+      "spec": "baseline-test",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && method >= 2",
+      "step": 3,
+      "evidence": "Already touch types"
+    },
+    {
+      "when": "method >= 1",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Two fingers",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "home",
+      "label": "Home row by touch",
+      "hours": [
+        2,
+        4
+      ],
+      "nodes": [
+        "home-row"
+      ],
+      "proof": {
+        "engine": "interaction",
+        "spec": "home-row",
+        "label": "Home-row words for a minute, 95% accurate, eyes up",
+        "criteria": [
+          {
+            "id": "acc",
+            "label": "95% accurate",
+            "check": "accuracy >= 0.95"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "top-bottom",
+      "label": "Top and bottom rows",
+      "hours": [
+        4,
+        8
+      ],
+      "nodes": [
+        "top-row",
+        "bottom-row"
+      ],
+      "proof": {
+        "engine": "interaction",
+        "spec": "all-letters",
+        "label": "Pangrams for a minute at 20 wpm, 95% accurate",
+        "criteria": [
+          {
+            "id": "wpm",
+            "label": "20 wpm",
+            "check": "wpm >= 20"
+          },
+          {
+            "id": "acc",
+            "label": "95% accurate",
+            "check": "accuracy >= 0.95"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "rhythm",
+      "label": "An even rhythm",
+      "hours": [
+        5,
+        10
+      ],
+      "nodes": [
+        "rhythm"
+      ],
+      "proof": {
+        "engine": "interaction",
+        "spec": "all-letters",
+        "label": "A minute of even keystrokes at 30 wpm",
+        "criteria": [
+          {
+            "id": "even",
+            "label": "Even rhythm",
+            "check": "consistency >= 0.7"
+          },
+          {
+            "id": "wpm",
+            "label": "30 wpm",
+            "check": "wpm >= 30"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "forty",
+      "label": "40 words a minute",
+      "hours": [
+        10,
+        20
+      ],
+      "nodes": [
+        "speed"
+      ],
+      "proof": {
+        "engine": "interaction",
+        "spec": "speed-test",
+        "label": "One-minute test at 40 wpm, 95% accurate",
+        "criteria": [
+          {
+            "id": "wpm",
+            "label": "40 wpm",
+            "check": "wpm >= 40"
+          },
+          {
+            "id": "acc",
+            "label": "95% accurate",
+            "check": "accuracy >= 0.95"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "sixty",
+      "label": "60 words a minute",
+      "hours": [
+        20,
+        40
+      ],
+      "nodes": [
+        "speed"
+      ],
+      "proof": {
+        "engine": "interaction",
+        "spec": "speed-test",
+        "label": "One-minute test at 60 wpm, 97% accurate",
+        "criteria": [
+          {
+            "id": "wpm",
+            "label": "60 wpm",
+            "check": "wpm >= 60"
+          },
+          {
+            "id": "acc",
+            "label": "97% accurate",
+            "check": "accuracy >= 0.97"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "home-row",
+      "name": "Home row",
+      "requires": [],
+      "lesson": "home-lesson",
+      "drills": [
+        "home-drill",
+        "finger-quiz"
+      ],
+      "mistakes": [
+        "looking-down"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which keys have the bumps?",
+        "kind": "choice",
+        "options": [
+          "F and J",
+          "A and ;"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "top-row",
+      "name": "Top row",
+      "requires": [
+        "home-row"
+      ],
+      "lesson": "rows-lesson",
+      "drills": [
+        "top-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which finger types E?",
+        "kind": "choice",
+        "options": [
+          "Left middle",
+          "Left index"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "bottom-row",
+      "name": "Bottom row",
+      "requires": [
+        "home-row"
+      ],
+      "lesson": "rows-lesson",
+      "drills": [
+        "bottom-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which finger types M?",
+        "kind": "choice",
+        "options": [
+          "Right index",
+          "Right middle"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "rhythm",
+      "name": "Rhythm",
+      "requires": [
+        "top-row",
+        "bottom-row"
+      ],
+      "lesson": "rhythm-lesson",
+      "drills": [
+        "rhythm-drill"
+      ],
+      "mistakes": [
+        "bursty"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Fast bursts or an even pace?",
+        "kind": "choice",
+        "options": [
+          "Even pace",
+          "Fast bursts"
+        ],
+        "answer": 0
+      },
+      "focus": "Accuracy"
+    },
+    {
+      "id": "speed",
+      "name": "Speed",
+      "requires": [
+        "rhythm"
+      ],
+      "lesson": "rhythm-lesson",
+      "drills": [
+        "speed-drill"
+      ],
+      "mistakes": [
+        "sloppy-speed"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Push speed or accuracy first?",
+        "kind": "choice",
+        "options": [
+          "Accuracy",
+          "Speed"
+        ],
+        "answer": 0
+      },
+      "focus": "Speed"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "home-lesson",
+      "title": "Home row",
+      "nodes": [
+        "home-row"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Where do your index fingers rest?",
+          "options": [
+            "F and J",
+            "G and H"
+          ],
+          "answer": 0,
+          "reveal": "Feel for the bumps."
+        },
+        {
+          "type": "diagram",
+          "text": "Each finger owns one column.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "a",
+                "label": "A pinky"
+              },
+              {
+                "id": "s",
+                "label": "S ring"
+              },
+              {
+                "id": "d",
+                "label": "D middle"
+              },
+              {
+                "id": "f",
+                "label": "F index"
+              },
+              {
+                "id": "j",
+                "label": "J index"
+              },
+              {
+                "id": "k",
+                "label": "K middle"
+              },
+              {
+                "id": "l",
+                "label": "L ring"
+              },
+              {
+                "id": "p",
+                "label": "; pinky"
+              }
+            ],
+            "edges": [],
+            "direction": "LR"
+          }
+        },
+        {
+          "type": "try-it",
+          "text": "Type: asdf jkl; with eyes closed.",
+          "action": "type-it",
+          "target": "asdf jkl;"
+        }
+      ]
+    },
+    {
+      "id": "rows-lesson",
+      "title": "Reaching up and down",
+      "nodes": [
+        "top-row",
+        "bottom-row"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "After reaching for E, the finger goes...",
+          "options": [
+            "Back to D",
+            "Stays on E"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "Reach, press, return home.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "d",
+                "label": "D"
+              },
+              {
+                "id": "e",
+                "label": "E"
+              },
+              {
+                "id": "c",
+                "label": "C"
+              }
+            ],
+            "edges": [
+              [
+                "d",
+                "e"
+              ],
+              [
+                "e",
+                "d"
+              ],
+              [
+                "d",
+                "c"
+              ],
+              [
+                "c",
+                "d"
+              ]
+            ],
+            "direction": "LR"
+          },
+          "playback": "loop"
+        }
+      ]
+    },
+    {
+      "id": "rhythm-lesson",
+      "title": "Rhythm and speed",
+      "nodes": [
+        "rhythm",
+        "speed"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Which is faster over a minute: bursts or steady?",
+          "options": [
+            "Steady",
+            "Bursts"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "compare",
+          "text": "Tap the bursty typist.",
+          "left": {
+            "kind": "chart",
+            "type": "line",
+            "series": [
+              {
+                "label": "ms per key",
+                "values": [
+                  180,
+                  190,
+                  175,
+                  185,
+                  180
+                ]
+              }
+            ]
+          },
+          "right": {
+            "kind": "chart",
+            "type": "line",
+            "series": [
+              {
+                "label": "ms per key",
+                "values": [
+                  90,
+                  400,
+                  80,
+                  520,
+                  100
+                ]
+              }
+            ]
+          },
+          "answer": "right"
+        },
+        {
+          "type": "sim",
+          "text": "Drag speed and accuracy. Watch real words per minute.",
+          "sim": {
+            "kind": "sim",
+            "title": "Speed and errors",
+            "params": {
+              "raw_wpm": {
+                "label": "Raw speed",
+                "min": 20,
+                "max": 100,
+                "default": 50,
+                "unit": "wpm"
+              },
+              "accuracy": {
+                "label": "Accuracy",
+                "min": 80,
+                "max": 100,
+                "default": 92,
+                "unit": "%"
+              }
+            },
+            "formulas": {
+              "net_wpm": "raw_wpm - raw_wpm * (100 - accuracy) / 100 * 5"
+            },
+            "figure": {
+              "kind": "plot",
+              "x": "accuracy",
+              "series": [
+                "net_wpm"
+              ]
+            },
+            "readout": [
+              {
+                "value": "net_wpm",
+                "label": "Net speed",
+                "unit": "wpm",
+                "decimals": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "home-drill",
+      "type": "tap-rhythm",
+      "title": "Home-row words",
+      "prompt": "Type the home-row words without looking down.",
+      "nodes": [
+        "home-row"
+      ],
+      "spec": "home-row",
+      "needs": [],
+      "success": "accuracy >= 0.95",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          "10 wpm",
+          "15 wpm",
+          "20 wpm"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": [
+        "looking-down"
+      ]
+    },
+    {
+      "id": "finger-quiz",
+      "type": "match",
+      "title": "Which finger?",
+      "prompt": "Match each key to its finger.",
+      "nodes": [
+        "home-row"
+      ],
+      "spec": "finger-items",
+      "needs": [],
+      "minutes": 2,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "top-drill",
+      "type": "tap-rhythm",
+      "title": "Top-row reaches",
+      "prompt": "Type the top-row words; return home after each reach.",
+      "nodes": [
+        "top-row"
+      ],
+      "spec": "top-row",
+      "needs": [],
+      "success": "accuracy >= 0.93",
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "bottom-drill",
+      "type": "tap-rhythm",
+      "title": "Bottom-row reaches",
+      "prompt": "Type the bottom-row words; return home after each reach.",
+      "nodes": [
+        "bottom-row"
+      ],
+      "spec": "bottom-row",
+      "needs": [],
+      "success": "accuracy >= 0.93",
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "rhythm-drill",
+      "type": "tap-rhythm",
+      "title": "Even keystrokes",
+      "prompt": "Type the passage at an even pace, slower than feels natural.",
+      "nodes": [
+        "rhythm"
+      ],
+      "spec": "all-letters",
+      "needs": [],
+      "success": "consistency >= 0.7",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          "25 wpm",
+          "30 wpm",
+          "35 wpm"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Accuracy",
+      "fixes": [
+        "bursty"
+      ]
+    },
+    {
+      "id": "speed-drill",
+      "type": "tap-rhythm",
+      "title": "Speed bursts",
+      "prompt": "Three one-minute tests; keep accuracy above 95%.",
+      "nodes": [
+        "speed"
+      ],
+      "spec": "speed-test",
+      "needs": [],
+      "success": "accuracy >= 0.95",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          "40 wpm",
+          "50 wpm",
+          "60 wpm"
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Speed",
+      "fixes": [
+        "sloppy-speed"
+      ]
+    }
+  ],
+  "specs": {
+    "baseline-test": {
+      "kind": "task",
+      "task": "type-text",
+      "content": [
+        "The quick brown fox jumps over the lazy dog."
+      ],
+      "duration_s": 30
+    },
+    "home-row": {
+      "kind": "task",
+      "task": "type-text",
+      "content": [
+        "sad lad",
+        "fall flask",
+        "ask dad",
+        "a glass jar",
+        "salad hall"
+      ],
+      "duration_s": 60,
+      "pass": "accuracy >= 0.95"
+    },
+    "top-row": {
+      "kind": "task",
+      "task": "type-text",
+      "content": [
+        "we were here",
+        "tire wire",
+        "quiet trip",
+        "your type"
+      ],
+      "duration_s": 60,
+      "pass": "accuracy >= 0.93"
+    },
+    "bottom-row": {
+      "kind": "task",
+      "task": "type-text",
+      "content": [
+        "zinc box",
+        "move van",
+        "calm mix",
+        "next bench"
+      ],
+      "duration_s": 60,
+      "pass": "accuracy >= 0.93"
+    },
+    "all-letters": {
+      "kind": "task",
+      "task": "type-text",
+      "content": [
+        "The quick brown fox jumps over the lazy dog.",
+        "Pack my box with five dozen liquor jugs.",
+        "How vexingly quick daft zebras jump."
+      ],
+      "duration_s": 60,
+      "pass": "consistency >= 0.7"
+    },
+    "speed-test": {
+      "kind": "task",
+      "task": "type-text",
+      "content": [
+        "Our quarterly report shows steady growth in every region, with the strongest gains in online sales and customer renewals."
+      ],
+      "duration_s": 60,
+      "pass": "wpm >= 40 && accuracy >= 0.95"
+    },
+    "finger-items": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "match",
+          "id": "f1",
+          "prompt": "Match each key to its finger.",
+          "pairs": [
+            [
+              "F",
+              "Left index"
+            ],
+            [
+              "D",
+              "Left middle"
+            ],
+            [
+              "K",
+              "Right middle"
+            ],
+            [
+              "A",
+              "Left pinky"
+            ]
+          ],
+          "difficulty": 1,
+          "nodes": [
+            "home-row"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "f2",
+          "prompt": "Which finger types E?",
+          "options": [
+            "Left middle",
+            "Left index"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "top-row"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "f3",
+          "prompt": "Which finger types M?",
+          "options": [
+            "Right index",
+            "Right middle"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "bottom-row"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    }
+  },
+  "mistakes": [
+    {
+      "id": "looking-down",
+      "name": "Looking at the keys",
+      "nodes": [
+        "home-row"
+      ],
+      "engine": "interaction",
+      "detector": {
+        "metric": "mean_ms",
+        "when": "mean_ms > 600",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "home-lesson",
+        "card": 2
+      },
+      "fix_drill": "home-drill",
+      "resolved_after": 3,
+      "headline": "Long pauses: eyes went to the keys"
+    },
+    {
+      "id": "bursty",
+      "name": "Bursty rhythm",
+      "nodes": [
+        "rhythm"
+      ],
+      "engine": "interaction",
+      "detector": {
+        "metric": "consistency",
+        "when": "consistency < 0.5",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "rhythm-lesson",
+        "card": 1
+      },
+      "fix_drill": "rhythm-drill",
+      "resolved_after": 3,
+      "headline": "Fast bursts, then long stalls"
+    },
+    {
+      "id": "sloppy-speed",
+      "name": "Speed over accuracy",
+      "nodes": [
+        "speed"
+      ],
+      "engine": "interaction",
+      "detector": {
+        "metric": "accuracy",
+        "when": "accuracy < 0.92 && wpm > 40",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "rhythm-lesson",
+        "card": 2
+      },
+      "fix_drill": "speed-drill",
+      "resolved_after": 3,
+      "headline": "Errors climb as speed rises"
+    }
+  ],
+  "access": [
+    "A computer with a keyboard"
+  ],
+  "focus": {
+    "Fundamentals": 40,
+    "Speed": 35,
+    "Accuracy": 25
+  },
+  "key_metrics": [
+    {
+      "id": "wpm",
+      "label": "Words per minute",
+      "engine": "interaction",
+      "metric": "wpm",
+      "unit": "wpm",
+      "better": "higher",
+      "format": "number"
+    },
+    {
+      "id": "accuracy",
+      "label": "Accuracy",
+      "engine": "interaction",
+      "metric": "accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "consistency",
+      "label": "Rhythm",
+      "engine": "interaction",
+      "metric": "consistency",
+      "unit": "",
+      "better": "higher",
+      "format": "number"
+    }
+  ],
+  "copy": {
+    "placeholder": "typing, shortcuts, stenography",
+    "blurb": "Home row, rhythm, then speed"
+  },
+  "notes": "Engines: interaction measures speed, accuracy and keystroke consistency from typing tasks in the studio. Without the studio, tests are self-reported from any typing site the learner uses, and marked less precise. Not treated as physical, but the plan keeps sessions short and the lessons cue relaxed hands. Hours are estimates from general touch-typing course guidance, shown as ranges."
+}

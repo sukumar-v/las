@@ -1,0 +1,1070 @@
+{
+  "schemaVersion": 1,
+  "skill": "juggling three balls",
+  "name": "Juggling",
+  "noun": "juggling",
+  "source": "generated",
+  "physical": true,
+  "engines": [
+    "movement",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "movement": "self-report"
+  },
+  "why": [
+    {
+      "id": "fun",
+      "label": "For fun"
+    },
+    {
+      "id": "focus",
+      "label": "A focus break"
+    },
+    {
+      "id": "show",
+      "label": "Show my kids"
+    },
+    {
+      "id": "coord",
+      "label": "Better coordination"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "cascade",
+      "label": "A steady cascade",
+      "why": [
+        "fun",
+        "coord"
+      ],
+      "ladderStep": 3,
+      "milestone": "Twenty catches in a row",
+      "proof": "One clip with twenty clean catches",
+      "focus": {
+        "Fundamentals": 50,
+        "Rhythm": 40,
+        "Tricks": 10
+      },
+      "access": [
+        "Three juggling balls"
+      ]
+    },
+    {
+      "id": "show",
+      "label": "A minute for an audience",
+      "why": [
+        "show",
+        "fun"
+      ],
+      "ladderStep": 5,
+      "milestone": "A minute with one trick",
+      "proof": "A one-minute clip including a trick",
+      "focus": {
+        "Fundamentals": 30,
+        "Rhythm": 30,
+        "Tricks": 40
+      }
+    },
+    {
+      "id": "break",
+      "label": "A two-minute desk break",
+      "why": [
+        "focus"
+      ],
+      "ladderStep": 2,
+      "milestone": "Two-ball exchange both ways",
+      "proof": "A clip of ten exchanges each side",
+      "focus": {
+        "Fundamentals": 60,
+        "Rhythm": 40,
+        "Tricks": 0
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "catches",
+      "type": "single",
+      "question": "With three balls, how many catches in a row?",
+      "options": [
+        {
+          "value": 0,
+          "label": "None yet"
+        },
+        {
+          "value": 3,
+          "label": "A few"
+        },
+        {
+          "value": 10,
+          "label": "About ten"
+        },
+        {
+          "value": 30,
+          "label": "Thirty or more"
+        }
+      ],
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && catches >= 30",
+      "step": 4,
+      "evidence": "Already runs a cascade"
+    },
+    {
+      "when": "catches >= 10",
+      "step": 3,
+      "evidence": "Ten catches already"
+    },
+    {
+      "when": "catches >= 3",
+      "step": 2
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "one-ball",
+      "label": "One ball, eye-height arcs",
+      "hours": [
+        0.5,
+        1
+      ],
+      "nodes": [
+        "throw"
+      ],
+      "proof": {
+        "engine": "movement",
+        "spec": "ball-arcs",
+        "label": "Twenty throws hand to hand, peaks at eye height",
+        "criteria": [
+          {
+            "id": "count",
+            "label": "Twenty throws",
+            "check": "throws >= 20"
+          },
+          {
+            "id": "even",
+            "label": "Even height",
+            "check": "peak_spread <= 0.06"
+          }
+        ],
+        "capture": {
+          "angle": "front",
+          "fps": 60,
+          "duration_s": 45
+        },
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "exchange",
+      "label": "Two-ball exchange",
+      "hours": [
+        1,
+        3
+      ],
+      "nodes": [
+        "exchange"
+      ],
+      "proof": {
+        "engine": "movement",
+        "spec": "ball-arcs",
+        "label": "Ten exchanges starting with each hand",
+        "criteria": [
+          {
+            "id": "count",
+            "label": "Twenty throws",
+            "check": "throws >= 20"
+          },
+          {
+            "id": "drift",
+            "label": "Hands stay put",
+            "check": "hand_drift <= 0.15"
+          }
+        ],
+        "capture": {
+          "angle": "front",
+          "fps": 60,
+          "duration_s": 60
+        },
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "cascade",
+      "label": "Twenty-catch cascade",
+      "hours": [
+        4,
+        12
+      ],
+      "nodes": [
+        "cascade"
+      ],
+      "proof": {
+        "engine": "movement",
+        "spec": "ball-arcs",
+        "label": "Three-ball cascade with twenty catches in a row",
+        "criteria": [
+          {
+            "id": "count",
+            "label": "Twenty throws",
+            "check": "throws >= 20"
+          },
+          {
+            "id": "even",
+            "label": "Even peaks",
+            "check": "peak_spread <= 0.08"
+          }
+        ],
+        "capture": {
+          "angle": "front",
+          "fps": 60,
+          "duration_s": 60
+        },
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "minute",
+      "label": "A full minute",
+      "hours": [
+        6,
+        15
+      ],
+      "nodes": [
+        "stamina"
+      ],
+      "proof": {
+        "engine": "movement",
+        "spec": "ball-arcs",
+        "label": "One minute of cascade without a drop",
+        "criteria": [
+          {
+            "id": "time",
+            "label": "Sixty seconds",
+            "check": "clip_s >= 60 && drops == 0"
+          }
+        ],
+        "capture": {
+          "angle": "front",
+          "fps": 60,
+          "duration_s": 90
+        },
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "trick",
+      "label": "Add one trick",
+      "hours": [
+        8,
+        20
+      ],
+      "nodes": [
+        "trick"
+      ],
+      "proof": {
+        "engine": "self-report",
+        "spec": "trick-log",
+        "label": "Over the top, five times inside a cascade",
+        "criteria": [
+          {
+            "id": "tricks",
+            "label": "Five tricks",
+            "check": "count >= 5"
+          }
+        ],
+        "single_take": true
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "throw",
+      "name": "The throw",
+      "requires": [],
+      "lesson": "throw-lesson",
+      "drills": [
+        "one-ball"
+      ],
+      "mistakes": [
+        "uneven-peaks"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Where should the ball peak?",
+        "kind": "choice",
+        "options": [
+          "Eye height",
+          "Far above the head"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "exchange",
+      "name": "The exchange",
+      "requires": [
+        "throw"
+      ],
+      "lesson": "exchange-lesson",
+      "drills": [
+        "exchange-drill",
+        "pattern-quiz"
+      ],
+      "mistakes": [
+        "walking-forward"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "When do you throw the second ball?",
+        "kind": "choice",
+        "options": [
+          "When the first peaks",
+          "When it lands"
+        ],
+        "answer": 0
+      },
+      "focus": "Rhythm"
+    },
+    {
+      "id": "cascade",
+      "name": "The cascade",
+      "requires": [
+        "exchange"
+      ],
+      "lesson": "cascade-lesson",
+      "drills": [
+        "cascade-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which hand throws first with three balls?",
+        "kind": "choice",
+        "options": [
+          "The hand holding two",
+          "Either"
+        ],
+        "answer": 0
+      },
+      "focus": "Rhythm"
+    },
+    {
+      "id": "stamina",
+      "name": "Keeping it going",
+      "requires": [
+        "cascade"
+      ],
+      "lesson": "cascade-lesson",
+      "drills": [
+        "cascade-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Why does it speed up?",
+        "kind": "recall"
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "trick",
+      "name": "Over the top",
+      "requires": [
+        "stamina"
+      ],
+      "lesson": "trick-lesson",
+      "drills": [
+        "trick-quiz"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which ball goes over?",
+        "kind": "recall"
+      },
+      "focus": "Tricks"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "throw-lesson",
+      "title": "The throw",
+      "nodes": [
+        "throw"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Higher throws give you more time. Better?",
+          "options": [
+            "Only up to eye height",
+            "Always higher"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "sim",
+          "text": "Drag throw height. Watch the time in the air.",
+          "sim": {
+            "kind": "sim",
+            "title": "Height and hang time",
+            "params": {
+              "height_m": {
+                "label": "Peak above hand",
+                "min": 0.2,
+                "max": 2,
+                "default": 0.5,
+                "unit": "m"
+              }
+            },
+            "formulas": {
+              "airtime_s": "2 * sqrt(2 * height_m / 9.81)"
+            },
+            "figure": {
+              "kind": "plot",
+              "x": "height_m",
+              "series": [
+                "airtime_s"
+              ]
+            },
+            "readout": [
+              {
+                "value": "airtime_s",
+                "label": "Time in the air",
+                "unit": "s",
+                "decimals": 2
+              }
+            ]
+          }
+        },
+        {
+          "type": "compare",
+          "text": "Tap the uneven throws.",
+          "left": {
+            "kind": "chart",
+            "type": "dots",
+            "series": [
+              {
+                "label": "Peaks",
+                "values": [
+                  10,
+                  10,
+                  11,
+                  10,
+                  10
+                ]
+              }
+            ]
+          },
+          "right": {
+            "kind": "chart",
+            "type": "dots",
+            "series": [
+              {
+                "label": "Peaks",
+                "values": [
+                  10,
+                  16,
+                  7,
+                  14,
+                  9
+                ]
+              }
+            ]
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "exchange-lesson",
+      "title": "The exchange",
+      "nodes": [
+        "exchange"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Throw the second ball when the first is...",
+          "options": [
+            "At its peak",
+            "In your hand"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "Throw, peak, throw, catch, catch.",
+          "figure": {
+            "kind": "rhythm",
+            "pattern": "T.T.C.C.",
+            "subdivisions": 8,
+            "highlight": [
+              0,
+              2
+            ]
+          },
+          "playback": "loop"
+        },
+        {
+          "type": "compare",
+          "text": "Tap the juggler walking forward.",
+          "left": {
+            "kind": "chart",
+            "type": "line",
+            "series": [
+              {
+                "label": "Hands",
+                "values": [
+                  0,
+                  0,
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "right": {
+            "kind": "chart",
+            "type": "line",
+            "series": [
+              {
+                "label": "Hands",
+                "values": [
+                  0,
+                  3,
+                  6,
+                  9,
+                  12
+                ]
+              }
+            ]
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "cascade-lesson",
+      "title": "The cascade",
+      "nodes": [
+        "cascade",
+        "stamina"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "In a cascade, how many balls are in the air?",
+          "options": [
+            "Usually one or two",
+            "All three"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Balls cross in a figure eight.",
+          "figure": {
+            "kind": "figure",
+            "points": {
+              "left": [
+                25,
+                80
+              ],
+              "right": [
+                75,
+                80
+              ],
+              "peak_l": [
+                35,
+                20
+              ],
+              "peak_r": [
+                65,
+                20
+              ]
+            },
+            "segments": [
+              [
+                "left",
+                "peak_r"
+              ],
+              [
+                "right",
+                "peak_l"
+              ]
+            ],
+            "marks": [
+              {
+                "at": "peak_l",
+                "label": "peak",
+                "role": "reference"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "trick-lesson",
+      "title": "Over the top",
+      "nodes": [
+        "trick"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "An over-the-top throw goes...",
+          "options": [
+            "Outside and over",
+            "Under the others"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "One ball arcs over the pattern, then back in.",
+          "figure": {
+            "kind": "figure",
+            "points": {
+              "left": [
+                25,
+                80
+              ],
+              "right": [
+                75,
+                80
+              ],
+              "top": [
+                50,
+                5
+              ]
+            },
+            "segments": [
+              [
+                "left",
+                "top"
+              ],
+              [
+                "top",
+                "right"
+              ]
+            ],
+            "marks": [
+              {
+                "at": "top",
+                "label": "over",
+                "role": "good"
+              }
+            ]
+          },
+          "playback": "once"
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "one-ball",
+      "type": "timed-reps",
+      "title": "One-ball arcs",
+      "prompt": "Twenty throws hand to hand, facing the camera.",
+      "nodes": [
+        "throw"
+      ],
+      "spec": "ball-arcs",
+      "capture": {
+        "angle": "front",
+        "fps": 60,
+        "duration_s": 45
+      },
+      "needs": [
+        "Three juggling balls"
+      ],
+      "success": "throws >= 20 && peak_spread <= 0.08",
+      "difficulty": {
+        "param": "reps",
+        "levels": [
+          10,
+          20,
+          40
+        ],
+        "start": 0
+      },
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": [
+        "uneven-peaks"
+      ]
+    },
+    {
+      "id": "exchange-drill",
+      "type": "timed-reps",
+      "title": "Exchanges",
+      "prompt": "Two balls: throw, throw, catch, catch. Ten each side.",
+      "nodes": [
+        "exchange"
+      ],
+      "spec": "ball-arcs",
+      "capture": {
+        "angle": "front",
+        "fps": 60,
+        "duration_s": 60
+      },
+      "needs": [
+        "Three juggling balls"
+      ],
+      "success": "throws >= 20 && hand_drift <= 0.15",
+      "difficulty": {
+        "param": "reps",
+        "levels": [
+          10,
+          20,
+          30
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Rhythm",
+      "fixes": [
+        "walking-forward"
+      ]
+    },
+    {
+      "id": "pattern-quiz",
+      "type": "order",
+      "title": "Throw order",
+      "prompt": "Put the exchange in order.",
+      "nodes": [
+        "exchange"
+      ],
+      "spec": "juggle-quiz",
+      "needs": [],
+      "minutes": 2,
+      "intensity": 1,
+      "focus": "Rhythm",
+      "fixes": []
+    },
+    {
+      "id": "cascade-drill",
+      "type": "timed-reps",
+      "title": "Cascade runs",
+      "prompt": "Three-ball cascade, as long as you can. Film facing the camera.",
+      "nodes": [
+        "cascade",
+        "stamina"
+      ],
+      "spec": "ball-arcs",
+      "capture": {
+        "angle": "front",
+        "fps": 60,
+        "duration_s": 90
+      },
+      "needs": [
+        "Three juggling balls"
+      ],
+      "success": "throws >= 20",
+      "difficulty": {
+        "param": "catches",
+        "levels": [
+          6,
+          12,
+          20,
+          40
+        ],
+        "start": 0
+      },
+      "minutes": 8,
+      "intensity": 2,
+      "focus": "Rhythm",
+      "fixes": []
+    },
+    {
+      "id": "trick-quiz",
+      "type": "choice",
+      "title": "Trick check",
+      "prompt": "Pick the over-the-top throw.",
+      "nodes": [
+        "trick"
+      ],
+      "spec": "juggle-quiz",
+      "needs": [],
+      "minutes": 2,
+      "intensity": 1,
+      "focus": "Tricks",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "ball-arcs": {
+      "kind": "metric",
+      "capture": {
+        "angle": "front",
+        "fps": 60,
+        "track": [
+          "pose",
+          "objects"
+        ],
+        "guide": "Facing the camera, hands and the space above your head in frame; 60 fps for fast balls"
+      },
+      "segment": {
+        "by": "reps",
+        "signal": "object.sports_ball.y"
+      },
+      "metrics": {
+        "peak": "min(object.sports_ball.y) per rep",
+        "throws": "count(peak)",
+        "peak_spread": "std(peak)",
+        "hand_drift": "range(mid_hip.x)",
+        "clip_s": "duration()",
+        "drops": "count(where(object.sports_ball.y, object.sports_ball.y > left_hip.y))"
+      },
+      "mistakes": [
+        {
+          "id": "uneven-peaks",
+          "when": "peak_spread > 0.1",
+          "min_confidence": 0.7,
+          "severity": 2,
+          "show": "overlay(object.sports_ball.y)",
+          "fix_drill": "one-ball"
+        },
+        {
+          "id": "walking-forward",
+          "when": "hand_drift > 0.2",
+          "min_confidence": 0.7,
+          "severity": 2,
+          "show": "skeleton",
+          "fix_drill": "exchange-drill"
+        }
+      ],
+      "requires_visible": [
+        "object.sports_ball",
+        "left_wrist",
+        "right_wrist"
+      ]
+    },
+    "juggle-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "order",
+          "id": "j1",
+          "prompt": "Order the two-ball exchange.",
+          "items": [
+            "Throw right",
+            "Throw left at the peak",
+            "Catch left",
+            "Catch right"
+          ],
+          "difficulty": 1,
+          "nodes": [
+            "exchange"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "j2",
+          "prompt": "With three balls, which hand starts?",
+          "options": [
+            "The one holding two",
+            "Either"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "cascade"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "j3",
+          "prompt": "An over-the-top throw passes...",
+          "options": [
+            "Outside and over the pattern",
+            "Under it"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "trick"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    },
+    "trick-log": {
+      "kind": "self-report",
+      "fields": [
+        "done",
+        "count",
+        "note"
+      ],
+      "criterion": "Counted clean over-the-top throws inside a running cascade"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "uneven-peaks",
+      "name": "Uneven throws",
+      "nodes": [
+        "throw"
+      ],
+      "engine": "movement",
+      "detector": {
+        "metric": "peak_spread",
+        "when": "peak_spread > 0.1",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "throw-lesson",
+        "card": 2
+      },
+      "fix_drill": "one-ball",
+      "resolved_after": 3,
+      "headline": "Throws peak at different heights"
+    },
+    {
+      "id": "walking-forward",
+      "name": "Walking forward",
+      "nodes": [
+        "exchange"
+      ],
+      "engine": "movement",
+      "detector": {
+        "metric": "hand_drift",
+        "when": "hand_drift > 0.2",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "exchange-lesson",
+        "card": 2
+      },
+      "fix_drill": "exchange-drill",
+      "resolved_after": 3,
+      "headline": "Throws drift forward; you chase them"
+    }
+  ],
+  "warmups": [
+    {
+      "id": "juggle-warmup",
+      "title": "Loose shoulders",
+      "steps": [
+        "Ten shoulder rolls",
+        "Ten wrist circles each way",
+        "Twenty easy one-ball throws"
+      ],
+      "minutes": 3
+    }
+  ],
+  "safety": {
+    "warmup": "juggle-warmup",
+    "injury_questions": [
+      "Any shoulder, elbow or wrist pain right now?"
+    ],
+    "beginner_caps": {
+      "max_intensity": 2,
+      "max_minutes": 30,
+      "sessions_per_week": 6
+    },
+    "stop_criteria": [
+      "Wrist or shoulder pain",
+      "Tingling in the fingers"
+    ],
+    "see_professional": [
+      "Wrist pain lasting more than a week"
+    ],
+    "supervised_only": []
+  },
+  "access": [
+    "Three juggling balls",
+    "A clear space with a high ceiling",
+    "A phone to film with"
+  ],
+  "injuries": {
+    "Wrists": "Short sessions, ten minutes at most, with soft beanbags for two weeks",
+    "Shoulders": "Throws to chin height only for two weeks"
+  },
+  "focus": {
+    "Fundamentals": 45,
+    "Rhythm": 40,
+    "Tricks": 15
+  },
+  "hard_focus": [
+    "Tricks"
+  ],
+  "key_metrics": [
+    {
+      "id": "throws",
+      "label": "Catches in a row",
+      "engine": "movement",
+      "metric": "throws",
+      "unit": "",
+      "better": "higher",
+      "format": "count"
+    },
+    {
+      "id": "spread",
+      "label": "Throw height spread",
+      "engine": "movement",
+      "metric": "peak_spread",
+      "unit": "",
+      "better": "lower",
+      "format": "number"
+    }
+  ],
+  "copy": {
+    "placeholder": "juggling, poi, kendama",
+    "blurb": "Even throws, then a cascade"
+  },
+  "notes": "Engines: movement with object tracking for the balls (sports ball class) and pose for the hands. Balls move fast, so captures ask for 60 fps and a plain background; tracking several balls at speed can drop frames, so confidence decides what is shown. Tricks are self-reported for now. Hours are estimates from general beginner progressions, shown as ranges."
+}

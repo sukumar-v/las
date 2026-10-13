@@ -1,0 +1,152 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/** Running form: stride from a treadmill side view (movement) and cadence from the phone in a pocket (sensor). */
+export const runningForm: Scenario = {
+  id: "running-form",
+  skill: "running form",
+  notes: "Runs 5 km twice a week, gets sore shins. Has treadmill access at the gym.",
+  // the phone sensor is the first choice for cadence; without it, cadence is counted from the treadmill video
+  expect: { engines: ["movement", "sensor"], main: "sensor", fallback: "movement", physical: true, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "running form",
+    name: "Running form",
+    noun: "running",
+    source: "generated",
+    physical: true,
+    engines: ["movement", "sensor", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { sensor: "movement", movement: "self-report" }),
+    why: [
+      { id: "injury", label: "Run without aches" },
+      { id: "faster", label: "Run faster" },
+      { id: "race", label: "Run a race" },
+      { id: "enjoy", label: "Enjoy my runs" }
+    ],
+    pictures: [
+      { id: "easy-5k", label: "Easy 5 km runs, no sore shins", why: ["injury", "enjoy"], ladderStep: 2, milestone: "Cadence near 170 on an easy run", proof: "Two minutes at easy pace, cadence in range", focus: { Fundamentals: 50, Form: 35, Endurance: 15 }, access: ["A treadmill"] },
+      { id: "race", label: "A 10 km race with good form", why: ["race", "faster"], ladderStep: 5, milestone: "Form holds late in a long run", proof: "Treadmill clip after 40 minutes, form still in range", focus: { Fundamentals: 25, Form: 35, Endurance: 40 } },
+      { id: "light", label: "Light, quiet steps", why: ["enjoy", "injury"], ladderStep: 3, milestone: "Feet land under the hips", proof: "A side clip with short, quiet strides", focus: { Fundamentals: 35, Form: 55, Endurance: 10 } }
+    ],
+    probes: [
+      { id: "weekly_km", type: "single", question: "How far do you run in a week?", options: [{ value: 0, label: "I don't run yet" }, { value: 10, label: "Up to 10 km" }, { value: 25, label: "10 to 30 km" }, { value: 40, label: "More than 30 km" }] },
+      { id: "theory", type: "quiz", question: "Three quick questions on form.", spec: "form-quiz" }
+    ],
+    placement: [
+      { when: "!fresh && weekly_km >= 25 && quiz.correct >= 3", step: 2, evidence: "Runs regularly and knows the cues" },
+      { when: "weekly_km >= 10", step: 1, evidence: "Already runs most weeks" }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new to form work", hours: [0, 0] },
+      { id: "posture", label: "Tall posture on the treadmill", hours: [1, 3], nodes: ["posture"],
+        proof: { engine: "movement", spec: "stride-form", label: "One minute at easy pace, slight forward lean", criteria: [{ id: "lean", label: "Lean 3 to 10 degrees", check: "trunk_lean >= 3 && trunk_lean <= 10" }], capture: { angle: "side", fps: 60, duration_s: 60 }, fallback: "self-report" } },
+      { id: "cadence", label: "Cadence in range", hours: [3, 8], nodes: ["cadence"],
+        proof: { engine: "sensor", spec: "cadence-phone", label: "Two minutes at easy pace with cadence 160 to 185", criteria: [{ id: "cadence", label: "Cadence in range", check: "cadence_spm >= 160 && cadence_spm <= 185" }], fallback: "movement", fallback_spec: "cadence-video" } },
+      { id: "landing", label: "Feet land under the hips", hours: [5, 12], nodes: ["landing"],
+        proof: { engine: "movement", spec: "stride-form", label: "Side clip: feet land close under the hips", criteria: [{ id: "overstride", label: "Short reach", check: "overstride <= 0.12" }, { id: "shin", label: "Shin near vertical", check: "shin_angle <= 12" }], capture: { angle: "side", fps: 60, duration_s: 60 }, fallback: "self-report" } },
+      { id: "quiet", label: "Less bounce", hours: [6, 12], nodes: ["bounce"],
+        proof: { engine: "movement", spec: "stride-form", label: "Side clip: hips rise and fall less than your first clip", criteria: [{ id: "bounce", label: "Less bounce", check: "bounce < baseline_bounce" }], capture: { angle: "side", fps: 60, duration_s: 60 }, fallback: "self-report" } },
+      { id: "late-form", label: "Form holds when tired", hours: [10, 25], nodes: ["endurance"],
+        proof: { engine: "sensor", spec: "cadence-phone", label: "Last ten minutes of a long run: cadence still in range", criteria: [{ id: "cadence", label: "Cadence in range", check: "cadence_spm >= 160 && cadence_spm <= 185" }, { id: "steady", label: "Steady rhythm", check: "steadiness >= 0.7" }], fallback: "movement", fallback_spec: "cadence-video" } }
+    ],
+    nodes: [
+      { id: "posture", name: "Tall posture", lesson: "posture-lesson", drills: ["posture-run"], mistakes: ["leaning-back"], review: { prompt: "Lean from the ankles or the waist?", kind: "choice", options: ["Ankles", "Waist"], answer: 0 }, focus: "Fundamentals" },
+      { id: "cadence", name: "Cadence", requires: ["posture"], lesson: "cadence-lesson", drills: ["cadence-quiz", "cadence-run"], mistakes: ["slow-cadence"], review: { prompt: "More steps per minute means each step is...", kind: "choice", options: ["Shorter", "Longer"], answer: 0 }, focus: "Fundamentals" },
+      { id: "landing", name: "Landing under the hips", requires: ["cadence"], lesson: "landing-lesson", drills: ["landing-run"], mistakes: ["overstriding"], review: { prompt: "Where should the foot land?", kind: "choice", options: ["Under the hips", "Far in front"], answer: 0 }, focus: "Form" },
+      { id: "bounce", name: "Less bounce", requires: ["cadence"], lesson: "bounce-lesson", drills: ["landing-run"], review: { prompt: "Does bouncing waste energy?", kind: "choice", options: ["Yes", "No"], answer: 0 }, focus: "Form" },
+      { id: "endurance", name: "Form when tired", requires: ["landing", "bounce"], lesson: "endurance-lesson", drills: ["long-cadence"], review: { prompt: "What slips first when you tire?", kind: "recall" }, focus: "Endurance" }
+    ],
+    lessons: [
+      { id: "posture-lesson", title: "Tall posture", nodes: ["posture"], cards: [
+        { type: "predict", text: "Where does a good forward lean come from?", options: ["The ankles", "Bending at the waist"], answer: 0 },
+        { type: "compare", text: "Tap the runner leaning back.", left: { kind: "figure", points: { head: [52, 10], hip: [48, 50], ankle: [45, 95] }, segments: [["head", "hip"], ["hip", "ankle"]] }, right: { kind: "figure", points: { head: [40, 10], hip: [50, 50], ankle: [55, 95] }, segments: [["head", "hip"], ["hip", "ankle"]], marks: [{ at: "head", label: "back", role: "attention" }] }, answer: "right" }
+      ] },
+      { id: "cadence-lesson", title: "Cadence", nodes: ["cadence"], cards: [
+        { type: "predict", text: "Same speed, more steps per minute. Each step gets...", options: ["Shorter", "Longer"], answer: 0 },
+        { type: "sim", text: "Drag cadence at a fixed pace. Watch step length.", sim: { title: "Cadence and step length", params: { cadence: { label: "Steps per minute", min: 140, max: 200, default: 160 }, pace_kmh: { label: "Speed", min: 6, max: 16, default: 10, unit: "km/h" } }, formulas: { step_m: "pace_kmh * 1000 / 60 / cadence" }, figure: { kind: "plot", x: "cadence", series: ["step_m"] }, readout: [{ value: "step_m", label: "Step length", unit: "m", decimals: 2 }] } }
+      ] },
+      { id: "landing-lesson", title: "Landing", nodes: ["landing"], cards: [
+        { type: "predict", text: "A foot landing far ahead acts like a...", options: ["Brake", "Spring"], answer: 0 },
+        { type: "compare", text: "Tap the overstride.", left: { kind: "figure", points: { hip: [50, 45], knee: [55, 70], ankle: [52, 92] }, segments: [["hip", "knee"], ["knee", "ankle"]] }, right: { kind: "figure", points: { hip: [40, 45], knee: [58, 68], ankle: [72, 92] }, segments: [["hip", "knee"], ["knee", "ankle"]], marks: [{ at: "ankle", label: "ahead", role: "attention" }] }, answer: "right" }
+      ] },
+      { id: "bounce-lesson", title: "Less bounce", nodes: ["bounce"], cards: [
+        { type: "predict", text: "Higher cadence usually makes bounce...", options: ["Smaller", "Bigger"], answer: 0 },
+        { type: "diagram", text: "Hip height over strides: flatter is better.", figure: { kind: "chart", type: "line", series: [{ label: "Bouncy", values: [0, 8, 0, 8, 0, 8] }, { label: "Quiet", values: [0, 4, 0, 4, 0, 4] }] } }
+      ] },
+      { id: "endurance-lesson", title: "Form when tired", nodes: ["endurance"], cards: [
+        { type: "predict", text: "When tired, cadence tends to...", options: ["Drop", "Rise"], answer: 0 },
+        { type: "try-it", text: "Tap your step rhythm at 170.", action: "tap-rhythm", pattern: "xxxx", seconds: 15 }
+      ] }
+    ],
+    drills: [
+      { id: "posture-run", type: "move", title: "Tall and tilted", prompt: "One minute on the treadmill, filmed from the side.", nodes: ["posture"], spec: "stride-form", capture: { angle: "side", fps: 60, duration_s: 60 }, needs: ["A treadmill"], success: "trunk_lean >= 3 && trunk_lean <= 10", difficulty: { param: "speed", levels: ["walk", "easy jog", "easy run"] }, minutes: 5, intensity: 2, focus: "Fundamentals", fixes: ["leaning-back"] },
+      { id: "cadence-quiz", type: "choice", title: "Cadence facts", prompt: "Pick the answer.", nodes: ["cadence"], spec: "form-quiz", minutes: 2, intensity: 1, focus: "Fundamentals" },
+      { id: "cadence-run", type: "move", title: "Metronome run", prompt: "Run two minutes to the click, filmed from the side.", nodes: ["cadence"], spec: "cadence-video", capture: { angle: "side", fps: 60, duration_s: 120 }, needs: ["A treadmill"], success: "cadence_spm >= 160", difficulty: { param: "tempo", levels: [160, 165, 170, 175] }, minutes: 6, intensity: 3, focus: "Fundamentals", fixes: ["slow-cadence"] },
+      { id: "landing-run", type: "move", title: "Quiet feet", prompt: "Run softly for a minute; film from the side.", nodes: ["landing", "bounce"], spec: "stride-form", capture: { angle: "side", fps: 60, duration_s: 60 }, needs: ["A treadmill"], success: "overstride <= 0.15", difficulty: { param: "speed", levels: ["easy", "steady", "tempo"] }, minutes: 6, intensity: 3, focus: "Form", fixes: ["overstriding"] },
+      { id: "long-cadence", type: "move", title: "Late-run check", prompt: "At the end of a long run, film one more minute.", nodes: ["endurance"], spec: "cadence-video", capture: { angle: "side", fps: 60, duration_s: 60 }, needs: ["A treadmill"], success: "cadence_spm >= 160", difficulty: { param: "run length", levels: ["30 min", "45 min", "60 min"] }, minutes: 10, intensity: 3, focus: "Endurance" }
+    ],
+    specs: {
+      "stride-form": {
+        kind: "metric",
+        capture: { angle: "side", fps: 60, guide: "Treadmill side view, whole body in frame, camera at hip height" },
+        segment: { by: "reps", signal: "left_ankle.y" },
+        phases: { contact: "left_heel.y == max(left_heel.y)" },
+        metrics: {
+          trunk_lean: "mean(angle(mid_shoulder, mid_hip, vertical))",
+          overstride: "abs(left_heel.x - left_hip.x) at contact per rep",
+          shin_angle: "angle(left_knee, left_ankle, vertical) at contact per rep",
+          bounce: "range(mid_hip.y) per rep",
+          baseline_bounce: "baseline.bounce"
+        },
+        units: { trunk_lean: "deg", shin_angle: "deg" },
+        mistakes: [
+          { id: "overstriding", when: "mean(overstride) > 0.15", show: "overlay(angle(left_knee, left_ankle, vertical))", fix_drill: "landing-run" },
+          { id: "leaning-back", when: "trunk_lean < 0", show: "overlay(angle(mid_shoulder, mid_hip, vertical))", fix_drill: "posture-run" }
+        ],
+        requires_visible: ["left_hip", "left_knee", "left_ankle", "left_heel"]
+      },
+      "cadence-video": {
+        kind: "metric",
+        capture: { angle: "side", fps: 60, guide: "Treadmill side view; counts strides when no phone is paired" },
+        segment: { by: "reps", signal: "left_ankle.y" },
+        metrics: { stride_s: "duration() per rep", strides: "count(stride_s)", clip_s: "sum(stride_s)", cadence_spm: "strides * 2 * 60 / clip_s", steadiness: "clamp(1 - std(stride_s) / mean(stride_s), 0, 1)" },
+        units: { cadence_spm: "spm" },
+        mistakes: [{ id: "slow-cadence", when: "cadence_spm < 155", show: "beat_timeline", fix_drill: "cadence-run" }]
+      },
+      "cadence-phone": { kind: "sensor", detect: "cadence", placement: "pocket", duration_s: 120, target: { cadence_spm: 170 }, pass: "cadence_spm >= 160 && cadence_spm <= 185 && steadiness >= 0.7" },
+      "form-quiz": {
+        kind: "items",
+        items: [
+          { type: "choice", id: "r1", prompt: "Same pace, higher cadence: steps get...", options: ["Shorter", "Longer"], answer: 0, difficulty: 1, nodes: ["cadence"] },
+          { type: "choice", id: "r2", prompt: "Where should your foot land?", options: ["Near under the hips", "Far in front"], answer: 0, difficulty: 2, nodes: ["landing"] },
+          { type: "choice", id: "r3", prompt: "A forward lean starts at the...", options: ["Ankles", "Waist", "Neck"], answer: 0, difficulty: 3, nodes: ["posture"] }
+        ]
+      }
+    },
+    mistakes: [
+      { id: "overstriding", name: "Overstriding", nodes: ["landing"], engine: "movement", detector: { metric: "overstride", when: "mean(overstride) > 0.15" }, severity: 2, explain: { lesson: "landing-lesson", card: 1 }, fix_drill: "landing-run", headline: "Feet land too far ahead" },
+      { id: "slow-cadence", name: "Low cadence", nodes: ["cadence"], engine: "movement", detector: { metric: "cadence_spm", when: "cadence_spm < 155" }, severity: 1, explain: { lesson: "cadence-lesson", card: 1 }, fix_drill: "cadence-run", headline: "Few, long steps per minute" },
+      { id: "leaning-back", name: "Leaning back", nodes: ["posture"], engine: "movement", detector: { metric: "trunk_lean", when: "trunk_lean < 0" }, severity: 1, explain: { lesson: "posture-lesson", card: 1 }, fix_drill: "posture-run", headline: "Trunk leans behind the hips" }
+    ],
+    warmups: [
+      { id: "run-warmup", title: "Easy start", steps: ["Five minutes of brisk walking", "Ten leg swings each side", "Ten calf raises", "Two minutes of easy jogging"], minutes: 10 },
+      { id: "shin-warmup", title: "Shin-friendly start", steps: ["Five minutes of walking", "Twenty slow calf raises", "Toe walks for thirty seconds"], minutes: 8, for_injuries: ["Shins"] }
+    ],
+    safety: {
+      warmup: "run-warmup",
+      injury_questions: ["Any shin, knee or foot pain right now?", "Any heart or breathing condition?"],
+      beginner_caps: { max_intensity: 3, max_minutes: 45, sessions_per_week: 4 },
+      stop_criteria: ["Sharp pain in a shin, knee or foot", "Chest pain or unusual breathlessness", "Dizziness"],
+      see_professional: ["Shin pain that lasts more than a week", "Pain that changes how you walk"],
+      supervised_only: []
+    },
+    access: ["A treadmill", "A phone in a pocket", "Running shoes"],
+    injuries: { Shins: "Cut weekly distance by a third for two weeks; walk-run intervals only", Knees: "Easy pace on flat ground only; no downhill running for two weeks" },
+    focus: { Fundamentals: 40, Form: 40, Endurance: 20 },
+    hard_focus: ["Endurance"],
+    key_metrics: [
+      { id: "cadence", label: "Cadence", engine: "sensor", metric: "cadence_spm", unit: "spm", better: "higher", format: "number" },
+      { id: "overstride", label: "Overstride", engine: "movement", metric: "overstride", better: "lower", format: "number" }
+    ],
+    copy: { placeholder: "running, jogging, a 10 km", blurb: "Cadence, landing and posture" },
+    notes: "Engines: sensor for cadence (phone in a pocket), movement for posture, landing and bounce from a treadmill side view at 60 fps. If no phone is paired, cadence is counted from the treadmill video (cadence-video) with the same metric name. Cadence and overstride ranges are general guidance, not a rule for every body. Hours are estimates, shown as ranges."
+  })
+};

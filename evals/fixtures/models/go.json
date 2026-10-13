@@ -1,0 +1,1058 @@
+{
+  "schemaVersion": 1,
+  "skill": "Go",
+  "name": "Go",
+  "noun": "Go",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "code",
+    "knowledge",
+    "self-report"
+  ],
+  "why": [
+    {
+      "id": "team",
+      "label": "My team uses Go"
+    },
+    {
+      "id": "services",
+      "label": "Write web services"
+    },
+    {
+      "id": "concurrency",
+      "label": "Understand concurrency"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "service",
+      "label": "Shipping a small service at work",
+      "why": [
+        "team",
+        "services"
+      ],
+      "ladderStep": 5,
+      "milestone": "A concurrent worker pool that passes tests",
+      "proof": "Worker-pool tests pass under the race detector",
+      "focus": {
+        "Fundamentals": 25,
+        "Writing": 55,
+        "Reading": 20
+      }
+    },
+    {
+      "id": "review",
+      "label": "Reviewing teammates' Go code",
+      "why": [
+        "team"
+      ],
+      "ladderStep": 3,
+      "milestone": "Errors handled the Go way",
+      "proof": "Error-handling tests pass, go vet clean",
+      "focus": {
+        "Fundamentals": 35,
+        "Writing": 30,
+        "Reading": 35
+      }
+    },
+    {
+      "id": "goroutines",
+      "label": "Confident with goroutines",
+      "why": [
+        "concurrency",
+        "services"
+      ],
+      "ladderStep": 4,
+      "milestone": "Fan-out with channels",
+      "proof": "Channel tests pass with no data race",
+      "focus": {
+        "Fundamentals": 30,
+        "Writing": 50,
+        "Reading": 20
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "years",
+      "type": "single",
+      "question": "How long have you programmed?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Just starting"
+        },
+        {
+          "value": 2,
+          "label": "A couple of years"
+        },
+        {
+          "value": 5,
+          "label": "Five years or more"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "basics",
+      "type": "quiz",
+      "question": "What does this Go print?",
+      "spec": "go-predict",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && years >= 5 && quiz.correct >= 3",
+      "step": 2,
+      "evidence": "Experienced and reads Go"
+    },
+    {
+      "when": "years >= 2",
+      "step": 1,
+      "evidence": "Programs already"
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new to Go",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "basics",
+      "label": "Functions, slices and loops",
+      "hours": [
+        3,
+        6
+      ],
+      "nodes": [
+        "slices"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "sum-evens",
+        "label": "SumEvens passes every test, hidden ones too",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1 && compiled"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "go-predict"
+      }
+    },
+    {
+      "id": "maps",
+      "label": "Maps and structs",
+      "hours": [
+        4,
+        8
+      ],
+      "nodes": [
+        "maps"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "word-count",
+        "label": "CountWords returns the right map",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "go-predict"
+      }
+    },
+    {
+      "id": "errors",
+      "label": "Errors as values",
+      "hours": [
+        5,
+        10
+      ],
+      "nodes": [
+        "errors"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "parse-config",
+        "label": "ParsePort returns errors for bad input; go vet is clean",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          },
+          {
+            "id": "vet",
+            "label": "go vet clean",
+            "check": "lint_findings == 0"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "go-predict"
+      }
+    },
+    {
+      "id": "goroutines",
+      "label": "Goroutines and channels",
+      "hours": [
+        8,
+        15
+      ],
+      "nodes": [
+        "channels"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "fan-out",
+        "label": "Fan-out sum over channels passes, race detector on",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          },
+          {
+            "id": "hidden",
+            "label": "Hidden race test passes",
+            "check": "hidden_passed >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "go-predict"
+      }
+    },
+    {
+      "id": "pool",
+      "label": "A worker pool",
+      "hours": [
+        10,
+        20
+      ],
+      "nodes": [
+        "worker-pool"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "worker-pool",
+        "label": "Worker pool processes every job exactly once",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "go-predict"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "slices",
+      "name": "Slices and loops",
+      "requires": [],
+      "lesson": "slices-lesson",
+      "drills": [
+        "slice-predict",
+        "sum-build"
+      ],
+      "mistakes": [
+        "off-by-one"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What does append return?",
+        "kind": "choice",
+        "options": [
+          "A new slice header",
+          "Nothing"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "maps",
+      "name": "Maps",
+      "requires": [
+        "slices"
+      ],
+      "lesson": "maps-lesson",
+      "drills": [
+        "count-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Reading a missing key gives...",
+        "kind": "choice",
+        "options": [
+          "The zero value",
+          "A panic"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "errors",
+      "name": "Errors as values",
+      "requires": [
+        "maps"
+      ],
+      "lesson": "errors-lesson",
+      "drills": [
+        "err-predict",
+        "parse-build"
+      ],
+      "mistakes": [
+        "ignored-error"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What does a function return on failure?",
+        "kind": "choice",
+        "options": [
+          "A non-nil error",
+          "An exception"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "channels",
+      "name": "Goroutines and channels",
+      "requires": [
+        "errors"
+      ],
+      "lesson": "channels-lesson",
+      "drills": [
+        "fanout-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Who should close a channel?",
+        "kind": "choice",
+        "options": [
+          "The sender",
+          "The receiver"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "worker-pool",
+      "name": "Worker pools",
+      "requires": [
+        "channels"
+      ],
+      "lesson": "channels-lesson",
+      "drills": [
+        "pool-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What waits for all workers?",
+        "kind": "choice",
+        "options": [
+          "sync.WaitGroup",
+          "time.Sleep"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "slices-lesson",
+      "title": "Slices",
+      "nodes": [
+        "slices"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "for i, v := range s: what is i?",
+          "options": [
+            "The index",
+            "The value"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "A slice points into an array: pointer, length, capacity.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "s",
+                "label": "slice header"
+              },
+              {
+                "id": "a",
+                "label": "array [1 2 3 _]"
+              }
+            ],
+            "edges": [
+              [
+                "s",
+                "a"
+              ]
+            ],
+            "direction": "LR"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maps-lesson",
+      "title": "Maps",
+      "nodes": [
+        "maps"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "m[\"missing\"] on a map[string]int gives...",
+          "options": [
+            "0",
+            "A panic"
+          ],
+          "answer": 0,
+          "reveal": "Missing keys read as the zero value."
+        },
+        {
+          "type": "demo",
+          "text": "Counting words in a map.",
+          "figure": {
+            "kind": "code",
+            "language": "go",
+            "source": "counts := map[string]int{}\nfor _, w := range strings.Fields(s) {\n    counts[w]++\n}",
+            "trace": [
+              {
+                "line": 1,
+                "vars": {
+                  "w": "-",
+                  "counts": "{}"
+                }
+              },
+              {
+                "line": 3,
+                "vars": {
+                  "w": "a",
+                  "counts": "{a:1}"
+                }
+              },
+              {
+                "line": 3,
+                "vars": {
+                  "w": "b",
+                  "counts": "{a:1 b:1}"
+                }
+              }
+            ]
+          },
+          "playback": "steps"
+        }
+      ]
+    },
+    {
+      "id": "errors-lesson",
+      "title": "Errors",
+      "nodes": [
+        "errors"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Go has no exceptions. Failures come back as...",
+          "options": [
+            "A second return value",
+            "A crash"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "compare",
+          "text": "Tap the code that drops an error.",
+          "left": {
+            "kind": "code",
+            "language": "go",
+            "source": "port, err := ParsePort(s)\nif err != nil {\n    return err\n}"
+          },
+          "right": {
+            "kind": "code",
+            "language": "go",
+            "source": "port, _ := ParsePort(s)\nuse(port)"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "channels-lesson",
+      "title": "Goroutines and channels",
+      "nodes": [
+        "channels",
+        "worker-pool"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "go f() returns...",
+          "options": [
+            "Immediately",
+            "When f finishes"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Jobs fan out to workers; results fan in.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "j",
+                "label": "jobs chan"
+              },
+              {
+                "id": "w1",
+                "label": "worker 1"
+              },
+              {
+                "id": "w2",
+                "label": "worker 2"
+              },
+              {
+                "id": "r",
+                "label": "results chan"
+              }
+            ],
+            "edges": [
+              [
+                "j",
+                "w1"
+              ],
+              [
+                "j",
+                "w2"
+              ],
+              [
+                "w1",
+                "r"
+              ],
+              [
+                "w2",
+                "r"
+              ]
+            ],
+            "direction": "LR"
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "slice-predict",
+      "type": "predict-output",
+      "title": "Slice output",
+      "prompt": "Pick what prints.",
+      "nodes": [
+        "slices"
+      ],
+      "spec": "go-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "sum-build",
+      "type": "build",
+      "title": "SumEvens",
+      "prompt": "Write SumEvens: the sum of the even numbers in a slice.",
+      "nodes": [
+        "slices"
+      ],
+      "spec": "sum-evens",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "difficulty": {
+        "param": "tests",
+        "levels": [
+          "basic",
+          "hidden"
+        ],
+        "start": 0
+      },
+      "minutes": 8,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "off-by-one"
+      ]
+    },
+    {
+      "id": "count-build",
+      "type": "build",
+      "title": "CountWords",
+      "prompt": "Return a map from each word to its count.",
+      "nodes": [
+        "maps"
+      ],
+      "spec": "word-count",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 10,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "err-predict",
+      "type": "predict-output",
+      "title": "Error flow",
+      "prompt": "Which line runs?",
+      "nodes": [
+        "errors"
+      ],
+      "spec": "go-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "parse-build",
+      "type": "build",
+      "title": "ParsePort",
+      "prompt": "Parse a port number; return an error outside 1-65535.",
+      "nodes": [
+        "errors"
+      ],
+      "spec": "parse-config",
+      "needs": [],
+      "success": "pass_rate >= 1 && lint_findings == 0",
+      "difficulty": {
+        "param": "tests",
+        "levels": [
+          "good input",
+          "bad input",
+          "hidden"
+        ],
+        "start": 0
+      },
+      "minutes": 12,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "ignored-error"
+      ]
+    },
+    {
+      "id": "fanout-build",
+      "type": "build",
+      "title": "Fan-out sum",
+      "prompt": "Sum chunks in goroutines and combine over a channel.",
+      "nodes": [
+        "channels"
+      ],
+      "spec": "fan-out",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 15,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "pool-build",
+      "type": "build",
+      "title": "Worker pool",
+      "prompt": "Process jobs with N workers; every job exactly once.",
+      "nodes": [
+        "worker-pool"
+      ],
+      "spec": "worker-pool",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "difficulty": {
+        "param": "workers",
+        "levels": [
+          2,
+          4,
+          8
+        ],
+        "start": 0
+      },
+      "minutes": 20,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "sum-evens": {
+      "kind": "test",
+      "language": "go",
+      "entry": "evens.go",
+      "tests": [
+        {
+          "call": "SumEvens([]int{1, 2, 3, 4})",
+          "expect": "6",
+          "hidden": false
+        },
+        {
+          "call": "SumEvens(nil)",
+          "expect": "0",
+          "hidden": false,
+          "label": "Nil slice"
+        },
+        {
+          "call": "SumEvens([]int{-2, 3})",
+          "expect": "-2",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "lint": [
+        "go vet"
+      ],
+      "starter": {
+        "evens.go": "package main\n\nfunc SumEvens(xs []int) int {\n\treturn 0\n}\n"
+      }
+    },
+    "word-count": {
+      "kind": "test",
+      "language": "go",
+      "entry": "words.go",
+      "tests": [
+        {
+          "call": "CountWords(\"a b a\")[\"a\"]",
+          "expect": "2",
+          "hidden": false
+        },
+        {
+          "call": "len(CountWords(\"\"))",
+          "expect": "0",
+          "hidden": false
+        },
+        {
+          "native": "words_test.go",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "lint": [
+        "go vet"
+      ]
+    },
+    "parse-config": {
+      "kind": "test",
+      "language": "go",
+      "entry": "port.go",
+      "tests": [
+        {
+          "call": "fmt.Sprint(ParsePort(\"8080\"))",
+          "expect": "8080 <nil>",
+          "hidden": false
+        },
+        {
+          "call": "func() bool { _, err := ParsePort(\"x\"); return err != nil }()",
+          "expect": "true",
+          "hidden": false
+        },
+        {
+          "call": "func() bool { _, err := ParsePort(\"70000\"); return err != nil }()",
+          "expect": "true",
+          "hidden": true
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "lint": [
+        "go vet"
+      ]
+    },
+    "fan-out": {
+      "kind": "test",
+      "language": "go",
+      "entry": "fanout.go",
+      "tests": [
+        {
+          "call": "ParallelSum([]int{1, 2, 3, 4}, 2)",
+          "expect": "10",
+          "hidden": false
+        },
+        {
+          "native": "fanout_race_test.go",
+          "hidden": true,
+          "label": "Runs with -race"
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 30,
+        "memory_mb": 512,
+        "network": false
+      }
+    },
+    "worker-pool": {
+      "kind": "test",
+      "language": "go",
+      "entry": "pool.go",
+      "tests": [
+        {
+          "call": "len(RunPool([]int{1, 2, 3}, 2))",
+          "expect": "3",
+          "hidden": false
+        },
+        {
+          "native": "pool_test.go",
+          "hidden": true,
+          "label": "Each job exactly once"
+        }
+      ],
+      "runner": [
+        "local",
+        "container"
+      ],
+      "limits": {
+        "time_s": 30,
+        "memory_mb": 512,
+        "network": false
+      }
+    },
+    "go-predict": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "predict-output",
+          "id": "g1",
+          "prompt": "What prints?",
+          "code": "s := []int{1, 2}\ns = append(s, 3)\nfmt.Println(len(s))",
+          "language": "go",
+          "options": [
+            "3",
+            "2"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "slices"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "g2",
+          "prompt": "What prints?",
+          "code": "m := map[string]int{}\nfmt.Println(m[\"x\"])",
+          "language": "go",
+          "options": [
+            "0",
+            "panic",
+            "nil"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "maps"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "g3",
+          "prompt": "What prints?",
+          "code": "_, err := strconv.Atoi(\"x\")\nfmt.Println(err != nil)",
+          "language": "go",
+          "options": [
+            "true",
+            "false"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "errors"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "g4",
+          "prompt": "What prints?",
+          "code": "ch := make(chan int, 1)\nch <- 4\nfmt.Println(<-ch * 2)",
+          "language": "go",
+          "options": [
+            "8",
+            "4",
+            "deadlock"
+          ],
+          "answer": 0,
+          "difficulty": 4,
+          "nodes": [
+            "channels"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.75"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "off-by-one",
+      "name": "Off by one",
+      "nodes": [
+        "slices"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "pass_rate",
+        "when": "pass_rate < 1 && compiled",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "slices-lesson",
+        "card": 1
+      },
+      "fix_drill": "sum-build",
+      "resolved_after": 3,
+      "headline": "Some cases miss an element"
+    },
+    {
+      "id": "ignored-error",
+      "name": "Ignored error",
+      "nodes": [
+        "errors"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "lint_findings",
+        "when": "lint_findings > 0",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "errors-lesson",
+        "card": 1
+      },
+      "fix_drill": "parse-build",
+      "resolved_after": 3,
+      "headline": "An error value is dropped"
+    }
+  ],
+  "access": [
+    "A computer",
+    "The Go toolchain or a container runtime"
+  ],
+  "focus": {
+    "Fundamentals": 30,
+    "Writing": 50,
+    "Reading": 20
+  },
+  "key_metrics": [
+    {
+      "id": "pass",
+      "label": "Tests passing",
+      "engine": "code",
+      "metric": "pass_rate",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "vet",
+      "label": "go vet findings",
+      "engine": "code",
+      "metric": "lint_findings",
+      "unit": "",
+      "better": "lower",
+      "format": "count"
+    }
+  ],
+  "copy": {
+    "placeholder": "Go, Rust, Kotlin",
+    "blurb": "Slices, errors, goroutines, a worker pool"
+  },
+  "notes": "Engines: code runs go test with the local toolchain or a container (no browser runner for Go). Hidden native tests run with the race detector for the concurrency steps. If no runner exists, each proof falls back to predict-output items in Go. Hours assume the learner already programs in another language; estimates from general onboarding guides, shown as ranges."
+}

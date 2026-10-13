@@ -1,0 +1,115 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/** JavaScript for the web: values, functions, arrays, async. Tests run in the browser sandbox first, then Node. */
+export const javascript: Scenario = {
+  id: "javascript",
+  skill: "JavaScript",
+  notes: "Designer who knows HTML and CSS. Wants to add interactivity to their own site.",
+  expect: { engines: ["code"], main: "code", fallback: "knowledge", physical: false, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "JavaScript",
+    name: "JavaScript",
+    noun: "JavaScript",
+    source: "generated",
+    physical: false,
+    engines: ["code", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { code: "knowledge" }),
+    why: [
+      { id: "site", label: "Make my site interactive" },
+      { id: "frontend", label: "Move into front-end work" },
+      { id: "prototype", label: "Prototype my own designs" }
+    ],
+    pictures: [
+      { id: "filter", label: "A live filter on my portfolio", why: ["site", "prototype"], ladderStep: 4, milestone: "Filter a list as the user types", proof: "Filter tests pass on arrays of projects", focus: { Fundamentals: 30, Writing: 50, Reading: 20 } },
+      { id: "fetch", label: "Loading data from an API", why: ["frontend", "site"], ladderStep: 5, milestone: "Fetch, wait and handle failures", proof: "Async tests pass, failure case included", focus: { Fundamentals: 25, Writing: 55, Reading: 20 } },
+      { id: "basics", label: "Reading other people's scripts", why: ["prototype"], ladderStep: 2, milestone: "Predict what small functions return", proof: "Function tests pass", focus: { Fundamentals: 50, Writing: 25, Reading: 25 } }
+    ],
+    probes: [
+      { id: "level", type: "scale", question: "How much JavaScript have you written?", options: [{ value: 0, label: "None" }, { value: 1, label: "Pasted snippets" }, { value: 2, label: "Small functions" }, { value: 3, label: "A working app" }] },
+      { id: "basics", type: "quiz", question: "What does this print?", spec: "js-predict" },
+      { id: "try", type: "code", question: "Write one small function. Optional.", spec: "initials", optional: true }
+    ],
+    placement: [
+      { when: "!fresh && level >= 3 && quiz.correct >= 3", step: 3, evidence: "Writes working code" },
+      { when: "level >= 2 || quiz.correct >= 2", step: 1, evidence: "Writes small functions" }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new", hours: [0, 0] },
+      { id: "values", label: "Values, strings and functions", hours: [2, 5], nodes: ["functions"],
+        proof: { engine: "code", spec: "initials", label: "initials() passes every test, hidden ones too", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }], fallback: "knowledge", fallback_spec: "js-predict" } },
+      { id: "arrays", label: "Arrays: map, filter, reduce", hours: [4, 8], nodes: ["arrays"],
+        proof: { engine: "code", spec: "array-tests", label: "Totals and filters with array methods pass", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }], fallback: "knowledge", fallback_spec: "js-predict" } },
+      { id: "objects", label: "Objects and equality", hours: [3, 6], nodes: ["objects"],
+        proof: { engine: "code", spec: "object-tests", label: "Group projects by tag; tests pass", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }, { id: "hidden", label: "Hidden tests pass", check: "hidden_passed >= 1" }], fallback: "knowledge", fallback_spec: "js-predict" } },
+      { id: "filter", label: "A live search filter", hours: [4, 10], nodes: ["filtering"],
+        proof: { engine: "code", spec: "filter-tests", label: "matchProjects filters case-insensitively; tests pass", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }], fallback: "knowledge", fallback_spec: "js-predict" } },
+      { id: "async", label: "Promises and async/await", hours: [6, 12], nodes: ["async"],
+        proof: { engine: "code", spec: "async-tests", label: "loadProjects awaits, retries once, reports failures", criteria: [{ id: "tests", label: "All tests pass", check: "pass_rate >= 1" }], fallback: "knowledge", fallback_spec: "js-predict" } }
+    ],
+    nodes: [
+      { id: "functions", name: "Functions", lesson: "functions-lesson", drills: ["fn-predict", "initials-build"], mistakes: ["no-return"], review: { prompt: "A function with no return gives back...", kind: "choice", options: ["undefined", "0"], answer: 0 }, focus: "Fundamentals" },
+      { id: "arrays", name: "Array methods", requires: ["functions"], lesson: "arrays-lesson", drills: ["array-predict", "array-build"], review: { prompt: "Which keeps only some items?", kind: "choice", options: ["filter", "map"], answer: 0 }, focus: "Writing" },
+      { id: "objects", name: "Objects", requires: ["arrays"], lesson: "objects-lesson", drills: ["object-build"], mistakes: ["loose-equality"], review: { prompt: "{} === {} is...", kind: "choice", options: ["false", "true"], answer: 0 }, focus: "Fundamentals" },
+      { id: "filtering", name: "Search filter", requires: ["objects"], lesson: "arrays-lesson", drills: ["filter-build"], review: { prompt: "Make a search case-insensitive with...", kind: "choice", options: ["toLowerCase()", "trim()"], answer: 0 }, focus: "Writing" },
+      { id: "async", name: "Async code", requires: ["filtering"], lesson: "async-lesson", drills: ["async-predict", "async-build"], review: { prompt: "What does await wait for?", kind: "choice", options: ["A promise", "A timer only"], answer: 0 }, focus: "Writing" }
+    ],
+    lessons: [
+      { id: "functions-lesson", title: "Functions", nodes: ["functions"], cards: [
+        { type: "predict", text: "const f = (x) => { x * 2 }; f(3) is...", options: ["undefined", "6"], answer: 0, reveal: "Braces need an explicit return." },
+        { type: "compare", text: "Tap the arrow function that returns nothing.", left: { kind: "code", language: "javascript", source: "const double = (x) => x * 2;" }, right: { kind: "code", language: "javascript", source: "const double = (x) => { x * 2 };" }, answer: "right" }
+      ] },
+      { id: "arrays-lesson", title: "Array methods", nodes: ["arrays", "filtering"], cards: [
+        { type: "predict", text: "[1, 2, 3].map(n => n * 2) gives...", options: ["[2, 4, 6]", "12"], answer: 0 },
+        { type: "demo", text: "filter keeps, map changes, reduce combines.", figure: { kind: "code", language: "javascript", source: "const total = items\n  .filter(i => i.inStock)\n  .map(i => i.price)\n  .reduce((a, b) => a + b, 0);", trace: [{ line: 2, vars: { step: "filter", value: "2 of 3 items" } }, { line: 3, vars: { step: "map", value: "[5, 7]" } }, { line: 4, vars: { step: "reduce", value: "12" } }] }, playback: "steps" }
+      ] },
+      { id: "objects-lesson", title: "Objects and equality", nodes: ["objects"], cards: [
+        { type: "predict", text: "'1' == 1 and '1' === 1. Which is true?", options: ["Only ==", "Only ==="], answer: 0, reveal: "=== also compares types; prefer it." },
+        { type: "diagram", text: "Two variables can point at one object.", figure: { kind: "graph", nodes: [{ id: "a", label: "a" }, { id: "b", label: "b" }, { id: "o", label: "{ tag: 'web' }" }], edges: [["a", "o"], ["b", "o"]] } }
+      ] },
+      { id: "async-lesson", title: "Async", nodes: ["async"], cards: [
+        { type: "predict", text: "console.log runs before or after a fetch resolves?", options: ["Before", "After"], answer: 0 },
+        { type: "diagram", text: "await pauses this function, not the page.", figure: { kind: "graph", nodes: [{ id: "c", label: "call loadProjects" }, { id: "w", label: "await fetch" }, { id: "o", label: "other code runs" }, { id: "r", label: "resume with data" }], edges: [["c", "w"], ["w", "o"], ["o", "r"]] } }
+      ] }
+    ],
+    drills: [
+      { id: "fn-predict", type: "predict-output", title: "What comes back?", prompt: "Pick the return value.", nodes: ["functions"], spec: "js-predict", minutes: 3, intensity: 1, focus: "Reading" },
+      { id: "initials-build", type: "build", title: "initials()", prompt: "Return the initials of a full name in capitals.", nodes: ["functions"], spec: "initials", success: "pass_rate >= 1", difficulty: { param: "tests", levels: ["basic", "extra spaces", "hidden"] }, minutes: 6, intensity: 1, focus: "Writing", fixes: ["no-return"] },
+      { id: "array-predict", type: "predict-output", title: "Array output", prompt: "Pick what the chain returns.", nodes: ["arrays"], spec: "js-predict", minutes: 3, intensity: 1, focus: "Reading" },
+      { id: "array-build", type: "build", title: "Cart total", prompt: "Total the prices of in-stock items with filter, map and reduce.", nodes: ["arrays"], spec: "array-tests", success: "pass_rate >= 1", minutes: 8, intensity: 1, focus: "Writing" },
+      { id: "object-build", type: "build", title: "Group by tag", prompt: "Group projects into an object keyed by tag.", nodes: ["objects"], spec: "object-tests", success: "pass_rate >= 1", minutes: 10, intensity: 1, focus: "Writing", fixes: ["loose-equality"] },
+      { id: "filter-build", type: "build", title: "Live filter", prompt: "Write matchProjects(projects, query), ignoring case.", nodes: ["filtering"], spec: "filter-tests", success: "pass_rate >= 1", minutes: 10, intensity: 1, focus: "Writing" },
+      { id: "async-predict", type: "predict-output", title: "Order of logs", prompt: "Pick the order of the logs.", nodes: ["async"], spec: "js-predict", minutes: 3, intensity: 1, focus: "Reading" },
+      { id: "async-build", type: "build", title: "loadProjects", prompt: "Await a fetch, retry once on failure, then report the error.", nodes: ["async"], spec: "async-tests", success: "pass_rate >= 1", minutes: 15, intensity: 1, focus: "Writing" }
+    ],
+    specs: {
+      initials: { kind: "test", language: "javascript", entry: "main.js", tests: [{ call: "initials('ada lovelace')", expect: "AL" }, { call: "initials('Grace')", expect: "G" }, { call: "initials('  alan   turing ')", expect: "AT", hidden: true }], runner: ["browser", "local"], starter: { "main.js": "export function initials(name) {\n  \n}\n" } },
+      "array-tests": { kind: "test", language: "javascript", entry: "cart.js", tests: [{ call: "cartTotal([{ price: 5, inStock: true }, { price: 7, inStock: true }, { price: 9, inStock: false }])", expect: "12" }, { call: "cartTotal([])", expect: "0" }], runner: ["browser", "local"] },
+      "object-tests": { kind: "test", language: "javascript", entry: "group.js", tests: [{ call: "JSON.stringify(groupByTag([{ name: 'a', tag: 'web' }, { name: 'b', tag: 'web' }]))", expect: "{\"web\":[\"a\",\"b\"]}" }, { call: "JSON.stringify(groupByTag([]))", expect: "{}", hidden: true }], runner: ["browser", "local"], lint: ["eslint"] },
+      "filter-tests": { kind: "test", language: "javascript", entry: "filter.js", tests: [{ call: "matchProjects([{ title: 'Poster' }, { title: 'App' }], 'post').length", expect: "1" }, { call: "matchProjects([{ title: 'App' }], '').length", expect: "1", label: "Empty query keeps all" }], runner: ["browser", "local"] },
+      "async-tests": { kind: "test", language: "javascript", entry: "load.js", tests: [{ native: "load.test.js", label: "Retries once, then rejects with a message" }, { call: "typeof loadProjects", expect: "function" }], runner: ["browser", "local"], limits: { time_s: 15, memory_mb: 256, network: false } },
+      "js-predict": {
+        kind: "items",
+        stop_after_wrong: 2,
+        items: [
+          { type: "predict-output", id: "js1", prompt: "What is logged?", code: "const f = (x) => { x * 2 };\nconsole.log(f(3));", language: "javascript", options: ["undefined", "6"], answer: 0, difficulty: 1, nodes: ["functions"] },
+          { type: "predict-output", id: "js2", prompt: "What is logged?", code: "console.log([1, 2, 3].filter(n => n > 1).map(n => n * 10));", language: "javascript", options: ["[20, 30]", "[10, 20, 30]"], answer: 0, difficulty: 2, nodes: ["arrays"] },
+          { type: "predict-output", id: "js3", prompt: "What is logged?", code: "console.log('1' === 1, '1' == 1);", language: "javascript", options: ["false true", "true true", "false false"], answer: 0, difficulty: 3, nodes: ["objects"] },
+          { type: "predict-output", id: "js4", prompt: "In what order?", code: "setTimeout(() => console.log('a'), 0);\nPromise.resolve().then(() => console.log('b'));\nconsole.log('c');", language: "javascript", options: ["c b a", "a b c", "c a b"], answer: 0, difficulty: 5, nodes: ["async"] }
+        ],
+        pass: "accuracy >= 0.75"
+      }
+    },
+    mistakes: [
+      { id: "no-return", name: "Missing return", nodes: ["functions"], engine: "code", detector: { metric: "pass_rate", when: "pass_rate == 0" }, severity: 2, explain: { lesson: "functions-lesson", card: 1 }, fix_drill: "initials-build", headline: "The function returns undefined" },
+      { id: "loose-equality", name: "Loose equality", nodes: ["objects"], engine: "code", detector: { metric: "lint_findings", when: "lint_findings > 0" }, severity: 1, explain: { lesson: "objects-lesson", card: 0 }, fix_drill: "object-build", headline: "Use === instead of ==" }
+    ],
+    access: ["A computer with a browser"],
+    focus: { Fundamentals: 35, Writing: 45, Reading: 20 },
+    key_metrics: [
+      { id: "pass", label: "Tests passing", engine: "code", metric: "pass_rate", unit: "%", better: "higher", format: "percent" },
+      { id: "reading", label: "Code reading", engine: "knowledge", metric: "accuracy", unit: "%", better: "higher", format: "percent" }
+    ],
+    copy: { placeholder: "JavaScript, TypeScript", blurb: "Functions, arrays, objects, async" },
+    notes: "Engines: code runs tests in the studio's browser sandbox first (no install), then Node if the learner prefers. Tests have no network; the async step uses a stubbed fetch in its native test. If no runner exists, each proof falls back to predict-output items in JavaScript. Hours are estimates from general beginner course pacing, shown as ranges."
+  })
+};

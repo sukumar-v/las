@@ -1,0 +1,1298 @@
+{
+  "schemaVersion": 1,
+  "skill": "piano",
+  "name": "Piano",
+  "noun": "the piano",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "audio",
+    "movement",
+    "knowledge",
+    "self-report"
+  ],
+  "why": [
+    {
+      "id": "songs",
+      "label": "Play songs I love"
+    },
+    {
+      "id": "relax",
+      "label": "Unwind after work"
+    },
+    {
+      "id": "read",
+      "label": "Read music"
+    },
+    {
+      "id": "family",
+      "label": "Play for family"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "minuet",
+      "label": "Playing the minuet hands together",
+      "why": [
+        "read",
+        "family"
+      ],
+      "ladderStep": 5,
+      "milestone": "Eight bars hands together at 72",
+      "proof": "One take of bars 1-8, hands together",
+      "focus": {
+        "Fundamentals": 35,
+        "Pieces": 45,
+        "Theory": 20
+      },
+      "access": [
+        "The minuet score"
+      ]
+    },
+    {
+      "id": "chords",
+      "label": "Chords under a melody",
+      "why": [
+        "songs",
+        "relax"
+      ],
+      "ladderStep": 4,
+      "milestone": "Four chords in time",
+      "proof": "One take of the C-F-G-C progression",
+      "focus": {
+        "Fundamentals": 40,
+        "Pieces": 35,
+        "Theory": 25
+      }
+    },
+    {
+      "id": "scale",
+      "label": "A relaxed daily warm-up",
+      "why": [
+        "relax"
+      ],
+      "ladderStep": 2,
+      "milestone": "C major scale, both hands apart",
+      "proof": "One take of the scale at 60",
+      "focus": {
+        "Fundamentals": 60,
+        "Pieces": 20,
+        "Theory": 20
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How much piano have you played?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never"
+        },
+        {
+          "value": 1,
+          "label": "A few songs by ear"
+        },
+        {
+          "value": 2,
+          "label": "Lessons as a kid"
+        },
+        {
+          "value": 3,
+          "label": "Play weekly"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "theory",
+      "type": "quiz",
+      "question": "Name a few notes.",
+      "spec": "note-quiz",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 2 && quiz.correct >= 3",
+      "step": 3,
+      "evidence": "Reads notes and has played before"
+    },
+    {
+      "when": "level >= 1 || quiz.correct >= 2",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "posture",
+      "label": "Curved fingers, level wrists",
+      "hours": [
+        1,
+        2
+      ],
+      "nodes": [
+        "hand-shape"
+      ],
+      "proof": {
+        "engine": "movement",
+        "spec": "hand-shape",
+        "label": "Thirty seconds of five-finger patterns with curved fingers",
+        "criteria": [
+          {
+            "id": "curve",
+            "label": "Curved fingers",
+            "check": "curved_share >= 0.7"
+          },
+          {
+            "id": "wrist",
+            "label": "Wrist level",
+            "check": "wrist_drop <= 0.03"
+          }
+        ],
+        "capture": {
+          "angle": "top",
+          "fps": 30,
+          "duration_s": 30
+        },
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "scale",
+      "label": "C major scale, hands apart",
+      "hours": [
+        3,
+        6
+      ],
+      "nodes": [
+        "scale"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "c-scale",
+        "label": "C major scale up and down at 60, right hand",
+        "criteria": [
+          {
+            "id": "notes",
+            "label": "Right notes",
+            "check": "note_accuracy >= 0.95"
+          },
+          {
+            "id": "even",
+            "label": "Even timing",
+            "check": "mean_abs_onset_ms <= 80"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "melody",
+      "label": "Minuet melody, right hand",
+      "hours": [
+        5,
+        10
+      ],
+      "nodes": [
+        "reading",
+        "melody"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "minuet-rh",
+        "label": "Bars 1-8 of the minuet, right hand, at 72",
+        "criteria": [
+          {
+            "id": "notes",
+            "label": "Right notes",
+            "check": "note_accuracy >= 0.9"
+          },
+          {
+            "id": "rhythm",
+            "label": "In time",
+            "check": "onset_share_on_time >= 0.8"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "chords",
+      "label": "Four chords in time",
+      "hours": [
+        4,
+        10
+      ],
+      "nodes": [
+        "chords"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "chord-cycle",
+        "label": "C, F, G, C, four beats each, all notes sounding",
+        "criteria": [
+          {
+            "id": "notes",
+            "label": "All chord notes",
+            "check": "note_accuracy >= 0.85"
+          },
+          {
+            "id": "tempo",
+            "label": "Steady tempo",
+            "check": "abs(tempo_drift_pct) <= 5"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    },
+    {
+      "id": "together",
+      "label": "Minuet hands together",
+      "hours": [
+        10,
+        25
+      ],
+      "nodes": [
+        "together"
+      ],
+      "proof": {
+        "engine": "audio",
+        "spec": "minuet-both",
+        "label": "Bars 1-8, both hands, at 72, one take",
+        "criteria": [
+          {
+            "id": "notes",
+            "label": "Right notes",
+            "check": "note_accuracy >= 0.85"
+          },
+          {
+            "id": "rhythm",
+            "label": "In time",
+            "check": "onset_share_on_time >= 0.8"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "hand-shape",
+      "name": "Hand shape",
+      "requires": [],
+      "lesson": "hand-lesson",
+      "drills": [
+        "five-finger"
+      ],
+      "mistakes": [
+        "flat-fingers"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Fingers curved or flat?",
+        "kind": "choice",
+        "options": [
+          "Curved",
+          "Flat"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "scale",
+      "name": "Scale fingering",
+      "requires": [
+        "hand-shape"
+      ],
+      "lesson": "scale-lesson",
+      "drills": [
+        "scale-play"
+      ],
+      "mistakes": [
+        "uneven-scale"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Right hand: which finger crosses under after E?",
+        "kind": "choice",
+        "options": [
+          "Thumb",
+          "Pinky"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "reading",
+      "name": "Reading treble notes",
+      "requires": [],
+      "lesson": "reading-lesson",
+      "drills": [
+        "note-names"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Name the note on the bottom line.",
+        "kind": "choice",
+        "options": [
+          "E",
+          "G"
+        ],
+        "answer": 0
+      },
+      "focus": "Theory"
+    },
+    {
+      "id": "melody",
+      "name": "Melody in time",
+      "requires": [
+        "scale",
+        "reading"
+      ],
+      "lesson": "melody-lesson",
+      "drills": [
+        "minuet-rh-play"
+      ],
+      "mistakes": [
+        "rushing-melody"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Dotted half note: how many beats?",
+        "kind": "choice",
+        "options": [
+          "Three",
+          "Two"
+        ],
+        "answer": 0
+      },
+      "focus": "Pieces"
+    },
+    {
+      "id": "chords",
+      "name": "Three chords",
+      "requires": [
+        "hand-shape"
+      ],
+      "lesson": "chord-lesson",
+      "drills": [
+        "chord-play"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Notes in a C chord?",
+        "kind": "choice",
+        "options": [
+          "C E G",
+          "C F A"
+        ],
+        "answer": 0
+      },
+      "focus": "Theory"
+    },
+    {
+      "id": "together",
+      "name": "Hands together",
+      "requires": [
+        "melody",
+        "chords"
+      ],
+      "lesson": "together-lesson",
+      "drills": [
+        "minuet-both-play"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Practice hands together at what speed first?",
+        "kind": "choice",
+        "options": [
+          "Slow",
+          "Full"
+        ],
+        "answer": 0
+      },
+      "focus": "Pieces"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "hand-lesson",
+      "title": "Hand shape",
+      "nodes": [
+        "hand-shape"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Curved fingers or flat: which plays evenly?",
+          "options": [
+            "Curved",
+            "Flat"
+          ],
+          "answer": 0,
+          "reveal": "Curved fingers strike with the tips."
+        },
+        {
+          "type": "compare",
+          "text": "Tap the collapsed hand.",
+          "left": {
+            "kind": "figure",
+            "points": {
+              "wrist": [
+                10,
+                50
+              ],
+              "knuckle": [
+                40,
+                40
+              ],
+              "tip": [
+                60,
+                60
+              ]
+            },
+            "segments": [
+              [
+                "wrist",
+                "knuckle"
+              ],
+              [
+                "knuckle",
+                "tip"
+              ]
+            ],
+            "marks": [
+              {
+                "at": "knuckle",
+                "label": "arched",
+                "role": "good"
+              }
+            ]
+          },
+          "right": {
+            "kind": "figure",
+            "points": {
+              "wrist": [
+                10,
+                60
+              ],
+              "knuckle": [
+                40,
+                55
+              ],
+              "tip": [
+                65,
+                56
+              ]
+            },
+            "segments": [
+              [
+                "wrist",
+                "knuckle"
+              ],
+              [
+                "knuckle",
+                "tip"
+              ]
+            ],
+            "marks": [
+              {
+                "at": "tip",
+                "label": "flat",
+                "role": "attention"
+              }
+            ]
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "scale-lesson",
+      "title": "C major scale",
+      "nodes": [
+        "scale"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Eight notes, five fingers. What happens?",
+          "options": [
+            "The thumb tucks under",
+            "You skip a note"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Fingers 1-2-3, thumb under, 1-2-3-4-5.",
+          "figure": {
+            "kind": "notation",
+            "abc": "X:1\nM:4/4\nL:1/4\nK:C\n\"1\"C \"2\"D \"3\"E \"1\"F | \"2\"G \"3\"A \"4\"B \"5\"c |]"
+          }
+        },
+        {
+          "type": "compare",
+          "text": "Tap the uneven scale.",
+          "left": {
+            "kind": "rhythm",
+            "pattern": "xxxxxxxx",
+            "subdivisions": 8,
+            "highlight": []
+          },
+          "right": {
+            "kind": "rhythm",
+            "pattern": "xx.xxx.x",
+            "subdivisions": 8,
+            "highlight": []
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "reading-lesson",
+      "title": "Reading the treble clef",
+      "nodes": [
+        "reading"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Lines spell E-G-B-D-F. The bottom line is...",
+          "options": [
+            "E",
+            "F"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Line notes and space notes.",
+          "figure": {
+            "kind": "notation",
+            "abc": "X:1\nL:1/4\nK:C\nE G B d f | F A c e |]"
+          }
+        }
+      ]
+    },
+    {
+      "id": "melody-lesson",
+      "title": "The minuet melody",
+      "nodes": [
+        "melody"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Does the minuet feel in two or in three?",
+          "options": [
+            "Three",
+            "Two"
+          ],
+          "answer": 0,
+          "reveal": "A minuet is in 3/4."
+        },
+        {
+          "type": "demo",
+          "text": "Bar one, counted 1-2-3.",
+          "figure": {
+            "kind": "notation",
+            "abc": "X:1\nM:3/4\nL:1/8\nK:G\nd2 G A B c | d2 G2 G2 |]"
+          },
+          "playback": "steps"
+        },
+        {
+          "type": "try-it",
+          "text": "Tap the rhythm of bar one.",
+          "action": "tap-rhythm",
+          "pattern": "x.xxxx"
+        }
+      ]
+    },
+    {
+      "id": "chord-lesson",
+      "title": "Three chords",
+      "nodes": [
+        "chords"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "A chord built on C uses which notes?",
+          "options": [
+            "C, E, G",
+            "C, D, E"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "C, F and G chords: skip a key each time.",
+          "figure": {
+            "kind": "notation",
+            "abc": "X:1\nL:1\nK:C\n[CEG] | [FAc] | [GBd] | [CEG] |]"
+          }
+        }
+      ]
+    },
+    {
+      "id": "together-lesson",
+      "title": "Hands together",
+      "nodes": [
+        "together"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Hands together: start slow or at full speed?",
+          "options": [
+            "Half speed",
+            "Full speed"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "sim",
+          "text": "Drag tempo. Watch the time you get per note.",
+          "sim": {
+            "kind": "sim",
+            "title": "Tempo and thinking time",
+            "params": {
+              "bpm": {
+                "label": "Tempo",
+                "min": 40,
+                "max": 120,
+                "default": 72,
+                "unit": "bpm"
+              }
+            },
+            "formulas": {
+              "ms_per_beat": "60000 / bpm"
+            },
+            "figure": {
+              "kind": "plot",
+              "x": "bpm",
+              "series": [
+                "ms_per_beat"
+              ]
+            },
+            "readout": [
+              {
+                "value": "ms_per_beat",
+                "label": "Per beat",
+                "unit": "ms",
+                "decimals": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "five-finger",
+      "type": "move",
+      "title": "Five-finger patterns",
+      "prompt": "Play C-D-E-F-G and back, camera above your hands.",
+      "nodes": [
+        "hand-shape"
+      ],
+      "spec": "hand-shape",
+      "capture": {
+        "angle": "top",
+        "fps": 30,
+        "duration_s": 30
+      },
+      "needs": [
+        "A piano or keyboard",
+        "A phone stand above the keys"
+      ],
+      "success": "curved_share >= 0.7",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          50,
+          60,
+          72
+        ],
+        "start": 0
+      },
+      "minutes": 4,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": [
+        "flat-fingers"
+      ]
+    },
+    {
+      "id": "scale-play",
+      "type": "play-along",
+      "title": "Scale with the click",
+      "prompt": "C major, right hand, up and down with the click.",
+      "nodes": [
+        "scale"
+      ],
+      "spec": "c-scale",
+      "needs": [
+        "A piano or keyboard"
+      ],
+      "success": "note_accuracy >= 0.9 && mean_abs_onset_ms <= 100",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          50,
+          60,
+          72,
+          90
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": [
+        "uneven-scale"
+      ]
+    },
+    {
+      "id": "note-names",
+      "type": "choice",
+      "title": "Name the note",
+      "prompt": "Pick the note's name.",
+      "nodes": [
+        "reading"
+      ],
+      "spec": "note-quiz",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Theory",
+      "fixes": []
+    },
+    {
+      "id": "minuet-rh-play",
+      "type": "play-along",
+      "title": "Minuet, right hand",
+      "prompt": "Play bars 1-8 with the click, right hand only.",
+      "nodes": [
+        "melody"
+      ],
+      "spec": "minuet-rh",
+      "needs": [
+        "A piano or keyboard",
+        "The minuet score"
+      ],
+      "success": "note_accuracy >= 0.85",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          50,
+          60,
+          72
+        ],
+        "start": 0
+      },
+      "minutes": 8,
+      "intensity": 1,
+      "focus": "Pieces",
+      "fixes": [
+        "rushing-melody"
+      ]
+    },
+    {
+      "id": "chord-play",
+      "type": "play-along",
+      "title": "Chord cycle",
+      "prompt": "C, F, G, C: four beats each, left hand.",
+      "nodes": [
+        "chords"
+      ],
+      "spec": "chord-cycle",
+      "needs": [
+        "A piano or keyboard"
+      ],
+      "success": "note_accuracy >= 0.8",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          50,
+          60,
+          72
+        ],
+        "start": 0
+      },
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Theory",
+      "fixes": []
+    },
+    {
+      "id": "minuet-both-play",
+      "type": "play-along",
+      "title": "Minuet, hands together",
+      "prompt": "Bars 1-4 hands together, slowly, then bars 5-8.",
+      "nodes": [
+        "together"
+      ],
+      "spec": "minuet-both",
+      "needs": [
+        "A piano or keyboard",
+        "The minuet score"
+      ],
+      "success": "note_accuracy >= 0.8",
+      "difficulty": {
+        "param": "tempo",
+        "levels": [
+          40,
+          56,
+          72
+        ],
+        "start": 0
+      },
+      "minutes": 10,
+      "intensity": 1,
+      "focus": "Pieces",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "hand-shape": {
+      "kind": "metric",
+      "capture": {
+        "angle": "top",
+        "fps": 30,
+        "track": [
+          "hands"
+        ],
+        "guide": "Phone above the keys, both hands in frame"
+      },
+      "segment": {
+        "by": "whole"
+      },
+      "metrics": {
+        "finger_curve": "mean(angle(right_hand.index_mcp, right_hand.index_pip, right_hand.index_tip))",
+        "curved_share": "share(angle(right_hand.middle_mcp, right_hand.middle_pip, right_hand.middle_tip) < 165)",
+        "wrist_drop": "mean(right_hand.wrist.y - right_hand.middle_mcp.y)"
+      },
+      "units": {
+        "finger_curve": "deg"
+      },
+      "mistakes": [
+        {
+          "id": "flat-fingers",
+          "when": "curved_share < 0.5",
+          "min_confidence": 0.7,
+          "severity": 2,
+          "show": "overlay(angle(right_hand.middle_mcp, right_hand.middle_pip, right_hand.middle_tip))",
+          "fix_drill": "five-finger"
+        }
+      ],
+      "requires_visible": [
+        "right_hand.wrist",
+        "right_hand.middle_mcp",
+        "right_hand.middle_tip"
+      ]
+    },
+    "c-scale": {
+      "kind": "audio",
+      "reference": {
+        "notes": [
+          [
+            "C4",
+            1
+          ],
+          [
+            "D4",
+            1
+          ],
+          [
+            "E4",
+            1
+          ],
+          [
+            "F4",
+            1
+          ],
+          [
+            "G4",
+            1
+          ],
+          [
+            "A4",
+            1
+          ],
+          [
+            "B4",
+            1
+          ],
+          [
+            "C5",
+            1
+          ],
+          [
+            "B4",
+            1
+          ],
+          [
+            "A4",
+            1
+          ],
+          [
+            "G4",
+            1
+          ],
+          [
+            "F4",
+            1
+          ],
+          [
+            "E4",
+            1
+          ],
+          [
+            "D4",
+            1
+          ],
+          [
+            "C4",
+            2
+          ]
+        ]
+      },
+      "tempo": 60,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 50,
+        "onset_ms": 80
+      },
+      "grade": [
+        "notes",
+        "rhythm"
+      ],
+      "playback": "metronome",
+      "pass": "note_accuracy >= 0.95 && mean_abs_onset_ms <= 80",
+      "mistakes": [
+        {
+          "id": "uneven-scale",
+          "when": "onset_std_ms > 90",
+          "severity": 1,
+          "show": "beat_timeline",
+          "fix_drill": "scale-play"
+        }
+      ]
+    },
+    "minuet-rh": {
+      "kind": "audio",
+      "reference": {
+        "score": "learner-media/minuet.musicxml",
+        "part": "right_hand",
+        "bars": "1-8"
+      },
+      "tempo": 72,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 50,
+        "onset_ms": 80
+      },
+      "grade": [
+        "notes",
+        "rhythm"
+      ],
+      "playback": "metronome",
+      "pass": "note_accuracy >= 0.9 && onset_share_on_time >= 0.8",
+      "mistakes": [
+        {
+          "id": "rushing-melody",
+          "when": "early_share >= 0.4",
+          "severity": 2,
+          "show": "beat_timeline",
+          "fix_drill": "minuet-rh-play"
+        }
+      ]
+    },
+    "chord-cycle": {
+      "kind": "audio",
+      "reference": {
+        "abc": "X:1\nM:4/4\nL:1\nK:C\n[CEG] | [FAc] | [GBd] | [CEG] |]"
+      },
+      "tempo": 60,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 50,
+        "onset_ms": 100
+      },
+      "grade": [
+        "notes",
+        "rhythm",
+        "tempo"
+      ],
+      "playback": "metronome",
+      "pass": "note_accuracy >= 0.85 && abs(tempo_drift_pct) <= 5",
+      "mistakes": []
+    },
+    "minuet-both": {
+      "kind": "audio",
+      "reference": {
+        "score": "learner-media/minuet.musicxml",
+        "bars": "1-8"
+      },
+      "tempo": 72,
+      "tuning_hz": 440,
+      "tolerance": {
+        "pitch_cents": 50,
+        "onset_ms": 90
+      },
+      "grade": [
+        "notes",
+        "rhythm"
+      ],
+      "playback": "metronome",
+      "pass": "note_accuracy >= 0.85 && onset_share_on_time >= 0.8",
+      "mistakes": []
+    },
+    "note-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "n1",
+          "prompt": "Treble clef, bottom line. Which note?",
+          "options": [
+            "E",
+            "F",
+            "G"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "reading"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "n2",
+          "prompt": "Treble clef, second line. Which note?",
+          "options": [
+            "G",
+            "B"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "reading"
+          ]
+        },
+        {
+          "type": "match",
+          "id": "n3",
+          "prompt": "Match each note value to its beats.",
+          "pairs": [
+            [
+              "Quarter",
+              "1"
+            ],
+            [
+              "Half",
+              "2"
+            ],
+            [
+              "Dotted half",
+              "3"
+            ]
+          ],
+          "difficulty": 2,
+          "nodes": [
+            "melody"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "n4",
+          "prompt": "Which notes make a G chord?",
+          "options": [
+            "G B D",
+            "G A B",
+            "G C E"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "chords"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2
+    }
+  },
+  "mistakes": [
+    {
+      "id": "flat-fingers",
+      "name": "Flat fingers",
+      "nodes": [
+        "hand-shape"
+      ],
+      "engine": "movement",
+      "detector": {
+        "metric": "curved_share",
+        "when": "curved_share < 0.5",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "hand-lesson",
+        "card": 1
+      },
+      "fix_drill": "five-finger",
+      "resolved_after": 3,
+      "headline": "Fingers flatten on the keys"
+    },
+    {
+      "id": "uneven-scale",
+      "name": "Uneven scale",
+      "nodes": [
+        "scale"
+      ],
+      "engine": "audio",
+      "detector": {
+        "metric": "onset_std_ms",
+        "when": "onset_std_ms > 90",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "scale-lesson",
+        "card": 2
+      },
+      "fix_drill": "scale-play",
+      "resolved_after": 3,
+      "headline": "Notes bunch around the thumb crossing"
+    },
+    {
+      "id": "rushing-melody",
+      "name": "Rushing",
+      "nodes": [
+        "melody"
+      ],
+      "engine": "audio",
+      "detector": {
+        "metric": "early_share",
+        "when": "early_share >= 0.4",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "melody-lesson",
+        "card": 2
+      },
+      "fix_drill": "minuet-rh-play",
+      "resolved_after": 3,
+      "headline": "Notes come ahead of the click"
+    }
+  ],
+  "access": [
+    "A piano or keyboard",
+    "The minuet score",
+    "A phone stand above the keys"
+  ],
+  "focus": {
+    "Fundamentals": 40,
+    "Pieces": 35,
+    "Theory": 25
+  },
+  "key_metrics": [
+    {
+      "id": "notes",
+      "label": "Notes right",
+      "engine": "audio",
+      "metric": "note_accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "timing",
+      "label": "Timing error",
+      "engine": "audio",
+      "metric": "mean_abs_onset_ms",
+      "unit": "ms",
+      "better": "lower",
+      "format": "ms"
+    },
+    {
+      "id": "curve",
+      "label": "Curved fingers",
+      "engine": "movement",
+      "metric": "curved_share",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    }
+  ],
+  "media": [
+    {
+      "id": "minuet",
+      "path": "learner-media/minuet.musicxml",
+      "license": "learner",
+      "note": "The learner's own score file"
+    }
+  ],
+  "copy": {
+    "placeholder": "piano, keyboard, a song",
+    "blurb": "Notes, rhythm and relaxed hands"
+  },
+  "notes": "Engines: audio grades notes and rhythm against references (a scale as note data, chords as ABC, the minuet from the learner's own MusicXML); movement tracks hand shape from above. Many notes at once are harder to separate, so chord proofs use a looser tolerance. Not physical in the safety sense; long sessions are capped by the plan anyway. Hours are estimates from general beginner method books, shown as ranges."
+}

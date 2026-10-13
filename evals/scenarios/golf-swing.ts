@@ -1,0 +1,152 @@
+import { recordFallbacks, type Scenario } from "../src/harness.js";
+
+/** A full golf swing: body positions at 60+ fps (the club is hard to see), the ball as an object, tempo from the phone. */
+export const golfSwing: Scenario = {
+  id: "golf-swing",
+  skill: "golf swing",
+  notes: "Plays nine holes a month, slices the driver. Practices at a driving range with a phone tripod.",
+  expect: { engines: ["movement", "sensor"], main: "movement", fallback: "self-report", physical: true, supervisedOnly: [] },
+  build: (draft) => ({
+    skill: "golf swing",
+    name: "Golf swing",
+    noun: "the golf swing",
+    source: "generated",
+    physical: true,
+    engines: ["movement", "sensor", "knowledge", "self-report"],
+    fallbacks: recordFallbacks(draft, { movement: "self-report", sensor: "movement" }),
+    why: [
+      { id: "consistent", label: "Hit it straighter" },
+      { id: "friends", label: "Play with friends" },
+      { id: "score", label: "Lower my score" },
+      { id: "outdoors", label: "Time outdoors" }
+    ],
+    pictures: [
+      { id: "range", label: "Solid contact at the range", why: ["consistent", "outdoors"], ladderStep: 2, milestone: "Ten balls with a steady head", proof: "One clip of ten swings, head steady", focus: { Fundamentals: 55, Tempo: 25, Theory: 20 }, access: ["A driving range"] },
+      { id: "round", label: "A relaxed round with friends", why: ["friends", "outdoors"], ladderStep: 4, milestone: "A smooth 3:1 tempo", proof: "Ten swings with tempo near 3 to 1", focus: { Fundamentals: 35, Tempo: 45, Theory: 20 } },
+      { id: "score", label: "Breaking 100", why: ["score", "consistent"], ladderStep: 5, milestone: "Swing holds on the course", proof: "A logged round with your swing checks", focus: { Fundamentals: 30, Tempo: 30, Theory: 40 }, access: ["A golf course"] }
+    ],
+    probes: [
+      { id: "rounds", type: "single", question: "How often do you play or practice?", options: [{ value: 0, label: "Never held a club" }, { value: 1, label: "A few range visits" }, { value: 2, label: "Monthly rounds" }, { value: 3, label: "Weekly" }] },
+      { id: "miss", type: "single", question: "Your usual miss?", optional: true, options: [{ value: "slice", label: "Curves right (slice)" }, { value: "hook", label: "Curves left (hook)" }, { value: "top", label: "Topped or thin" }, { value: "none", label: "Not sure" }] }
+    ],
+    placement: [
+      { when: "!fresh && rounds >= 2", step: 2, evidence: "Plays rounds already" },
+      { when: "rounds >= 1", step: 1, evidence: "Some range time" }
+    ],
+    ladder: [
+      { id: "start", label: "Brand new", hours: [0, 0] },
+      { id: "setup", label: "Grip and setup", hours: [1, 3], nodes: ["setup"],
+        proof: { engine: "movement", spec: "swing-body", label: "Setup clip: spine tilted forward, arms hanging", criteria: [{ id: "tilt", label: "Spine tilt 30 to 45", check: "address_tilt >= 30 && address_tilt <= 45" }], capture: { angle: "side", fps: 60, duration_s: 20 }, fallback: "self-report" } },
+      { id: "steady-head", label: "Steady head through the swing", hours: [4, 10], nodes: ["pivot"],
+        proof: { engine: "movement", spec: "swing-body", label: "Ten half swings, face-on, head moves little", criteria: [{ id: "head", label: "Little head sway", check: "head_sway <= 0.06" }, { id: "count", label: "Ten swings", check: "swings >= 10" }], capture: { angle: "front", fps: 60, duration_s: 120 }, fallback: "self-report" } },
+      { id: "tempo", label: "Backswing three, downswing one", hours: [5, 12], nodes: ["tempo"],
+        proof: { engine: "sensor", spec: "swing-tempo", label: "Ten full swings with tempo between 2.5 and 3.5", criteria: [{ id: "ratio", label: "Tempo near 3 to 1", check: "tempo_ratio >= 2.5 && tempo_ratio <= 3.5" }], fallback: "movement", fallback_spec: "swing-body" } },
+      { id: "impact", label: "Hands ahead at impact", hours: [8, 20], nodes: ["impact"],
+        proof: { engine: "movement", spec: "swing-body", label: "Ten full swings, face-on: lead wrist ahead of the ball", criteria: [{ id: "hands", label: "Hands ahead", check: "share(hands_ahead) >= 0.7" }, { id: "ball", label: "Ball in view", check: "ball_seen >= 0.8" }], capture: { angle: "front", fps: 120, duration_s: 120 }, fallback: "self-report" } },
+      { id: "course", label: "Swing holds on the course", hours: [15, 40], nodes: ["course"],
+        proof: { engine: "self-report", spec: "round-log", label: "Log three rounds with your pre-shot routine", criteria: [{ id: "rounds", label: "Three rounds", check: "count >= 3" }] } }
+    ],
+    nodes: [
+      { id: "setup", name: "Grip and setup", lesson: "setup-lesson", drills: ["setup-check", "setup-clip"], review: { prompt: "How many knuckles show on the lead hand?", kind: "choice", options: ["Two or three", "None"], answer: 0 }, focus: "Fundamentals" },
+      { id: "pivot", name: "Turning around the spine", requires: ["setup"], lesson: "pivot-lesson", drills: ["half-swings"], mistakes: ["head-sway"], review: { prompt: "What stays still while you turn?", kind: "choice", options: ["The head", "The hips"], answer: 0 }, focus: "Fundamentals" },
+      { id: "tempo", name: "Tempo", requires: ["pivot"], lesson: "tempo-lesson", drills: ["tempo-swings"], mistakes: ["rushed-tempo"], review: { prompt: "Backswing to downswing ratio?", kind: "choice", options: ["About 3 to 1", "1 to 1"], answer: 0 }, focus: "Tempo" },
+      { id: "impact", name: "Impact position", requires: ["pivot"], lesson: "impact-lesson", drills: ["impact-swings"], mistakes: ["scooping"], review: { prompt: "At impact, hands are...", kind: "choice", options: ["Ahead of the ball", "Behind it"], answer: 0 }, focus: "Fundamentals" },
+      { id: "course", name: "On the course", requires: ["tempo", "impact"], lesson: "course-lesson", drills: ["routine-quiz"], review: { prompt: "Name your pre-shot routine.", kind: "recall" }, focus: "Theory" }
+    ],
+    lessons: [
+      { id: "setup-lesson", title: "Grip and setup", nodes: ["setup"], cards: [
+        { type: "predict", text: "Should arms reach out or hang down at address?", options: ["Hang down", "Reach out"], answer: 0 },
+        { type: "diagram", text: "Tilt from the hips; arms hang under the shoulders.", figure: { kind: "figure", points: { head: [45, 15], hip: [60, 50], knee: [55, 72], ankle: [58, 95], hands: [42, 55] }, segments: [["head", "hip"], ["hip", "knee"], ["knee", "ankle"], ["head", "hands"]], marks: [{ at: "hip", label: "tilt", role: "reference" }] } }
+      ] },
+      { id: "pivot-lesson", title: "Turning", nodes: ["pivot"], cards: [
+        { type: "predict", text: "Swaying sideways makes contact...", options: ["Less consistent", "More consistent"], answer: 0 },
+        { type: "compare", text: "Tap the swing where the head slides.", left: { kind: "figure", points: { head: [50, 15], hip: [50, 50] }, segments: [["head", "hip"]], marks: [{ at: "head", label: "still", role: "good" }] }, right: { kind: "figure", points: { head: [62, 15], hip: [55, 50] }, segments: [["head", "hip"]], marks: [{ at: "head", label: "slid", role: "attention" }] }, answer: "right" }
+      ] },
+      { id: "tempo-lesson", title: "Tempo", nodes: ["tempo"], cards: [
+        { type: "predict", text: "Good players take how long going back versus down?", options: ["Three times longer", "The same"], answer: 0 },
+        { type: "sim", text: "Drag the backswing time. Watch the ratio.", sim: { title: "Swing tempo", params: { back_ms: { label: "Backswing", min: 500, max: 1200, default: 750, unit: "ms" }, down_ms: { label: "Downswing", min: 150, max: 450, default: 250, unit: "ms" } }, formulas: { ratio: "back_ms / down_ms" }, figure: { kind: "gauge", value: "ratio", min: 1, max: 5, good: [2.5, 3.5] }, readout: [{ value: "ratio", label: "Tempo ratio", decimals: 1 }] } },
+        { type: "try-it", text: "Say 'one, two, three' back and 'hit' down.", action: "count", seconds: 10 }
+      ] },
+      { id: "impact-lesson", title: "Impact", nodes: ["impact"], cards: [
+        { type: "predict", text: "Hands ahead at impact makes the ball fly...", options: ["Lower and solid", "Higher and weak"], answer: 0 },
+        { type: "compare", text: "Tap the scooping wrist.", left: { kind: "figure", points: { shoulder: [50, 30], wrist: [45, 62], ball: [50, 90] }, segments: [["shoulder", "wrist"]], marks: [{ at: "wrist", label: "ahead", role: "good" }] }, right: { kind: "figure", points: { shoulder: [50, 30], wrist: [58, 62], ball: [50, 90] }, segments: [["shoulder", "wrist"]], marks: [{ at: "wrist", label: "behind", role: "attention" }] }, answer: "right" }
+      ] },
+      { id: "course-lesson", title: "Pre-shot routine", nodes: ["course"], cards: [
+        { type: "predict", text: "Does the same routine before each shot help?", options: ["Yes", "No"], answer: 0 },
+        { type: "demo", text: "Pick a target, one rehearsal, set up, swing.", figure: { kind: "graph", nodes: [{ id: "t", label: "Target" }, { id: "r", label: "Rehearse" }, { id: "s", label: "Set up" }, { id: "g", label: "Swing" }], edges: [["t", "r"], ["r", "s"], ["s", "g"]] }, playback: "steps" }
+      ] }
+    ],
+    drills: [
+      { id: "setup-check", type: "choice", title: "Grip check", prompt: "Pick the neutral grip.", nodes: ["setup"], spec: "golf-quiz", minutes: 2, intensity: 1, focus: "Fundamentals" },
+      { id: "setup-clip", type: "move", title: "Address position", prompt: "Film your setup from the side, then hold still.", nodes: ["setup"], spec: "swing-body", capture: { angle: "side", fps: 60, duration_s: 20 }, needs: ["A club"], success: "address_tilt >= 30 && address_tilt <= 45", minutes: 3, intensity: 1, focus: "Fundamentals" },
+      { id: "half-swings", type: "move", title: "Half swings, head still", prompt: "Ten half swings, filmed face-on at 60 fps or more.", nodes: ["pivot"], spec: "swing-body", capture: { angle: "front", fps: 60, duration_s: 120 }, needs: ["A club", "A driving range"], success: "head_sway <= 0.08", difficulty: { param: "swing length", levels: ["quarter", "half", "three-quarter"] }, minutes: 8, intensity: 2, focus: "Fundamentals", fixes: ["head-sway"] },
+      { id: "tempo-swings", type: "move", title: "Counted swings", prompt: "Ten swings counting three back, one down. Phone strapped to your lead forearm.", nodes: ["tempo"], spec: "swing-body", capture: { angle: "front", fps: 60, duration_s: 120 }, needs: ["A club"], success: "tempo_ratio_video >= 2.5", difficulty: { param: "swing length", levels: ["half", "three-quarter", "full"] }, minutes: 8, intensity: 2, focus: "Tempo", fixes: ["rushed-tempo"] },
+      { id: "impact-swings", type: "move", title: "Impact holds", prompt: "Swing and freeze at impact; film face-on at high frame rate.", nodes: ["impact"], spec: "swing-body", capture: { angle: "front", fps: 120, duration_s: 90 }, needs: ["A club", "A driving range"], success: "share(hands_ahead) >= 0.6", difficulty: { param: "swing length", levels: ["half", "full"] }, minutes: 8, intensity: 2, focus: "Fundamentals", fixes: ["scooping"] },
+      { id: "routine-quiz", type: "order", title: "Routine order", prompt: "Order the pre-shot routine.", nodes: ["course"], spec: "golf-quiz", minutes: 2, intensity: 1, focus: "Theory" }
+    ],
+    specs: {
+      "swing-body": {
+        kind: "metric",
+        capture: { angle: "front", fps: 60, guide: "Face-on, whole body and ball in frame; 60 fps or more, the club blurs" },
+        segment: { by: "moves", min_duration_s: 0.8 },
+        phases: { top: "left_wrist.y == min(left_wrist.y)", address: "t < 0.5" },
+        metrics: {
+          address_tilt: "mean(angle(mid_shoulder, mid_hip, vertical)) at address",
+          head_sway: "range(nose.x) per move",
+          backswing_s: "phase_duration(up) per move",
+          downswing_s: "phase_duration(down) per move",
+          tempo_ratio_video: "mean(backswing_s) / mean(downswing_s)",
+          hands_ahead: "left_wrist.x < object.sports_ball.x",
+          ball_seen: "visible(object.sports_ball)",
+          swings: "count(head_sway)",
+          tempo_ratio: "tempo_ratio_video"
+        },
+        units: { address_tilt: "deg", backswing_s: "s", downswing_s: "s" },
+        mistakes: [
+          { id: "head-sway", when: "mean(head_sway) > 0.08", show: "overlay(nose.x)", fix_drill: "half-swings" },
+          { id: "scooping", when: "share(hands_ahead) < 0.5", show: "overlay(left_wrist.x - object.sports_ball.x)", fix_drill: "impact-swings" },
+          { id: "rushed-tempo", when: "tempo_ratio_video < 2", show: "skeleton", fix_drill: "tempo-swings" }
+        ],
+        requires_visible: ["nose", "left_wrist", "left_shoulder", "left_hip"]
+      },
+      "swing-tempo": { kind: "sensor", detect: "swing-tempo", placement: "strapped", duration_s: 180, target: { tempo_ratio: 3 }, pass: "tempo_ratio >= 2.5 && tempo_ratio <= 3.5" },
+      "golf-quiz": {
+        kind: "items",
+        items: [
+          { type: "choice", id: "g1", prompt: "In a neutral grip, how many knuckles of the lead hand do you see?", options: ["Two or three", "None", "All four"], answer: 0, difficulty: 1, nodes: ["setup"] },
+          { type: "choice", id: "g2", prompt: "A slice usually starts with a clubface that is...", options: ["Open", "Closed"], answer: 0, difficulty: 2, nodes: ["impact"] },
+          { type: "order", id: "g3", prompt: "Order the pre-shot routine.", items: ["Pick a target", "One rehearsal swing", "Set up", "Swing"], difficulty: 2, nodes: ["course"] }
+        ]
+      },
+      "round-log": { kind: "self-report", fields: ["done", "count", "felt", "note"], criterion: "Played a round using the same pre-shot routine on every full swing" }
+    },
+    mistakes: [
+      { id: "head-sway", name: "Head sway", nodes: ["pivot"], engine: "movement", detector: { metric: "head_sway", when: "mean(head_sway) > 0.08" }, severity: 2, explain: { lesson: "pivot-lesson", card: 1 }, fix_drill: "half-swings", headline: "Head slides away from the ball" },
+      { id: "scooping", name: "Scooping at impact", nodes: ["impact"], engine: "movement", detector: { metric: "hands_ahead", when: "share(hands_ahead) < 0.5" }, severity: 2, explain: { lesson: "impact-lesson", card: 1 }, fix_drill: "impact-swings", headline: "Hands trail the ball at impact" },
+      { id: "rushed-tempo", name: "Rushed tempo", nodes: ["tempo"], engine: "movement", detector: { metric: "tempo_ratio_video", when: "tempo_ratio_video < 2" }, severity: 1, explain: { lesson: "tempo-lesson", card: 1 }, fix_drill: "tempo-swings", headline: "Backswing is too quick" }
+    ],
+    warmups: [
+      { id: "golf-warmup", title: "Turn and loosen", steps: ["Two minutes of brisk walking", "Ten torso turns holding a club across the shoulders", "Ten slow half swings", "Five wrist circles each way"], minutes: 6 },
+      { id: "back-warmup", title: "Easy on the back", steps: ["Two minutes of walking", "Ten gentle pelvic tilts standing", "Ten quarter swings only"], minutes: 5, for_injuries: ["Lower back"] }
+    ],
+    safety: {
+      warmup: "golf-warmup",
+      injury_questions: ["Any back, elbow or wrist pain right now?", "Any recent back injury?"],
+      beginner_caps: { max_intensity: 3, max_minutes: 60, sessions_per_week: 4 },
+      stop_criteria: ["Sharp back or elbow pain", "Pain that grows with each swing", "Someone standing within swing range"],
+      see_professional: ["Back pain lasting more than a week", "Elbow pain that stays after rest"],
+      supervised_only: []
+    },
+    access: ["A club", "A driving range", "A phone tripod", "A golf course"],
+    injuries: { "Lower back": "Half swings only and fewer balls for two weeks", Elbows: "Hit off mats less; half swings and no more than 30 balls for two weeks" },
+    focus: { Fundamentals: 50, Tempo: 30, Theory: 20 },
+    hard_focus: ["Tempo"],
+    key_metrics: [
+      { id: "head", label: "Head sway", engine: "movement", metric: "head_sway", better: "lower", format: "number" },
+      { id: "tempo", label: "Tempo ratio", engine: "sensor", metric: "tempo_ratio", better: "higher", format: "number" },
+      { id: "impact", label: "Hands ahead at impact", engine: "movement", metric: "hands_ahead", unit: "%", better: "higher", format: "percent" }
+    ],
+    copy: { placeholder: "golf swing, tennis serve", blurb: "Setup, a steady turn and a 3:1 tempo" },
+    notes: "Engines: movement for body positions (face-on and down-the-line), the ball tracked as an object, sensor for swing tempo with the phone strapped to the lead forearm. The club itself is hard to see, so wrists stand in for it; captures ask for 60 fps or more. Without a phone, tempo comes from the video (the swing-body spec also produces tempo_ratio). Hours are estimates from general coaching progressions, shown as ranges."
+  })
+};

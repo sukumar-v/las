@@ -1,0 +1,1027 @@
+{
+  "schemaVersion": 1,
+  "skill": "SQL",
+  "name": "SQL",
+  "noun": "SQL",
+  "source": "generated",
+  "physical": false,
+  "engines": [
+    "code",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "code": "knowledge"
+  },
+  "why": [
+    {
+      "id": "reports",
+      "label": "Pull my own numbers"
+    },
+    {
+      "id": "job",
+      "label": "A data analyst role"
+    },
+    {
+      "id": "spreadsheets",
+      "label": "Outgrow spreadsheets"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "dashboard",
+      "label": "Monthly revenue by country, myself",
+      "why": [
+        "reports",
+        "spreadsheets"
+      ],
+      "ladderStep": 4,
+      "milestone": "A grouped report with a join",
+      "proof": "The revenue-by-country query matches the expected rows",
+      "focus": {
+        "Fundamentals": 30,
+        "Writing": 50,
+        "Reading": 20
+      }
+    },
+    {
+      "id": "interview",
+      "label": "Passing a SQL interview",
+      "why": [
+        "job"
+      ],
+      "ladderStep": 5,
+      "milestone": "Window functions and subqueries",
+      "proof": "Ranking query passes hidden tests",
+      "focus": {
+        "Fundamentals": 25,
+        "Writing": 55,
+        "Reading": 20
+      }
+    },
+    {
+      "id": "filter",
+      "label": "Answering quick questions",
+      "why": [
+        "reports"
+      ],
+      "ladderStep": 2,
+      "milestone": "Filter and sort any table",
+      "proof": "Filter queries return the right rows",
+      "focus": {
+        "Fundamentals": 50,
+        "Writing": 35,
+        "Reading": 15
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How much SQL have you written?",
+      "options": [
+        {
+          "value": 0,
+          "label": "None"
+        },
+        {
+          "value": 1,
+          "label": "Copied a query once"
+        },
+        {
+          "value": 2,
+          "label": "SELECT and WHERE"
+        },
+        {
+          "value": 3,
+          "label": "Joins and GROUP BY"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "basics",
+      "type": "quiz",
+      "question": "What does this query return?",
+      "spec": "sql-predict",
+      "optional": false
+    },
+    {
+      "id": "try",
+      "type": "code",
+      "question": "Write one SELECT. Optional.",
+      "spec": "select-where",
+      "optional": true
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 3 && quiz.correct >= 3",
+      "step": 3,
+      "evidence": "Writes joins already"
+    },
+    {
+      "when": "level >= 2",
+      "step": 2,
+      "evidence": "Knows SELECT and WHERE"
+    },
+    {
+      "when": "level >= 1 || quiz.correct >= 1",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "select",
+      "label": "SELECT and WHERE",
+      "hours": [
+        2,
+        4
+      ],
+      "nodes": [
+        "select"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "select-where",
+        "label": "Two filter queries return exactly the expected rows",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "sql-predict"
+      }
+    },
+    {
+      "id": "sort",
+      "label": "Sorting and limits",
+      "hours": [
+        1,
+        3
+      ],
+      "nodes": [
+        "order-by"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "top-orders",
+        "label": "Top five orders by total, in order",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "sql-predict"
+      }
+    },
+    {
+      "id": "group",
+      "label": "GROUP BY and aggregates",
+      "hours": [
+        3,
+        6
+      ],
+      "nodes": [
+        "group-by"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "revenue-by-country",
+        "label": "Revenue per country with a join and GROUP BY",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          },
+          {
+            "id": "hidden",
+            "label": "Hidden data passes",
+            "check": "hidden_passed >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "sql-predict"
+      }
+    },
+    {
+      "id": "joins",
+      "label": "Joins, including LEFT JOIN",
+      "hours": [
+        4,
+        8
+      ],
+      "nodes": [
+        "joins"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "no-orders",
+        "label": "Customers with no orders, found with a LEFT JOIN",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "sql-predict"
+      }
+    },
+    {
+      "id": "windows",
+      "label": "Window functions",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "windows"
+      ],
+      "proof": {
+        "engine": "code",
+        "spec": "rank-customers",
+        "label": "Rank customers by spend within each country",
+        "criteria": [
+          {
+            "id": "tests",
+            "label": "All tests pass",
+            "check": "pass_rate >= 1"
+          },
+          {
+            "id": "hidden",
+            "label": "Ties handled",
+            "check": "hidden_passed >= 1"
+          }
+        ],
+        "single_take": true,
+        "fallback": "knowledge",
+        "fallback_spec": "sql-predict"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "select",
+      "name": "SELECT and WHERE",
+      "requires": [],
+      "lesson": "select-lesson",
+      "drills": [
+        "select-predict",
+        "select-build"
+      ],
+      "mistakes": [
+        "string-quotes"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Which keyword filters rows?",
+        "kind": "choice",
+        "options": [
+          "WHERE",
+          "ORDER BY"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "order-by",
+      "name": "ORDER BY and LIMIT",
+      "requires": [
+        "select"
+      ],
+      "lesson": "select-lesson",
+      "drills": [
+        "top-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Largest first?",
+        "kind": "choice",
+        "options": [
+          "ORDER BY total DESC",
+          "ORDER BY total"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "group-by",
+      "name": "GROUP BY",
+      "requires": [
+        "order-by"
+      ],
+      "lesson": "group-lesson",
+      "drills": [
+        "group-predict",
+        "revenue-build"
+      ],
+      "mistakes": [
+        "ungrouped-column"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Filter after grouping with...",
+        "kind": "choice",
+        "options": [
+          "HAVING",
+          "WHERE"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "joins",
+      "name": "Joins",
+      "requires": [
+        "group-by"
+      ],
+      "lesson": "join-lesson",
+      "drills": [
+        "no-orders-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Keep customers with no orders?",
+        "kind": "choice",
+        "options": [
+          "LEFT JOIN",
+          "INNER JOIN"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    },
+    {
+      "id": "windows",
+      "name": "Window functions",
+      "requires": [
+        "joins"
+      ],
+      "lesson": "window-lesson",
+      "drills": [
+        "rank-build"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Does a window function collapse rows?",
+        "kind": "choice",
+        "options": [
+          "No",
+          "Yes"
+        ],
+        "answer": 0
+      },
+      "focus": "Writing"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "select-lesson",
+      "title": "Choosing rows",
+      "nodes": [
+        "select",
+        "order-by"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "SELECT name FROM customers WHERE country = 'FR' returns...",
+          "options": [
+            "French customers' names",
+            "All names"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "FROM picks the table, WHERE keeps rows, SELECT keeps columns.",
+          "figure": {
+            "kind": "graph",
+            "nodes": [
+              {
+                "id": "f",
+                "label": "FROM"
+              },
+              {
+                "id": "w",
+                "label": "WHERE"
+              },
+              {
+                "id": "s",
+                "label": "SELECT"
+              },
+              {
+                "id": "o",
+                "label": "ORDER BY"
+              }
+            ],
+            "edges": [
+              [
+                "f",
+                "w"
+              ],
+              [
+                "w",
+                "s"
+              ],
+              [
+                "s",
+                "o"
+              ]
+            ],
+            "direction": "LR"
+          }
+        },
+        {
+          "type": "compare",
+          "text": "Tap the query that breaks on text.",
+          "left": {
+            "kind": "code",
+            "language": "sql",
+            "source": "WHERE country = 'FR'"
+          },
+          "right": {
+            "kind": "code",
+            "language": "sql",
+            "source": "WHERE country = FR"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "group-lesson",
+      "title": "Grouping",
+      "nodes": [
+        "group-by"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "GROUP BY country with SUM(total) gives one row per...",
+          "options": [
+            "Country",
+            "Order"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "demo",
+          "text": "Rows fold into groups, then each group is summed.",
+          "figure": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Revenue",
+                "values": [
+                  120,
+                  80,
+                  45
+                ]
+              }
+            ],
+            "labels": [
+              "FR",
+              "DE",
+              "ES"
+            ]
+          },
+          "playback": "once"
+        }
+      ]
+    },
+    {
+      "id": "join-lesson",
+      "title": "Joins",
+      "nodes": [
+        "joins"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "INNER JOIN drops customers who have...",
+          "options": [
+            "No orders",
+            "Many orders"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "compare",
+          "text": "Tap the join that keeps everyone.",
+          "left": {
+            "kind": "code",
+            "language": "sql",
+            "source": "FROM customers c JOIN orders o ON o.customer_id = c.id"
+          },
+          "right": {
+            "kind": "code",
+            "language": "sql",
+            "source": "FROM customers c LEFT JOIN orders o ON o.customer_id = c.id"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "window-lesson",
+      "title": "Window functions",
+      "nodes": [
+        "windows"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "RANK() OVER (PARTITION BY country ...) restarts at 1 for each...",
+          "options": [
+            "Country",
+            "Row"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Each row keeps its place; the rank is added beside it.",
+          "figure": {
+            "kind": "code",
+            "language": "sql",
+            "source": "SELECT name, country,\n  RANK() OVER (PARTITION BY country ORDER BY spend DESC) AS r\nFROM spend_by_customer;"
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "select-predict",
+      "type": "predict-output",
+      "title": "Which rows?",
+      "prompt": "Pick the rows the query returns.",
+      "nodes": [
+        "select"
+      ],
+      "spec": "sql-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "select-build",
+      "type": "build",
+      "title": "Filter customers",
+      "prompt": "Select names of customers in France, then in Spain or Italy.",
+      "nodes": [
+        "select"
+      ],
+      "spec": "select-where",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 6,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "string-quotes"
+      ]
+    },
+    {
+      "id": "top-build",
+      "type": "build",
+      "title": "Top five",
+      "prompt": "The five largest orders, largest first.",
+      "nodes": [
+        "order-by"
+      ],
+      "spec": "top-orders",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 5,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "group-predict",
+      "type": "predict-output",
+      "title": "How many rows?",
+      "prompt": "How many rows does the grouped query return?",
+      "nodes": [
+        "group-by"
+      ],
+      "spec": "sql-predict",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Reading",
+      "fixes": []
+    },
+    {
+      "id": "revenue-build",
+      "type": "build",
+      "title": "Revenue by country",
+      "prompt": "Join orders to customers and sum totals per country.",
+      "nodes": [
+        "group-by"
+      ],
+      "spec": "revenue-by-country",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "difficulty": {
+        "param": "tests",
+        "levels": [
+          "basic",
+          "hidden data"
+        ],
+        "start": 0
+      },
+      "minutes": 10,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": [
+        "ungrouped-column"
+      ]
+    },
+    {
+      "id": "no-orders-build",
+      "type": "build",
+      "title": "No orders yet",
+      "prompt": "List customers who have never ordered.",
+      "nodes": [
+        "joins"
+      ],
+      "spec": "no-orders",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 8,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    },
+    {
+      "id": "rank-build",
+      "type": "build",
+      "title": "Rank by spend",
+      "prompt": "Rank customers by total spend within each country.",
+      "nodes": [
+        "windows"
+      ],
+      "spec": "rank-customers",
+      "needs": [],
+      "success": "pass_rate >= 1",
+      "minutes": 12,
+      "intensity": 1,
+      "focus": "Writing",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "select-where": {
+      "kind": "test",
+      "language": "sql",
+      "entry": "query.sql",
+      "tests": [
+        {
+          "call": "SELECT COUNT(*) FROM (<query>);",
+          "expect": "2",
+          "hidden": false,
+          "label": "French customers"
+        },
+        {
+          "call": "SELECT group_concat(name) FROM (<query>);",
+          "expect": "Ana,Luc",
+          "hidden": false
+        }
+      ],
+      "runner": [
+        "browser",
+        "local"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "starter": {
+        "schema.sql": "CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, country TEXT);\nCREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL, placed TEXT);\n",
+        "query.sql": "SELECT name FROM customers\nWHERE country = 'FR';\n"
+      }
+    },
+    "top-orders": {
+      "kind": "test",
+      "language": "sql",
+      "entry": "query.sql",
+      "tests": [
+        {
+          "call": "SELECT group_concat(id) FROM (<query>);",
+          "expect": "7,3,9,1,4",
+          "hidden": false
+        }
+      ],
+      "runner": [
+        "browser",
+        "local"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "starter": {
+        "schema.sql": "CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, country TEXT);\nCREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL, placed TEXT);\n"
+      }
+    },
+    "revenue-by-country": {
+      "kind": "test",
+      "language": "sql",
+      "entry": "query.sql",
+      "tests": [
+        {
+          "call": "SELECT country || ':' || revenue FROM (<query>) ORDER BY country LIMIT 1;",
+          "expect": "DE:80.0",
+          "hidden": false
+        },
+        {
+          "call": "SELECT COUNT(*) FROM (<query>);",
+          "expect": "3",
+          "hidden": false
+        },
+        {
+          "native": "hidden_revenue.sql",
+          "hidden": true,
+          "label": "A different data set"
+        }
+      ],
+      "runner": [
+        "browser",
+        "local"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "starter": {
+        "schema.sql": "CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, country TEXT);\nCREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL, placed TEXT);\n"
+      }
+    },
+    "no-orders": {
+      "kind": "test",
+      "language": "sql",
+      "entry": "query.sql",
+      "tests": [
+        {
+          "call": "SELECT group_concat(name) FROM (<query>);",
+          "expect": "Mia",
+          "hidden": false
+        }
+      ],
+      "runner": [
+        "browser",
+        "local"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "starter": {
+        "schema.sql": "CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, country TEXT);\nCREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL, placed TEXT);\n"
+      }
+    },
+    "rank-customers": {
+      "kind": "test",
+      "language": "sql",
+      "entry": "query.sql",
+      "tests": [
+        {
+          "call": "SELECT r FROM (<query>) WHERE name = 'Ana';",
+          "expect": "1",
+          "hidden": false
+        },
+        {
+          "native": "hidden_ties.sql",
+          "hidden": true,
+          "label": "Ties share a rank"
+        }
+      ],
+      "runner": [
+        "browser",
+        "local"
+      ],
+      "limits": {
+        "time_s": 10,
+        "memory_mb": 256,
+        "network": false
+      },
+      "starter": {
+        "schema.sql": "CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, country TEXT);\nCREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL, placed TEXT);\n"
+      }
+    },
+    "sql-predict": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "predict-output",
+          "id": "s1",
+          "prompt": "customers has 5 rows, 2 in FR. How many rows come back?",
+          "code": "SELECT name FROM customers WHERE country = 'FR';",
+          "language": "sql",
+          "options": [
+            "2",
+            "5",
+            "3"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "select"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "s2",
+          "prompt": "Totals are 10, 30, 20. What is first?",
+          "code": "SELECT total FROM orders ORDER BY total DESC LIMIT 1;",
+          "language": "sql",
+          "options": [
+            "30",
+            "10"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "order-by"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "s3",
+          "prompt": "Orders come from 3 countries. How many rows?",
+          "code": "SELECT c.country, SUM(o.total)\nFROM orders o JOIN customers c ON c.id = o.customer_id\nGROUP BY c.country;",
+          "language": "sql",
+          "options": [
+            "3",
+            "One per order"
+          ],
+          "answer": 0,
+          "difficulty": 3,
+          "nodes": [
+            "group-by"
+          ]
+        },
+        {
+          "type": "predict-output",
+          "id": "s4",
+          "prompt": "One of 5 customers never ordered. How many rows?",
+          "code": "SELECT c.name FROM customers c\nLEFT JOIN orders o ON o.customer_id = c.id\nWHERE o.id IS NULL;",
+          "language": "sql",
+          "options": [
+            "1",
+            "0",
+            "5"
+          ],
+          "answer": 0,
+          "difficulty": 4,
+          "nodes": [
+            "joins"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.75"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "string-quotes",
+      "name": "Unquoted text",
+      "nodes": [
+        "select"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "compiled",
+        "when": "compiled == 0",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "select-lesson",
+        "card": 2
+      },
+      "fix_drill": "select-build",
+      "resolved_after": 3,
+      "headline": "Text values need single quotes"
+    },
+    {
+      "id": "ungrouped-column",
+      "name": "Column not grouped",
+      "nodes": [
+        "group-by"
+      ],
+      "engine": "code",
+      "detector": {
+        "metric": "pass_rate",
+        "when": "pass_rate < 1",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "group-lesson",
+        "card": 1
+      },
+      "fix_drill": "revenue-build",
+      "resolved_after": 3,
+      "headline": "A selected column isn't grouped"
+    }
+  ],
+  "access": [
+    "A computer"
+  ],
+  "focus": {
+    "Fundamentals": 35,
+    "Writing": 45,
+    "Reading": 20
+  },
+  "key_metrics": [
+    {
+      "id": "pass",
+      "label": "Queries correct",
+      "engine": "code",
+      "metric": "pass_rate",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "reading",
+      "label": "Query reading",
+      "engine": "knowledge",
+      "metric": "accuracy",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    }
+  ],
+  "copy": {
+    "placeholder": "SQL, Excel formulas, pandas",
+    "blurb": "Filter, group, join, rank"
+  },
+  "notes": "Engines: code runs queries against a small seeded schema in the browser (SQLite compiled to WebAssembly), or a local sqlite3 when installed. Each test wraps the learner's query as a subquery (<query>) so results compare as text. If no runner exists, each proof falls back to predict-output items in SQL. Hours are estimates from general analyst onboarding pacing, shown as ranges."
+}

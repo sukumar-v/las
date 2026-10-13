@@ -1,0 +1,1061 @@
+{
+  "schemaVersion": 1,
+  "skill": "cooking",
+  "name": "Home cooking",
+  "noun": "cooking",
+  "source": "generated",
+  "physical": true,
+  "engines": [
+    "visual",
+    "knowledge",
+    "self-report"
+  ],
+  "fallbacks": {
+    "visual": "self-report"
+  },
+  "why": [
+    {
+      "id": "health",
+      "label": "Eat healthier"
+    },
+    {
+      "id": "money",
+      "label": "Save money"
+    },
+    {
+      "id": "hosting",
+      "label": "Cook for friends"
+    },
+    {
+      "id": "enjoy",
+      "label": "Enjoy cooking"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "weeknights",
+      "label": "Five weeknight dinners from scratch",
+      "why": [
+        "health",
+        "money"
+      ],
+      "ladderStep": 4,
+      "milestone": "Cook a 30-minute dinner, timed",
+      "proof": "A logged dinner under 35 minutes, with a photo",
+      "focus": {
+        "Fundamentals": 40,
+        "Technique": 40,
+        "Planning": 20
+      }
+    },
+    {
+      "id": "friends",
+      "label": "Hosting a dinner for four",
+      "why": [
+        "hosting",
+        "enjoy"
+      ],
+      "ladderStep": 5,
+      "milestone": "Three dishes ready at once",
+      "proof": "A logged three-dish dinner served together",
+      "focus": {
+        "Fundamentals": 25,
+        "Technique": 40,
+        "Planning": 35
+      }
+    },
+    {
+      "id": "knife",
+      "label": "Fast, safe knife work",
+      "why": [
+        "enjoy",
+        "health"
+      ],
+      "ladderStep": 1,
+      "milestone": "An even dice",
+      "proof": "A photo of diced onion, pieces even",
+      "focus": {
+        "Fundamentals": 60,
+        "Technique": 30,
+        "Planning": 10
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "level",
+      "type": "scale",
+      "question": "How often do you cook from scratch?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes, from recipes"
+        },
+        {
+          "value": 2,
+          "label": "Most weeks"
+        },
+        {
+          "value": 3,
+          "label": "Most days"
+        }
+      ],
+      "optional": false
+    },
+    {
+      "id": "safety",
+      "type": "quiz",
+      "question": "A few food-safety questions.",
+      "spec": "kitchen-quiz",
+      "optional": false
+    }
+  ],
+  "placement": [
+    {
+      "when": "!fresh && level >= 2 && quiz.correct >= 3",
+      "step": 2,
+      "evidence": "Cooks most weeks, knows food safety"
+    },
+    {
+      "when": "level >= 1",
+      "step": 1
+    }
+  ],
+  "ladder": [
+    {
+      "id": "start",
+      "label": "Brand new",
+      "hours": [
+        0,
+        0
+      ],
+      "nodes": []
+    },
+    {
+      "id": "knife",
+      "label": "Safe grip and an even dice",
+      "hours": [
+        2,
+        4
+      ],
+      "nodes": [
+        "knife"
+      ],
+      "proof": {
+        "engine": "visual",
+        "spec": "dice-rubric",
+        "label": "A photo of diced onion: pieces even in size",
+        "criteria": [
+          {
+            "id": "even",
+            "label": "Even pieces",
+            "check": "evenness_level >= 2"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "plate-photo"
+      }
+    },
+    {
+      "id": "browning",
+      "label": "Golden browning without burning",
+      "hours": [
+        3,
+        6
+      ],
+      "nodes": [
+        "heat"
+      ],
+      "proof": {
+        "engine": "visual",
+        "spec": "browning-rubric",
+        "label": "A photo of seared mushrooms: golden, not grey or black",
+        "criteria": [
+          {
+            "id": "color",
+            "label": "Golden brown",
+            "check": "browning_level >= 2"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "plate-photo"
+      }
+    },
+    {
+      "id": "safe-chicken",
+      "label": "Chicken cooked through, checked",
+      "hours": [
+        2,
+        4
+      ],
+      "nodes": [
+        "food-safety"
+      ],
+      "proof": {
+        "engine": "self-report",
+        "spec": "temp-log",
+        "label": "Chicken checked with a thermometer at 74°C in the thickest part",
+        "criteria": [
+          {
+            "id": "temp",
+            "label": "74°C or more",
+            "check": "count >= 74"
+          }
+        ],
+        "single_take": true
+      }
+    },
+    {
+      "id": "dinner",
+      "label": "A timed 30-minute dinner",
+      "hours": [
+        6,
+        12
+      ],
+      "nodes": [
+        "timing"
+      ],
+      "proof": {
+        "engine": "self-report",
+        "spec": "dinner-log",
+        "label": "One dinner from scratch in 35 minutes or less, tasted and rated",
+        "criteria": [
+          {
+            "id": "time",
+            "label": "35 minutes or less",
+            "check": "minutes <= 35"
+          },
+          {
+            "id": "taste",
+            "label": "You liked it",
+            "check": "felt >= 3"
+          }
+        ],
+        "single_take": true
+      }
+    },
+    {
+      "id": "hosting",
+      "label": "Three dishes ready together",
+      "hours": [
+        8,
+        20
+      ],
+      "nodes": [
+        "planning"
+      ],
+      "proof": {
+        "engine": "visual",
+        "spec": "plate-rubric",
+        "label": "A photo of three dishes served together, graded for doneness and plating",
+        "criteria": [
+          {
+            "id": "plating",
+            "label": "Plated cleanly",
+            "check": "plating_level >= 2"
+          },
+          {
+            "id": "together",
+            "label": "Served together",
+            "check": "readiness_level >= 2"
+          }
+        ],
+        "single_take": true,
+        "fallback": "self-report",
+        "fallback_spec": "plate-photo"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "knife",
+      "name": "Knife grip and dicing",
+      "requires": [],
+      "lesson": "knife-lesson",
+      "drills": [
+        "dice-drill",
+        "knife-quiz"
+      ],
+      "mistakes": [
+        "uneven-dice"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Where do your guiding fingertips go?",
+        "kind": "choice",
+        "options": [
+          "Curled under the knuckles",
+          "Flat on the food"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "heat",
+      "name": "Heat and browning",
+      "requires": [
+        "knife"
+      ],
+      "lesson": "heat-lesson",
+      "drills": [
+        "sear-drill"
+      ],
+      "mistakes": [
+        "crowded-pan"
+      ],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Crowding the pan makes food...",
+        "kind": "choice",
+        "options": [
+          "Steam and go grey",
+          "Brown faster"
+        ],
+        "answer": 0
+      },
+      "focus": "Technique"
+    },
+    {
+      "id": "food-safety",
+      "name": "Food safety",
+      "requires": [],
+      "lesson": "safety-lesson",
+      "drills": [
+        "safety-quiz"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Safe inner temperature for chicken?",
+        "kind": "choice",
+        "options": [
+          "74°C",
+          "55°C"
+        ],
+        "answer": 0
+      },
+      "focus": "Fundamentals"
+    },
+    {
+      "id": "timing",
+      "name": "Timing a meal",
+      "requires": [
+        "heat",
+        "food-safety"
+      ],
+      "lesson": "timing-lesson",
+      "drills": [
+        "timing-order"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "What starts first: rice or stir-fry?",
+        "kind": "choice",
+        "options": [
+          "Rice",
+          "Stir-fry"
+        ],
+        "answer": 0
+      },
+      "focus": "Planning"
+    },
+    {
+      "id": "planning",
+      "name": "Planning several dishes",
+      "requires": [
+        "timing"
+      ],
+      "lesson": "timing-lesson",
+      "drills": [
+        "plate-drill"
+      ],
+      "mistakes": [],
+      "bkt": {
+        "p_init": 0.1,
+        "p_learn": 0.2,
+        "p_slip": 0.1,
+        "p_guess": 0.15
+      },
+      "review": {
+        "prompt": "Work backwards from...",
+        "kind": "choice",
+        "options": [
+          "Serving time",
+          "The first chop"
+        ],
+        "answer": 0
+      },
+      "focus": "Planning"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "knife-lesson",
+      "title": "Knife grip",
+      "nodes": [
+        "knife"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Which hand position keeps fingertips safe?",
+          "options": [
+            "Claw: tips curled under",
+            "Flat hand on top"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "compare",
+          "text": "Tap the uneven dice.",
+          "left": {
+            "kind": "chart",
+            "type": "dots",
+            "series": [
+              {
+                "label": "Size mm",
+                "values": [
+                  10,
+                  10,
+                  11,
+                  9,
+                  10
+                ]
+              }
+            ]
+          },
+          "right": {
+            "kind": "chart",
+            "type": "dots",
+            "series": [
+              {
+                "label": "Size mm",
+                "values": [
+                  5,
+                  14,
+                  8,
+                  18,
+                  9
+                ]
+              }
+            ]
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "heat-lesson",
+      "title": "Browning",
+      "nodes": [
+        "heat"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Wet mushrooms in a crowded pan will...",
+          "options": [
+            "Steam and go grey",
+            "Brown nicely"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "sim",
+          "text": "Add more mushrooms. Watch the pan temperature.",
+          "sim": {
+            "kind": "sim",
+            "title": "Crowding the pan",
+            "params": {
+              "pieces": {
+                "label": "Pieces in pan",
+                "min": 5,
+                "max": 40,
+                "default": 12
+              }
+            },
+            "formulas": {
+              "pan_c": "clamp(220 - pieces * 4, 90, 220)"
+            },
+            "figure": {
+              "kind": "gauge",
+              "value": "pan_c",
+              "min": 80,
+              "max": 230,
+              "good": [
+                160,
+                220
+              ]
+            },
+            "readout": [
+              {
+                "value": "pan_c",
+                "label": "Pan",
+                "unit": "°C",
+                "decimals": 0
+              }
+            ]
+          }
+        },
+        {
+          "type": "compare",
+          "text": "Tap the crowded pan.",
+          "left": {
+            "kind": "mechanism",
+            "concept": "pan with gaps between mushrooms, golden edges"
+          },
+          "right": {
+            "kind": "mechanism",
+            "concept": "pan packed with grey, steaming mushrooms"
+          },
+          "answer": "right"
+        }
+      ]
+    },
+    {
+      "id": "safety-lesson",
+      "title": "Food safety",
+      "nodes": [
+        "food-safety"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Can you tell chicken is safe by its colour?",
+          "options": [
+            "No, use a thermometer",
+            "Yes"
+          ],
+          "answer": 0,
+          "reveal": "Colour can fool you; temperature can't."
+        },
+        {
+          "type": "diagram",
+          "text": "Thickest part, not touching bone: 74°C.",
+          "figure": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "°C",
+                "values": [
+                  74,
+                  63,
+                  71
+                ]
+              }
+            ],
+            "labels": [
+              "Chicken",
+              "Fish",
+              "Mince"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "timing-lesson",
+      "title": "Timing",
+      "nodes": [
+        "timing",
+        "planning"
+      ],
+      "cards": [
+        {
+          "type": "predict",
+          "text": "Rice takes 15 minutes, stir-fry 8. Start which first?",
+          "options": [
+            "Rice",
+            "Stir-fry"
+          ],
+          "answer": 0
+        },
+        {
+          "type": "diagram",
+          "text": "Work back from serving time.",
+          "figure": {
+            "kind": "chart",
+            "type": "bar",
+            "series": [
+              {
+                "label": "Start, minutes before serving",
+                "values": [
+                  20,
+                  12,
+                  8
+                ]
+              }
+            ],
+            "labels": [
+              "Rice",
+              "Prep veg",
+              "Stir-fry"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "drills": [
+    {
+      "id": "dice-drill",
+      "type": "make",
+      "title": "Dice an onion",
+      "prompt": "Dice half an onion with the claw grip. Spread the pieces out and photograph from above.",
+      "nodes": [
+        "knife"
+      ],
+      "spec": "dice-rubric",
+      "needs": [
+        "A chef's knife",
+        "A cutting board"
+      ],
+      "success": "evenness_level >= 2",
+      "difficulty": {
+        "param": "size",
+        "levels": [
+          "large dice",
+          "medium dice",
+          "small dice"
+        ],
+        "start": 0
+      },
+      "minutes": 10,
+      "intensity": 2,
+      "focus": "Fundamentals",
+      "fixes": [
+        "uneven-dice"
+      ]
+    },
+    {
+      "id": "knife-quiz",
+      "type": "choice",
+      "title": "Knife safety",
+      "prompt": "Pick the safe choice.",
+      "nodes": [
+        "knife"
+      ],
+      "spec": "kitchen-quiz",
+      "needs": [],
+      "minutes": 2,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "sear-drill",
+      "type": "make",
+      "title": "Sear mushrooms",
+      "prompt": "Sear mushrooms in one layer for four minutes, no stirring. Photograph the pan.",
+      "nodes": [
+        "heat"
+      ],
+      "spec": "browning-rubric",
+      "needs": [
+        "A frying pan"
+      ],
+      "success": "browning_level >= 2",
+      "difficulty": {
+        "param": "batch",
+        "levels": [
+          "one layer",
+          "two batches"
+        ],
+        "start": 0
+      },
+      "minutes": 12,
+      "intensity": 2,
+      "focus": "Technique",
+      "fixes": [
+        "crowded-pan"
+      ]
+    },
+    {
+      "id": "safety-quiz",
+      "type": "choice",
+      "title": "Safe or not?",
+      "prompt": "Pick the safe answer.",
+      "nodes": [
+        "food-safety"
+      ],
+      "spec": "kitchen-quiz",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Fundamentals",
+      "fixes": []
+    },
+    {
+      "id": "timing-order",
+      "type": "order",
+      "title": "Plan the timeline",
+      "prompt": "Order the steps so everything is ready together.",
+      "nodes": [
+        "timing"
+      ],
+      "spec": "kitchen-quiz",
+      "needs": [],
+      "minutes": 3,
+      "intensity": 1,
+      "focus": "Planning",
+      "fixes": []
+    },
+    {
+      "id": "plate-drill",
+      "type": "make",
+      "title": "Plate it",
+      "prompt": "Plate your dinner on a clean rim. Photograph from above in daylight.",
+      "nodes": [
+        "planning"
+      ],
+      "spec": "plate-rubric",
+      "needs": [],
+      "success": "plating_level >= 2",
+      "minutes": 30,
+      "intensity": 2,
+      "focus": "Planning",
+      "fixes": []
+    }
+  ],
+  "specs": {
+    "dice-rubric": {
+      "kind": "rubric",
+      "criteria": [
+        {
+          "id": "evenness",
+          "label": "Even pieces",
+          "levels": {
+            "1": "Sizes vary a lot",
+            "2": "Mostly even",
+            "3": "Even, square pieces"
+          },
+          "measure": "tapped_points(piece_a, piece_b, piece_c)",
+          "level_from": "if(size_spread < 0.15, 3, if(size_spread < 0.3, 2, 1))",
+          "weight": 1
+        }
+      ],
+      "must_cite": "region",
+      "taps": [
+        {
+          "id": "piece_a",
+          "prompt": "Tap the corners of a big piece"
+        },
+        {
+          "id": "piece_b",
+          "prompt": "Tap the corners of a small piece"
+        },
+        {
+          "id": "piece_c",
+          "prompt": "Tap a typical piece"
+        }
+      ],
+      "pass": "evenness >= 2",
+      "safety_critical": false
+    },
+    "browning-rubric": {
+      "kind": "rubric",
+      "criteria": [
+        {
+          "id": "browning",
+          "label": "Browning",
+          "levels": {
+            "1": "Grey or steamed",
+            "2": "Golden on one side",
+            "3": "Deep golden, no black"
+          },
+          "measure": "color_balance(pan)",
+          "weight": 1
+        }
+      ],
+      "must_cite": "region",
+      "pass": "browning >= 2",
+      "safety_critical": false
+    },
+    "plate-rubric": {
+      "kind": "rubric",
+      "criteria": [
+        {
+          "id": "plating",
+          "label": "Plating",
+          "levels": {
+            "1": "Messy rim, piled food",
+            "2": "Clean rim",
+            "3": "Clean rim, height and colour contrast"
+          },
+          "measure": "exposure(plate)",
+          "weight": 1
+        },
+        {
+          "id": "readiness",
+          "label": "Served together",
+          "levels": {
+            "1": "One dish clearly cold or unfinished",
+            "2": "All dishes ready",
+            "3": "All dishes hot and at their best"
+          },
+          "weight": 1
+        }
+      ],
+      "must_cite": "region",
+      "taps": [
+        {
+          "id": "rim",
+          "prompt": "Tap the edge of the plate"
+        }
+      ],
+      "pass": "plating >= 2",
+      "safety_critical": false
+    },
+    "kitchen-quiz": {
+      "kind": "items",
+      "items": [
+        {
+          "type": "choice",
+          "id": "k1",
+          "prompt": "Safe inner temperature for chicken?",
+          "options": [
+            "74°C",
+            "55°C",
+            "60°C"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "food-safety"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "k2",
+          "prompt": "A knife falls. What do you do?",
+          "options": [
+            "Step back and let it fall",
+            "Catch it"
+          ],
+          "answer": 0,
+          "difficulty": 1,
+          "nodes": [
+            "knife"
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "k3",
+          "prompt": "Raw chicken board, then salad?",
+          "options": [
+            "Wash the board in hot soapy water first",
+            "Wipe it with a towel"
+          ],
+          "answer": 0,
+          "difficulty": 2,
+          "nodes": [
+            "food-safety"
+          ]
+        },
+        {
+          "type": "order",
+          "id": "k4",
+          "prompt": "Order the dinner timeline.",
+          "items": [
+            "Start the rice",
+            "Prep the vegetables",
+            "Stir-fry",
+            "Serve"
+          ],
+          "difficulty": 3,
+          "nodes": [
+            "timing"
+          ]
+        }
+      ],
+      "stop_after_wrong": 2,
+      "pass": "accuracy >= 0.75"
+    },
+    "temp-log": {
+      "kind": "self-report",
+      "fields": [
+        "done",
+        "count",
+        "note"
+      ],
+      "criterion": "Measured the thickest part with a thermometer and entered the reading in °C",
+      "pass": "done && count >= 74"
+    },
+    "dinner-log": {
+      "kind": "self-report",
+      "fields": [
+        "done",
+        "minutes",
+        "felt",
+        "photo",
+        "note"
+      ],
+      "criterion": "Cooked the dinner from scratch, timed it, tasted it and rated it 1 to 5",
+      "pass": "done && minutes <= 35"
+    },
+    "plate-photo": {
+      "kind": "self-report",
+      "fields": [
+        "done",
+        "photo",
+        "felt",
+        "note"
+      ],
+      "criterion": "Photographed the result, tapped the measuring points, and rated it against the rubric levels"
+    }
+  },
+  "mistakes": [
+    {
+      "id": "uneven-dice",
+      "name": "Uneven dice",
+      "nodes": [
+        "knife"
+      ],
+      "engine": "visual",
+      "detector": {
+        "metric": "evenness_level",
+        "when": "evenness_level < 2",
+        "min_confidence": 0.7
+      },
+      "severity": 1,
+      "explain": {
+        "lesson": "knife-lesson",
+        "card": 1
+      },
+      "fix_drill": "dice-drill",
+      "resolved_after": 3,
+      "headline": "Pieces vary a lot in size"
+    },
+    {
+      "id": "crowded-pan",
+      "name": "Crowded pan",
+      "nodes": [
+        "heat"
+      ],
+      "engine": "visual",
+      "detector": {
+        "metric": "browning_level",
+        "when": "browning_level < 2",
+        "min_confidence": 0.7
+      },
+      "severity": 2,
+      "explain": {
+        "lesson": "heat-lesson",
+        "card": 2
+      },
+      "fix_drill": "sear-drill",
+      "resolved_after": 3,
+      "headline": "Food steamed grey instead of browning"
+    }
+  ],
+  "warmups": [
+    {
+      "id": "kitchen-setup",
+      "title": "Set up safely",
+      "steps": [
+        "Clear the counter and wipe it down",
+        "Put a damp towel under the board",
+        "Wash your hands",
+        "Lay out ingredients and a thermometer"
+      ],
+      "minutes": 5
+    }
+  ],
+  "safety": {
+    "warmup": "kitchen-setup",
+    "injury_questions": [
+      "Any hand or wrist injury that affects your grip?",
+      "Any food allergies in the household?"
+    ],
+    "beginner_caps": {
+      "max_intensity": 2,
+      "max_minutes": 60,
+      "sessions_per_week": 5
+    },
+    "stop_criteria": [
+      "A cut that keeps bleeding",
+      "A burn larger than a coin",
+      "Pain in the hand or wrist",
+      "Smoke or a grease fire: turn off the heat and cover the pan"
+    ],
+    "see_professional": [
+      "A deep cut or one that won't stop bleeding",
+      "A burn that blisters widely",
+      "Signs of food poisoning lasting over a day"
+    ],
+    "supervised_only": []
+  },
+  "access": [
+    "A chef's knife",
+    "A cutting board",
+    "A frying pan",
+    "A food thermometer",
+    "A phone camera"
+  ],
+  "injuries": {
+    "Wrists": "Pre-cut vegetables and a lighter pan for two weeks",
+    "Cut finger": "Wear a cut-resistant glove for knife drills until it heals"
+  },
+  "focus": {
+    "Fundamentals": 40,
+    "Technique": 35,
+    "Planning": 25
+  },
+  "hard_focus": [
+    "Technique"
+  ],
+  "key_metrics": [
+    {
+      "id": "score",
+      "label": "Photo rubric score",
+      "engine": "visual",
+      "metric": "score",
+      "unit": "%",
+      "better": "higher",
+      "format": "percent"
+    },
+    {
+      "id": "minutes",
+      "label": "Dinner time",
+      "engine": "self-report",
+      "metric": "minutes",
+      "unit": "min",
+      "better": "lower",
+      "format": "number"
+    }
+  ],
+  "copy": {
+    "placeholder": "cooking, baking, meal prep",
+    "blurb": "Knife, heat, timing, dinner"
+  },
+  "notes": "Engines: visual rubrics for cuts, browning and plating, graded from photos with a cited region and backed by tapped measurements; studio timers on every drill; self-report for taste (it can't be measured) and for food safety, which is checked with a thermometer reading and never by a rubric. Physical for knives and heat. Hours are estimates from general beginner cooking guidance, shown as ranges."
+}
