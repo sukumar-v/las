@@ -1,0 +1,61 @@
+{
+  "spec": {
+    "language": "python",
+    "entry": "words.py",
+    "tests": [
+      {
+        "call": "first_word(\"\")",
+        "expect": ""
+      },
+      {
+        "call": "count_words(\"a  b\")",
+        "expect": "2"
+      },
+      {
+        "call": "count_words(\"x\")",
+        "expect": "1"
+      }
+    ],
+    "limits": {
+      "time_s": 5
+    }
+  },
+  "evidence": {
+    "result": {
+      "runner": "local",
+      "language": "python",
+      "compiled": {
+        "ok": true,
+        "output": ""
+      },
+      "tests": [
+        {
+          "label": "first_word(\"\")",
+          "hidden": false,
+          "pass": false,
+          "expected": "",
+          "got": "",
+          "error": "runtime: IndexError: list index out of range (words.py:6)"
+        },
+        {
+          "label": "count_words(\"a  b\")",
+          "hidden": false,
+          "pass": false,
+          "expected": "2",
+          "got": "3"
+        },
+        {
+          "label": "count_words(\"x\")",
+          "hidden": false,
+          "pass": true,
+          "expected": "1",
+          "got": "1"
+        }
+      ],
+      "timeMs": 40
+    },
+    "files": {
+      "words.py": "def count_words(s):\n    return len(s.split(' '))\n\n\ndef first_word(s):\n    return s.split()[0]\n"
+    }
+  }
+}

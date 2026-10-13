@@ -1,0 +1,61 @@
+{
+  "spec": {
+    "language": "python",
+    "entry": "words.py",
+    "tests": [
+      {
+        "call": "count_words(\"a b\")",
+        "expect": "2"
+      },
+      {
+        "call": "spin()",
+        "expect": ""
+      },
+      {
+        "call": "count_words(\"\")",
+        "expect": "0"
+      }
+    ],
+    "limits": {
+      "time_s": 1
+    }
+  },
+  "evidence": {
+    "result": {
+      "runner": "local",
+      "language": "python",
+      "compiled": {
+        "ok": true,
+        "output": ""
+      },
+      "tests": [
+        {
+          "label": "count_words(\"a b\")",
+          "hidden": false,
+          "pass": true,
+          "expected": "2",
+          "got": "2"
+        },
+        {
+          "label": "spin()",
+          "hidden": false,
+          "pass": false,
+          "expected": "",
+          "got": "",
+          "error": "timeout: stopped after 1 s"
+        },
+        {
+          "label": "count_words(\"\")",
+          "hidden": false,
+          "pass": false,
+          "expected": "0",
+          "error": "not run: an earlier test stopped the program"
+        }
+      ],
+      "timeMs": 1000
+    },
+    "files": {
+      "words.py": "def count_words(s):\n    return len(s.split())\n\n\ndef first_word(s):\n    return s.split()[0]\n\n\ndef spin():\n    while True:\n        pass\n"
+    }
+  }
+}

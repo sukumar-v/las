@@ -1,0 +1,40 @@
+{
+  "language": "go",
+  "entry": "main.go",
+  "tests": [
+    {
+      "call": "add(2, 3)",
+      "expect": "5"
+    },
+    {
+      "call": "countWords(\"hello big world\")",
+      "expect": "3"
+    },
+    {
+      "call": "countWords(\"\")",
+      "expect": "0",
+      "hidden": true
+    },
+    {
+      "call": "add(2, 2)",
+      "expect": "5",
+      "label": "deliberate failure"
+    },
+    {
+      "call": "divide(1, 0)",
+      "expect": "0",
+      "label": "raises an error"
+    },
+    {
+      "stdin": "Ada\n",
+      "stdout": "Hello, Ada!"
+    }
+  ],
+  "runner": [
+    "local"
+  ],
+  "limits": {
+    "time_s": 10
+  },
+  "spin": "spin()"
+}

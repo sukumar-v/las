@@ -1,0 +1,34 @@
+{
+  "spec": {
+    "language": "python",
+    "entry": "words.py",
+    "tests": [
+      {
+        "call": "f()",
+        "expect": "1"
+      }
+    ],
+    "limits": {
+      "time_s": 5
+    }
+  },
+  "evidence": {
+    "result": {
+      "runner": "local",
+      "language": "python",
+      "tests": [
+        {
+          "label": "f()",
+          "hidden": false,
+          "pass": false,
+          "error": "not run: no Python toolchain was found on this computer (looked for python3, python)"
+        }
+      ],
+      "timeMs": 0,
+      "error": "no Python toolchain was found on this computer (looked for python3, python)"
+    },
+    "files": {
+      "words.py": ""
+    }
+  }
+}
