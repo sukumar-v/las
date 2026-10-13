@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 import las from "./tools/eslint-plugin-las/index.js";
 
@@ -6,6 +7,7 @@ export default tseslint.config(
   { ignores: ["**/dist/**", "**/node_modules/**", "prototypes/**", "**/*.d.ts", "packages/studio/public/**"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  { languageOptions: { globals: { ...globals.node, ...globals.browser } } },
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
