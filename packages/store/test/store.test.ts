@@ -5,7 +5,7 @@ import { BASE_THEME } from "@las/schema";
 describe("store", () => {
   it("migrates and round-trips the main tables", () => {
     const s = new Store(":memory:");
-    expect(s.db.version).toBe(1);
+    expect(s.db.version).toBe(2);
     const learner = s.getOrCreateLearner();
     expect(s.getOrCreateLearner().id).toBe(learner.id);
     const model = s.saveSkillModel({ skill: "juggling", name: "Juggling", version: 1, source: "generated" } as any, true);
