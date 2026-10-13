@@ -863,8 +863,7 @@ function applyPlanChoice(ctx: LasContext, live: LiveSessionRow, screenId: string
   ctx.store.logPlanChange(sk, `coach-plan:${screenId}`, `${optionId}${a.kind === "none" ? "" : `:${a.kind}`}`);
   ctx.store.updateCoachScreen(scr.id, { screen: { ...(scr.screen as object), chosen: optionId } });
   const change = changes.filter(Boolean).join(" ") || "Nothing changes.";
-  // the coach hears it as an answer on that screen (a plan option is a card answer of type "plan-option")
-  const eventId = queueEvent(ctx, live.id, { type: "card.answered", screenId, card: 0, cardType: "plan-option", answer: { optionId, label: opt.label, change } });
+  const eventId = queueEvent(ctx, live.id, { type: "plan.chosen", screenId, optionId, label: opt.label, change });
   return { optionId, change, eventId };
 }
 

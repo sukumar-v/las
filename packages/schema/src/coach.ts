@@ -90,14 +90,16 @@ export const CoachEventSchema = z.discriminatedUnion("type", [
   z.object({ ...base, type: z.literal("pain.reported"), area: z.string(), level: z.number().int().min(1).max(5), intensityCap: z.number().int().min(1).max(5) }),
   z.object({ ...base, type: z.literal("session.paused"), reason: z.enum(["learner", "pain"]) }),
   z.object({ ...base, type: z.literal("session.resumed"), pausedSeconds: z.number().min(0) }),
-  z.object({ ...base, type: z.literal("session.left"), reason: z.enum(["closed", "studio-offline"]) })
+  z.object({ ...base, type: z.literal("session.left"), reason: z.enum(["closed", "studio-offline"]) }),
+  /** the learner tapped an option on a plan screen; the server has already applied it (§10) */
+  z.object({ ...base, type: z.literal("plan.chosen"), optionId: z.string(), label: z.string(), change: z.string() })
 ]);
 export type CoachEvent = z.infer<typeof CoachEventSchema>;
 export type CoachEventType = CoachEvent["type"];
 export type CoachEventInput = z.input<typeof CoachEventSchema>;
 
 /** Events the watcher wakes a coach for (§4). */
-export const WAKE_EVENT_TYPES: readonly CoachEventType[] = ["screen.viewed", "card.answered", "drill.answered", "attempt.analyzed", "learner.asked", "pain.reported", "session.resumed"];
+export const WAKE_EVENT_TYPES: readonly CoachEventType[] = ["screen.viewed", "card.answered", "drill.answered", "attempt.analyzed", "learner.asked", "pain.reported", "session.resumed", "plan.chosen"];
 
 // ------------------------------------------------------------------ screens (§7)
 

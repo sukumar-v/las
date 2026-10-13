@@ -553,7 +553,7 @@ describe("live coach: scripted learner × scripted coach", () => {
     expect(changes.some((c) => c.reason === "replan" && c.option.startsWith("change-minutes"))).toBe(true);
     expect((await r.learner.event({ type: "plan.chosen", sessionId: id, screenId: a.screen.id, optionId: "keep" })).duplicate).toBe(true);
     const w = await r.wait();
-    expect(w.events.find((e: any) => e.cardType === "plan-option")).toMatchObject({ type: "card.answered", screenId: a.screen.id, answer: { optionId: "more" } });
+    expect(w.events.find((e: any) => e.type === "plan.chosen")).toMatchObject({ type: "plan.chosen", screenId: a.screen.id, optionId: "more" });
     // a bad option is refused before anything shows
     const bad = await r.show({ kind: "plan", question: "Change?", reason: "x", options: [{ id: "a", label: "A", action: { kind: "replan", option: "move-mountains" } }, { id: "b", label: "B", action: { kind: "none" } }] });
     expect(bad.isError).toBe(true);
