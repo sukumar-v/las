@@ -1,0 +1,58 @@
+{
+  "cadence": {
+    "metrics": {
+      "peak_g": {
+        "value": 2.4944141466287357,
+        "confidence": 1
+      },
+      "cadence_spm": {
+        "value": 162.99521179617705,
+        "confidence": 1
+      },
+      "steps": {
+        "value": 65,
+        "confidence": 1
+      }
+    },
+    "criteria": {
+      "pass": true
+    },
+    "ok": true
+  },
+  "swing": {
+    "metrics": {
+      "peak_g": {
+        "value": 31.65751787617324,
+        "confidence": 1
+      },
+      "backswing_ms": {
+        "value": 805.6493697147811,
+        "confidence": 0.81
+      },
+      "downswing_ms": {
+        "value": 284.3506302852199,
+        "confidence": 0.81
+      },
+      "tempo_ratio": {
+        "value": 2.8332955299120273,
+        "confidence": 0.81
+      }
+    },
+    "criteria": {},
+    "ok": true
+  },
+  "steadiness": {
+    "metrics": {
+      "peak_g": {
+        "value": 1.0093583538852167,
+        "confidence": 1
+      },
+      "steadiness": {
+        "value": 0.6523627256015532,
+        "confidence": 1
+      }
+    },
+    "criteria": {},
+    "ok": true
+  }
+}
