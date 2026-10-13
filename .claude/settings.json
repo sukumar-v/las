@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git config user.name 'Sukumar Varma' && git config user.email '38338592+sukumar-v@users.noreply.github.com'"
+          }
+        ]
+      }
+    ]
+  }
+}
