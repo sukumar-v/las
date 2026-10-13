@@ -1,6 +1,6 @@
-# Agent and theme evals
+# Agent, coach-loop and theme evals
 
-LAS has no code for any skill. These evals show that the general pieces (MCP tools, validator, spec languages, engines, routing) cover every skill on the coverage list in [any-skill §8](../docs/design/any-skill.md#8-coverage-targets), and that learners' looks become valid themes. Everything runs offline, in memory, in a few seconds.
+LAS has no code for any skill. These evals show that the general pieces (MCP tools, validator, spec languages, engines, routing) cover every skill on the coverage list in [any-skill §8](../docs/design/any-skill.md#8-coverage-targets), that the live coach's loop holds for each of those skills, and that learners' looks become valid themes. Everything runs offline, in memory, in a few seconds.
 
 ```sh
 pnpm vitest run --project evals                       # or: pnpm test:evals
@@ -57,6 +57,65 @@ A drift fails the test unless `LAS_UPDATE_FIXTURES=1`. A summary table (scenario
 - an edit ("make it warmer" with a stored theme as `base`) still validates and changes only a few color tokens.
 
 `LAS_UPDATE_FIXTURES=1` regenerates the theme fixtures with `pnpm --filter @las/evals themes` first. One test is marked `it.fails`: a dark-only theme comes back from `validate_theme` with the base theme's `dark` overrides; flip it to `it` once that's fixed.
+
+## Coach-loop evals
+
+`test/coach-evals.test.ts` runs the live coach's loop ([live-coach §16](../docs/design/live-coach.md#16-testing)) against every scenario's stored model, with no model in the loop and no real time. Each scenario's `fixtures/models/<id>.json` is stored through `validate_skill_model` and enrolled through the intake (the quick milestone, with the model's equipment as the learner's access). `src/coach-harness.ts` holds the rig, the scripts and the checks.
+
+- **The scripted learner** acts only through the studio's HTTP API. It opens the live session (`GET /api/live/:id`) and views each screen (`screen.viewed`, with the time spent on the previous one). It answers predict cards and knowledge items (`POST /api/drill/:id/next`), one wrong and then right. To record a take of a measured drill, it lets the drill route make the attempt, then posts a synthetic `Analysis` for the attempt's engine to `POST /api/attempt/:id/analysis`. The analysis has the spec's own metric names, one mistake from the model, a marker, and bait the server must strip: a key frame as a data URL and an overlay naming a media ref. It never posts media. The learner also asks a question, hesitates, reports pain, pauses and resumes, taps a plan option and finishes the wrap-up.
+- **The scripted coach** uses only `coach_start`, `coach_wait`, `coach_show` and `coach_end`, over an in-memory MCP client. Every policy answers a question with a short `message` that replies to the question's event.
+- **A fake clock** (`setDirectorClock`) makes the 60 s presence window, the 8 s deadline, the 300 ms batch window and the 45 s wait cost a millisecond each. A policy moves the clock on itself, for the quitter's absence or a pause.
+
+Each scenario runs five live sessions, one per policy, in this order. The essayist comes last because pain lowers intensity for 7 days.
+
+| Policy | The coach |
+|---|---|
+| `follow` | Shows `"suggested"` whenever nothing is queued and makes one quiet wait (a heartbeat). The learner asks, hesitates and finishes the wrap-up |
+| `override` | Writes its own lesson on a node the suggestion doesn't cover, its own knowledge drill (the model's predict cards as items), feedback from the `attempt.analyzed` it gets, a plan screen (add an hour a week, or keep) and its own wrap-up. Every override carries a reason |
+| `quitter` | Coaches the first screen (`quitter(n)`), takes one more batch and stops calling. The clock runs 61 s while the learner carries on with the fallback and asks a question. The quitter comes back with `ack` set to the last event it handled |
+| `leaver` | Coaches the first screen, then sends a `message` with `leaving: true`. The learner finishes on the fallback |
+| `essayist` | Tries an essay card, an unknown card type, a made-up metric spec, a 40-word message, feedback on a quality-failed analysis and feedback citing a mistake the analysis doesn't have. Then the learner reports pain (level 4) and the coach tries the hardest drill above the new cap. Last, pause and resume |
+
+The checks (each returns a list of problems):
+
+| Check | Holds when |
+|---|---|
+| `loopCompleted` | Every policy's session ran from `coach_start` to `coach_end`, which returned that session's summary, and the session is ended |
+| `screensFromCoachWhilePresent` | Every screen the studio got (`coach.screen`) came from an accepted `coach_show` (`source: "coach"`), or from the fallback while the coach was away. The exceptions are the director's own warm-up, recall and pause, and the wrap-up `coach_end` shows when the coach didn't |
+| `showsValidated` | Every `coach_show` returned `{ok, errors}`, and accepted screens are stored as coach screens. Each of the essayist's screens is refused with an error at its path (`cards[0]`, `cards[0].type`, `spec`, `text`, `attemptId`, `evidence.mistakeId`, `drillId`). None stored a row, sent the studio a screen or message, or changed the queued screen |
+| `overridesLogged` | Each override is in the planner log with `by: "coach"`, its reason and what was suggested |
+| `eventsDelivered` | Each wait returns, in id order, exactly the stored events not yet acknowledged (by `ack`, else by the previous batch), up to at least what was pending when it began. The quitter's lost batch comes again, with everything that happened while it was away |
+| `noRawMedia` | No event carries a `mediaRef`, a data URL or an `overlay` |
+| `waitResultsSmall` | Every `coach_wait` result (`structuredContent.data`) is under 4 KB of JSON. The table reports the max, and the max with the widget's theme added |
+| `questionsAnswered` | Each `learner.asked` text reaches the coach word for word, including one asked while the coach was away. The reply shows at once: `status: "shown"`, a `coach.message` during the call, and the studio draws it |
+| `painLowersCap` | `pain.reported` carries the cap the server applied, which is lower than before, the state has it, and the coach's next drill above it is refused at `drillId` |
+| `planChoiceLogged` | The tapped plan option returns a change and is logged as the plan change `coach-plan:<screenId>`, and the coach hears `plan.chosen` |
+| `leaverHandsOver` | The leaving message sets coach-away (`coachPresent: false`, `leftOnPurpose`) at once. The next screens come from the fallback with no waiting, and the session reaches its end |
+| `heartbeatOnQuiet` | A wait with nothing pending returns `heartbeat: true` with no events and "call coach_wait again", once the fake clock has passed the timeout |
+
+Some checks can't apply to a model, and the table's n/a column says which. No drill is above the lowered cap in the non-physical models or ASL, since all their drills are intensity 1. Chess has no drill an engine measures, so its essayist has no attempt to give feedback on. A separate test injects faults into a recorded run (media in an event, an oversize result, a skipped event, a refused screen that leaked, a fallback screen while the coach was present, a lost question) and checks that each one is flagged.
+
+**Known server bugs.** Two tests are `it.fails`. Each one asserts the designed behavior; flip it to `it` once the bug is fixed:
+
+- A `coach_wait` made after the session ended returns no events, so what was still pending is never delivered: the wrap-up's `screen.viewed`, or a last question. This is the `!row` branch of `coachWait` in `packages/server/src/core/director.ts`. `eventsDelivered` leaves out these waits, and `eventsLostAfterEnd` lists them.
+- A coach screen queued before a leaving message still shows after the coach left. `serveNext` in `director.ts` shows the queued screen before it checks presence. `leaverHandsOver` leaves that screen out, and `queuedShownAfterLeaving` lists it.
+
+**Adding a policy.**
+
+1. Write it in `src/coach-harness.ts` as `async (r: CoachRig) => { ... }`. Start with `r.start("<name>")` and add the name to `PolicyName`. Drive the learner with `r.view`, `r.act`, `r.advance`, `r.ask`, `r.hesitate`, `r.pain`, `r.event` and `r.recordTake`, and the coach with `r.wait`, `r.show`, `r.followTurn` and `r.answerQuestions`. Finish with `r.drain()` and `r.end()`. The coach talks only through the coach tools and the learner only through the HTTP API.
+2. Mark screens that must be refused with `{ expect: { what, path, message } }`, and overrides with `{ override: { reason, suggested } }`. Record anything a new check needs in `CoachRun`.
+3. Add the policy to `POLICIES`, before the essayist unless it reports pain. If it proves something new, add a check to `COACH_CHECKS` and `coachChecks`. Every scenario then runs it.
+4. Keep it light: all 27 scenarios with 5 sessions each run in about 15 seconds.
+
+**Running.**
+
+```sh
+pnpm -s test:evals                                                      # every eval
+pnpm vitest run --project evals evals/test/coach-evals.test.ts          # the coach loop only
+pnpm vitest run --project evals evals/test/coach-evals.test.ts -t chess # one scenario
+```
+
+Add `--reporter=verbose` to see the summary table: time, sessions, waits, shows accepted and refused, events, studio screens from the coach and the fallback, the largest wait result (with and without the theme), and what didn't apply. A new scenario is picked up once its model fixture exists, so run the agent evals first.
 
 ## Adding a scenario
 
