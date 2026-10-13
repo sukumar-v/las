@@ -607,6 +607,10 @@ export class Store {
     );
     return this.getLiveSession(id)!;
   }
+  /** one wake more, atomically (the watcher and the director may write the same row from two processes) */
+  recordLiveSessionWake(id: string, at = now()): void {
+    this.db.run("UPDATE live_session SET wakes = wakes + 1, last_wake_at = ? WHERE id = ?", at, id);
+  }
   private liveSession(r: Row): LiveSessionRow {
     return { id: r.id, enrollmentId: r.enrollment_id, state: r.state, coachSessionId: r.coach_session_id ?? undefined, client: r.client ?? undefined, coachPid: r.coach_pid ?? undefined, coachToken: r.coach_token ?? undefined, lastWaitAt: r.last_wait_at ?? undefined, waitOpen: bool(r.wait_open), leftOnPurpose: bool(r.left_on_purpose), studioSeenAt: r.studio_seen_at ?? undefined, wakes: r.wakes ?? 0, lastWakeAt: r.last_wake_at ?? undefined, data: json(r.json, {}), startedAt: r.started_at, endedAt: r.ended_at ?? undefined };
   }

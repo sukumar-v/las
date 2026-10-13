@@ -41,6 +41,8 @@ export interface WatchStore {
   listLiveSessions(opts: { states?: LiveState[] }): WatchRow[];
   getLiveSession(id: string): WatchRow | undefined;
   updateLiveSession(id: string, patch: Partial<Pick<WatchRow, "wakes" | "lastWakeAt" | "coachSessionId">>): unknown;
+  /** atomic `wakes + 1`; optional so a plain fake store still works */
+  recordLiveSessionWake?(id: string, at?: string): void;
   countPendingCoachEvents(liveSessionId: string, types?: string[]): number;
   pendingCoachEvents(liveSessionId: string, afterId?: number, limit?: number): { type: string }[];
   getSetting<T>(key: string, fallback: T): T;
@@ -162,7 +164,8 @@ export class CoachWatcher {
     const { store } = this.o;
     const adapter = findAdapter(s.client, this.adapters);
     // claim the wake first, so a second watcher (cron and --watch together) sees the interval
-    store.updateLiveSession(s.id, { wakes: s.wakes + 1, lastWakeAt: now.toISOString() });
+    if (store.recordLiveSessionWake) store.recordLiveSessionWake(s.id, now.toISOString());
+    else store.updateLiveSession(s.id, { wakes: s.wakes + 1, lastWakeAt: now.toISOString() });
     const notify = async (reason: string): Promise<WatchAction> => {
       const via = await this.o.notify({
         channel: adapter?.notify ?? "push",
