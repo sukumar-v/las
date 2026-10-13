@@ -73,7 +73,7 @@ function colorPath(theme: Theme, mode: ThemeMode, role: keyof ColorTokens | `dat
  * Validates a theme: schema, WCAG AA contrast in every mode, evaluation colors, color-blind-safe
  * series, focus ring, touch targets, motion, font licenses and assets. Every failure comes with a fix.
  */
-export function validateTheme(input: unknown): ThemeValidation {
+export function validateTheme(input: unknown, depth = 0): ThemeValidation {
   const parsed = ThemeSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -217,9 +217,17 @@ export function validateTheme(input: unknown): ThemeValidation {
 
   const ok = errors.length === 0;
   let fixedOk: boolean | undefined;
-  if (!ok && fixes.length) {
-    const again = validateTheme(fixed);
+  if (!ok && fixes.length && depth < 2) {
+    const again = validateTheme(fixed, depth + 1);
     fixedOk = again.ok;
+    if (!again.ok && again.fixedOk && again.fixed) {
+      // a second round of fixes converged; adopt it
+      for (const f of again.fixes) {
+        fixes.push(f);
+        setPath(fixed, f.path, f.to);
+      }
+      fixedOk = true;
+    }
   }
   return { ok, errors, fixes, fixed: ok ? undefined : fixed, fixedOk, report };
 }
