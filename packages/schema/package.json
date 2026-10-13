@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "exports": { ".": { "types": "./src/index.ts", "default": "./src/index.ts" } },
-  "scripts": { "build": "echo 'built by consumers'", "test": "vitest run" },
+  "scripts": { "build": "echo built-by-consumers", "test": "vitest run" },
   "dependencies": { "zod": "^4.1.0" },
   "devDependencies": { "vitest": "^4.1.0" }
 }
