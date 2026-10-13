@@ -28,7 +28,11 @@ export const MOVEMENT_FUNCTIONS = [
   "overlay",
   "midpoint",
   "projection",
-  "smooth"
+  "smooth",
+  "angle_arc",
+  "line",
+  "ghost",
+  "beat_timeline"
 ] as const;
 
 export const KNOWN_METRIC_FUNCTIONS = new Set<string>([...STANDARD_FUNCTION_NAMES, ...MOVEMENT_FUNCTIONS]);
