@@ -1,0 +1,19 @@
+{
+  "$comment": "Open-source policy: docs/DESIGN.md section 11. Adding a license type needs a design-doc update. 'exceptions' maps name@version to the reason it is accepted anyway; never use it to silence a real violation.",
+  "allowed": [
+    "MIT",
+    "ISC",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "0BSD",
+    "Apache-2.0",
+    "Unlicense",
+    "CC0-1.0",
+    "Python-2.0",
+    "BlueOak-1.0.0",
+    "CC-BY-4.0",
+    "OFL-1.1"
+  ],
+  "allowedWithCare": ["MPL-2.0"],
+  "exceptions": {}
+}

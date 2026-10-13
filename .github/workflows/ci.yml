@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# One run per branch or PR: a new push cancels the one still running.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+
+jobs:
+  verify:
+    name: Lint, test, licenses, smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # The pnpm version comes from "packageManager" in package.json.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm # caches the pnpm store, keyed on pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests (schema, store, server, ui, engines, runners, cli, evals)
+        run: pnpm test
+
+      - name: Engine regression
+        run: pnpm test:engines
+
+      - name: Theme snapshots
+        run: pnpm test:themes
+
+      - name: Offline evals
+        run: pnpm test:evals
+
+      - name: License check
+        run: pnpm run licenses # "pnpm licenses" alone is pnpm's own command
+
+      - name: Smoke test (MCP Inspector over stdio)
+        run: pnpm smoke
+
+      - name: Build the studio
+        run: |
+          if [ -d packages/studio/src ]; then
+            pnpm --filter @las/studio build
+          else
+            echo "packages/studio/src not present yet: skipping the studio build"
+          fi
+
+  e2e:
+    name: Studio end-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for e2e tests
+        id: e2e
+        run: |
+          if [ -f packages/studio/playwright.config.ts ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "packages/studio/playwright.config.ts not present yet: skipping e2e"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the studio
+        if: steps.e2e.outputs.present == 'true'
+        run: pnpm --filter @las/studio build
+
+      - name: Cache Playwright browsers
+        if: steps.e2e.outputs.present == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        if: steps.e2e.outputs.present == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e
+        if: steps.e2e.outputs.present == 'true'
+        run: pnpm test:e2e
+
+      - name: Upload the Playwright report
+        if: failure() && steps.e2e.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            packages/studio/playwright-report
+            packages/studio/test-results
+          if-no-files-found: ignore
