@@ -145,7 +145,7 @@ The live coach loop ([live coach §3](live-coach.md#3-mechanism-1-the-coach-loop
   - `las://packs/{pack}` (curated packs)
 - **Prompts:**
   - `/las-start`: learn something new
-  - `/las-session`: today's session. Its text still names the v0.1 flow (`next_session`); the skill tells the agent to run the coach loop when `coach_start` exists
+  - `/las-session`: today's session, as the coach loop (`coach_start` → `coach_wait` → `coach_show` → `coach_end`); it names the v0.1 flow as the fallback for clients that can't hold a long tool call
   - `/las-weekly-review`
   - `/las-stuck`: plateau or motivation conversation
 

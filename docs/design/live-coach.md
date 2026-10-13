@@ -14,7 +14,6 @@ Status: **built in v0.2** ([build plan](../DESIGN.md#13-build-plan)). First clie
 - A route to dismiss a coach message: the studio hides it on that device only.
 - The widget's coach view is read-only: it shows the screen and a studio link (§5).
 - `learner.hesitated` is unit-tested, not in the end-to-end tests.
-- The `/las-session` prompt still asks for the v0.1 flow (`next_session`); the skill tells the agent to use the loop.
 - `las-agents serve` tries the studio port once at start-up; only `las coach --watch` retries it (§14).
 - No OS notifier on Windows; Web Push still works there.
 
