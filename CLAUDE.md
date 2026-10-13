@@ -4,7 +4,7 @@ Design: `docs/DESIGN.md`, starting with `docs/design/any-skill.md`. Clickable pr
 
 ## Rules
 
-- **Commits:** no attribution trailers in commit messages: no `Co-Authored-By: Claude` and no `Claude-Session:` line.
+- **Commits:** the author and committer are always the repository owner (`Sukumar Varma <38338592+sukumar-v@users.noreply.github.com>`), never Claude; `.claude/settings.json` sets this at session start, and `git config user.name`/`user.email` must match before committing. No attribution trailers in commit messages: no `Co-Authored-By: Claude` and no `Claude-Session:` line.
 - **Open source only:** every dependency must be open source and free for anyone to use, including commercially. Allowed: MIT, BSD, ISC, Apache-2.0, public domain, OFL (fonts), CC-BY (data). MPL-2.0 is allowed with care. GPL tools are allowed only as optional external tools the learner installs, called as a separate process with a fallback. Not allowed: GPL/AGPL bundled or linked into LAS, non-commercial, source-available (FSL/BSL), custom model licenses, and proprietary hosted services as required dependencies. Check model weights separately from code. Record every new dependency in `docs/DESIGN.md` §11.
 - **No fixed design language:** every color, font, radius, shadow, component treatment and figure style comes from the learner's theme (`docs/design/theming.md`). Never hard-code them. The prototype's look is a demo, not the product's style.
 - **Show, don't tell:** learner-facing content is visual or interactive, with no essays.
