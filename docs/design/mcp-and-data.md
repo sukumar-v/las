@@ -29,6 +29,21 @@ sequenceDiagram
 - **Inline when possible:** if the client renders MCP Apps, sessions, drills and progress appear inside the chat. Otherwise tools return a studio link (`http://localhost:4711/s/<id>`, or the hosted URL).
 - **The server is the source of truth.** The agent never keeps learner state in its own memory; it reads it back through tools and resources.
 
+**Studio JSON routes.** The studio and the widgets call the same core functions as the tools, over a small JSON API on `127.0.0.1:4711` (`packages/server/src/http`). Events go through one route, `POST /api/events`.
+
+| Area | Routes |
+|---|---|
+| Server | `GET /api/health`, `GET /api/capabilities` (`?fresh=1` re-detects), `POST /api/devices` (the studio reports camera, microphone, motion and phone), `GET /api/stream` (live events), `POST /api/events` |
+| Theme | `GET /api/theme` (`?sk=`), `GET /api/fonts/:family/font.css` and `/:file` (the local font cache) |
+| Onboarding | `GET /api/state`, `GET /api/intake/:id`, `POST /api/intake/:id/answer`, `/place`, `/suggest`, `/feasibility`, `/milestone` |
+| Sessions | `GET /api/today`, `POST /api/session/next`, `GET /api/session/:id`, `POST /api/drill/:id/next`, `GET /api/reviews` |
+| Attempts | `GET /api/attempt/:id`, `POST /api/attempt/:id/evidence` (the studio's measurements; analyzed on the server), `POST /api/attempt/:id/analysis` (an analysis the studio already computed), `GET /api/attempt/:id/feedback`, `POST` and `GET /api/media/:attemptId` (the learner's own file, kept on the device) |
+| Code | `POST /api/code/run`, `POST /api/consent` (a runner's first-use consent) |
+| Progress | `GET /api/progress`, `GET /api/summary/:sessionId`, `GET /api/checkins`, `POST /api/checkins/run` |
+| Models | `GET /api/models/*` (cached model files served to the studio) |
+
+The studio package adds its own routes for phone pairing and push subscriptions (see packages/studio). `submit_rubric_grade` is a tool only: the agent's grades arrive through it, not through a route.
+
 ## 2. Tools
 
 Inputs and outputs, simplified. `sk` = a learner's enrollment in one skill (a learner can learn several skills).
@@ -85,6 +100,7 @@ The tools in [Theming §7](theming.md#7-tools-and-data): `draft_theme`, `validat
 | `run_code_tests` | `TestSpec, files` | Test results from the best available runner (asks the learner before a runner's first use) |
 | `compare_to_reference` | `attemptId, reference` | Similarity over time to a reference clip, recording or score |
 | `run_proof_check` | `milestoneId` | Recording flow, then `ProofResult` |
+| `submit_rubric_grade` | `attemptId, grades[]` (`criterion, level, confidence, region?, note?`) | The agent's own grades for a visual (rubric) attempt. The visual engine adds its measurements, stores the `Analysis` and returns the feedback card ([evaluation §3.1](evaluation.md#31-visual-grading-flow)) |
 
 ### Track
 | Tool | Input | Output |
