@@ -115,10 +115,10 @@ There's one neutral, accessible base theme. It's used before the learner chooses
 
 | Tool | Input | Output |
 |---|---|---|
-| `draft_theme` | `{prompt? , description?, image?, tokens?}` | A theme spec, plus the agent's notes on how it read the input |
-| `validate_theme` | `Theme` | `{ok, errors[], fixes[]}` |
-| `preview_theme` | `Theme, screen?` | A widget showing the learner's own Today, a lesson and a feedback card in that theme |
-| `set_theme` | `themeId, scope: all \| sk` | Applies it everywhere, or to one skill |
+| `draft_theme` | `{prompt?, description?, image_notes?, tokens?, name?, base?}` | A theme draft, plus notes on how the input was read and questions to ask if the learner is around. For a screenshot the agent looks at it with its own vision and passes what it sees as `image_notes` (colors, fonts, shapes, density, mood); LAS never sees pixels. `tokens` is a tokens file (W3C JSON, CSS custom properties or a Tailwind config). `base` is a theme id to edit ("make it warmer") |
+| `validate_theme` | `{theme, apply_fixes?}` (a full theme, or a partial one merged over the base theme) | `{ok, errors[], fixes[], report}`. Stores the theme when it passes and returns its `themeId`; with `apply_fixes: true` it stores the fixed copy when the fixes pass |
+| `preview_theme` | `{theme: id \| "base", screen?, sk?}` (`screen`: today, lesson, feedback, onboarding, progress or all) | A widget showing the learner's own screens in that theme |
+| `set_theme` | `{themeId, scope: "all" \| sk}` (`themeId` may be `"base"`) | Applies it everywhere, or to one skill |
 | `get_theme` | `sk?` | The active theme |
 
 Data: `theme(id, learner_id, name, source_kind, json, validated_at)` and `theme_scope(learner_id, enrollment_id?, theme_id)`.

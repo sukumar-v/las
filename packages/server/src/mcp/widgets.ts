@@ -32,24 +32,49 @@ export type ViewName =
   | "plan"
   | "route";
 
-function fallbackWidgetHtml(): string {
+/**
+ * MCP Apps protocol constants the fallback widget speaks (from @modelcontextprotocol/ext-apps spec.types:
+ * LATEST_PROTOCOL_VERSION, INITIALIZE_METHOD, INITIALIZED_METHOD, TOOL_RESULT_METHOD). A test keeps them in step.
+ */
+export const MCP_APPS = { protocolVersion: "2026-01-26", initialize: "ui/initialize", initialized: "ui/notifications/initialized", toolResult: "ui/notifications/tool-result" } as const;
+
+/** How long the fallback widget waits for a host to answer ui/initialize before pointing at the studio. */
+export const WIDGET_HOST_TIMEOUT_MS = 2000;
+
+export function fallbackWidgetHtml(): string {
   // A minimal widget used when the studio hasn't been built. Colors and fonts come from the theme in the tool result.
+  // No network: the MCP Apps handshake is a few JSON-RPC messages over window.parent.postMessage, written inline.
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LAS</title>
 <style>:root{color-scheme:light dark}body{margin:0;font-family:var(--las-font-body);background:var(--las-color-bg);color:var(--las-color-ink);padding:var(--las-space-3)}a{color:var(--las-color-accent)}pre{white-space:pre-wrap;font-family:var(--las-font-mono);font-size:var(--las-text-0)}.card{background:var(--las-color-surface);border:var(--las-border-width) solid var(--las-color-line);border-radius:var(--las-radius-lg);padding:var(--las-space-3)}</style></head>
 <body><div id="root" class="card">Loading…</div>
-<script type="module">
-import { App } from "https://esm.sh/@modelcontextprotocol/ext-apps@1.7.5";
-const root = document.getElementById("root");
-function applyTheme(t){ if(!t) return; const c=t.tokens.color, ty=t.tokens.type, s=document.documentElement.style;
-  for (const [k,v] of Object.entries(c)) if (typeof v==="string") s.setProperty("--las-color-"+k.replace("_","-"), v);
-  s.setProperty("--las-font-body", ty.body.family+", "+ty.body.fallback); s.setProperty("--las-font-mono", ty.mono.family+", "+ty.mono.fallback);
-  t.tokens.space.forEach((v,i)=>s.setProperty("--las-space-"+i, v+"px")); ty.scale.forEach((v,i)=>s.setProperty("--las-text-"+i, v+"px"));
-  s.setProperty("--las-radius-lg", t.tokens.radius.lg+"px"); s.setProperty("--las-border-width", t.tokens.border.width+"px"); }
-function render(sc){ applyTheme(sc.theme); const link = sc.studioLink ? '<p><a href="'+sc.studioLink+'" target="_blank" rel="noopener">Open in the studio</a></p>' : "";
-  root.innerHTML = "<strong>"+(sc.title||sc.view||"LAS")+"</strong>"+link+"<pre>"+JSON.stringify(sc.data??{},null,1).slice(0,4000)+"</pre>"; }
-const app = new App({ name: "las-view", version: "0.1.0" });
-app.ontoolresult = (r) => { if (r.structuredContent) render(r.structuredContent); };
-app.connect().catch(()=>{ root.textContent = "Open this in the studio."; });
+<script>
+(function(){
+var P=${JSON.stringify(MCP_APPS)}, TIMEOUT=${WIDGET_HOST_TIMEOUT_MS};
+var root=document.getElementById("root"), host=window.parent, nextId=1, pending={}, connected=false, rendered=false;
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function applyTheme(t){ if(!t||!t.tokens) return; var c=t.tokens.color||{}, ty=t.tokens.type||{}, s=document.documentElement.style;
+  Object.keys(c).forEach(function(k){ if(typeof c[k]==="string") s.setProperty("--las-color-"+k.replace("_","-"), c[k]); });
+  if(ty.body) s.setProperty("--las-font-body", ty.body.family+", "+ty.body.fallback); if(ty.mono) s.setProperty("--las-font-mono", ty.mono.family+", "+ty.mono.fallback);
+  (t.tokens.space||[]).forEach(function(v,i){ s.setProperty("--las-space-"+i, v+"px"); }); (ty.scale||[]).forEach(function(v,i){ s.setProperty("--las-text-"+i, v+"px"); });
+  if(t.tokens.radius) s.setProperty("--las-radius-lg", t.tokens.radius.lg+"px"); if(t.tokens.border) s.setProperty("--las-border-width", t.tokens.border.width+"px"); }
+function render(sc){ rendered=true; applyTheme(sc.theme); var link = sc.studioLink ? '<p><a href="'+esc(sc.studioLink)+'" target="_blank" rel="noopener">Open in the studio</a></p>' : "";
+  root.innerHTML = "<strong>"+esc(sc.title||sc.view||"LAS")+"</strong>"+link+"<pre>"+esc(JSON.stringify(sc.data==null?{}:sc.data,null,1).slice(0,4000))+"</pre>"; }
+function post(m){ m.jsonrpc="2.0"; try { host.postMessage(m,"*"); } catch(e) {} }
+function request(method, params, cb){ var id=nextId++; pending[id]=cb; post({ id:id, method:method, params:params }); }
+window.addEventListener("message", function(ev){
+  if(ev.source && ev.source!==host) return; var m=ev.data; if(!m||m.jsonrpc!=="2.0") return;
+  if(m.id!=null && !m.method){ var cb=pending[m.id]; delete pending[m.id]; if(cb) cb(m.error, m.result); return; }
+  if(m.method===P.toolResult){ if(m.params&&m.params.structuredContent) render(m.params.structuredContent); return; }
+  // any other host request (ping, teardown): answer so the host isn't left waiting
+  if(m.id!=null && m.method) post({ id:m.id, result:{} });
+});
+var timer=setTimeout(function(){ if(!connected&&!rendered) root.textContent="Open this in the studio."; }, TIMEOUT);
+if(!host||host===window){ clearTimeout(timer); root.textContent="Open this in the studio."; return; }
+request(P.initialize, { appInfo:{ name:"las-view", version:"0.1.0" }, appCapabilities:{}, protocolVersion:P.protocolVersion }, function(err){
+  if(err){ if(!rendered) root.textContent="Open this in the studio."; return; }
+  connected=true; clearTimeout(timer); post({ method:P.initialized, params:{} });
+});
+})();
 </script></body></html>`;
 }
 

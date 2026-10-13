@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import type { Capabilities, EngineStatus, Language } from "@las/schema";
@@ -95,6 +96,35 @@ function cachedModels(dir: string): string[] {
   }
 }
 
+/**
+ * A whisper.cpp model file the learner put in place: `LAS_WHISPER_MODEL`, else the first `ggml-*.bin` in the
+ * models folder (~/.las/models by default). whisper-cli without a model can't transcribe, so both are needed.
+ */
+export function whisperModelPath(modelsDir: string): string | undefined {
+  const env = process.env.LAS_WHISPER_MODEL;
+  if (env) return isFile(env) ? env : undefined;
+  for (const dir of [...new Set([modelsDir, join(homedir(), ".las", "models")])]) {
+    const hit = cachedModels(dir).filter((f) => /^ggml-.*\.bin$/i.test(f)).sort()[0];
+    if (hit && isFile(join(dir, hit))) return join(dir, hit);
+  }
+  return undefined;
+}
+
+function isFile(p: string): boolean {
+  try {
+    return statSync(p).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/** The whisper.cpp program and model when both are present: the only case the server transcribes itself. */
+export function whisperCpp(caps: Pick<Capabilities, "external">, modelsDir: string): { binary: string; modelPath: string } | undefined {
+  const bin = caps.external.find((e) => e.name === "whisper-cli" || e.name === "whisper-cpp");
+  const modelPath = bin ? whisperModelPath(modelsDir) : undefined;
+  return bin && modelPath ? { binary: bin.path, modelPath } : undefined;
+}
+
 export async function detectCapabilities(ctx: LasContext): Promise<Capabilities> {
   const models = cachedModels(ctx.config.modelsDir);
   const has = (p: string) => models.some((m) => m.toLowerCase().includes(p));
@@ -113,21 +143,23 @@ export async function detectCapabilities(ctx: LasContext): Promise<Capabilities>
   const local = toolchainResults.filter((t) => t.r.ok).map((t) => ({ language: t.language, tool: t.tool, version: firstVersion(t.r.out), consented: consentLocal }));
   const containerRuntime = podman.ok ? "podman" : docker.ok ? "docker" : undefined;
   const external = externalResults.filter((t) => t.path).map((t) => ({ name: t.name, protocol: t.protocol, path: t.path!, license: t.license, note: t.note }));
-  const whisperCli = external.find((e) => e.name === "whisper-cli" || e.name === "whisper-cpp");
+  const whisperCli = whisperCpp({ external }, ctx.config.modelsDir);
+  // engines analyze posted evidence in node either way; capturing it (camera, microphone, canvas) needs the studio
+  const capture = studio ? "studio" : "studio not built: run pnpm --filter @las/studio build; analysis of posted evidence still works";
   const ollamaModels = ollamaList.ok ? ollamaList.out.split("\n").slice(1).map((l) => l.split(/\s+/)[0]).filter(Boolean) : [];
   const visionViaOllama = ollamaModels.filter((m) => /llava|moondream|minicpm-v|qwen.*vl|smolvlm|granite.*vision|gemma3|bakllava/i.test(m));
 
   const engines: EngineStatus[] = [
-    { id: "movement", available: true, backend: "wasm", models: [{ id: "pose_landmarker_lite", downloaded: has("pose_landmarker"), license: "Apache-2.0" }, { id: "hand_landmarker", downloaded: has("hand_landmarker"), license: "Apache-2.0" }, { id: "face_landmarker", downloaded: has("face_landmarker"), license: "Apache-2.0" }, { id: "efficientdet_lite0", downloaded: has("efficientdet"), license: "Apache-2.0 code; weights unverified" }], details: { trackers: ["pose", "hands", "face", "objects"], smoothing: "one-euro", reference: "dtw", beat: "onset-autocorrelation", note: "runs in the studio; models download on first use and are cached" } },
-    { id: "audio", available: true, backend: "wasm", models: [], details: { pitch: "pitchy (McLeod)", onsets: "spectral flux", tempo: "autocorrelation", references: ["musicxml", "midi", "abc", "recording", "pattern", "notes"], calibration: "tap test" } },
-    { id: "speech", available: true, backend: whisperCli ? "native" : "wasm", models: [{ id: whisperCli ? "whisper.cpp (local)" : "onnx-community/whisper-base (Transformers.js)", downloaded: !!whisperCli || has("whisper"), license: "MIT" }], details: { transcription: whisperCli ? "whisper.cpp process" : "Transformers.js in the studio", languages: "any Whisper language", perSound: [], tones: "pitch contour", note: "per-sound scores need a license-clean model per language; none ships in v0.1, so the intelligibility and self-comparison fallback is used" } },
-    { id: "code", available: true, backend: "native", models: [], details: { browser: browserLanguages(), local: local.map((l) => l.language), container: !!containerRuntime } },
-    { id: "visual", available: true, backend: "wasm", models: [{ id: "tesseract.js eng", downloaded: has("tesseract") || has("eng.traineddata"), license: "Apache-2.0" }], details: { grading: "the agent's vision model grades with the rubric and submits through submit_rubric_grade; a local open vision model stands in when the agent is text-only", measurements: ["tapped_points", "proportion", "symmetry", "exposure", "color_balance", "edge_density", "text"], localVision: visionViaOllama } },
-    { id: "knowledge", available: true, backend: "native", models: [], details: { spacing: "ts-fsrs", mastery: "BKT" } },
-    { id: "interaction", available: true, backend: "native", models: [], details: { tasks: ["type-text", "shortcuts", "mental-math", "click-targets", "sequence"] } },
-    { id: "sensor", available: true, backend: "wasm", models: [], details: { detect: ["cadence", "swing-tempo", "steadiness", "step-count", "impact"], needs: "a phone with motion sensors, paired or opened directly" } },
-    { id: "game", available: true, backend: "native", models: [], details: { rules: ["chess (chess.js)"], engines: external.filter((e) => e.protocol === "uci" || e.protocol === "gtp").map((e) => e.name), fallback: "tactics quizzes from the game spec" } },
-    { id: "self-report", available: true, backend: "native", models: [] }
+    { id: "movement", available: true, backend: "wasm", models: [{ id: "pose_landmarker_lite", downloaded: has("pose_landmarker"), license: "Apache-2.0" }, { id: "hand_landmarker", downloaded: has("hand_landmarker"), license: "Apache-2.0" }, { id: "face_landmarker", downloaded: has("face_landmarker"), license: "Apache-2.0" }, { id: "efficientdet_lite0", downloaded: has("efficientdet"), license: "Apache-2.0 code; weights unverified" }], details: { capture, trackers: ["pose", "hands", "face", "objects"], smoothing: "one-euro", reference: "dtw", beat: "onset-autocorrelation", note: "runs in the studio; models download on first use and are cached" } },
+    { id: "audio", available: true, backend: "wasm", models: [], details: { capture, pitch: "pitchy (McLeod)", onsets: "spectral flux", tempo: "autocorrelation", references: ["musicxml", "midi", "abc", "recording", "pattern", "notes"], calibration: "tap test" } },
+    { id: "speech", available: true, backend: whisperCli ? "native" : "wasm", models: [{ id: whisperCli ? `whisper.cpp (local, ${whisperCli.modelPath.split(/[\\/]/).pop()})` : "onnx-community/whisper-base (Transformers.js)", downloaded: !!whisperCli || has("whisper"), license: "MIT" }], details: { capture, transcription: whisperCli ? "whisper.cpp process" : "Transformers.js in the studio", languages: "any Whisper language", perSound: [], tones: "pitch contour", note: "per-sound scores need a license-clean model per language; none ships in v0.1, so the intelligibility and self-comparison fallback is used" } },
+    { id: "code", available: true, backend: "native", models: [], details: { capture, browser: browserLanguages(), local: local.map((l) => l.language), container: !!containerRuntime } },
+    { id: "visual", available: true, backend: "wasm", models: [{ id: "tesseract.js eng", downloaded: has("tesseract") || has("eng.traineddata"), license: "Apache-2.0" }], details: { capture, grading: "the agent's vision model grades with the rubric and submits through submit_rubric_grade; a local open vision model stands in when the agent is text-only", measurements: ["tapped_points", "proportion", "symmetry", "exposure", "color_balance", "edge_density", "text"], localVision: visionViaOllama } },
+    { id: "knowledge", available: true, backend: "native", models: [], details: { capture, spacing: "ts-fsrs", mastery: "BKT" } },
+    { id: "interaction", available: true, backend: "native", models: [], details: { capture, tasks: ["type-text", "shortcuts", "mental-math", "click-targets", "sequence"] } },
+    { id: "sensor", available: true, backend: "wasm", models: [], details: { capture, detect: ["cadence", "swing-tempo", "steadiness", "step-count", "impact"], needs: "a phone with motion sensors, paired or opened directly" } },
+    { id: "game", available: true, backend: "native", models: [], details: { capture, rules: ["chess (chess.js)"], engines: external.filter((e) => e.protocol === "uci" || e.protocol === "gtp").map((e) => e.name), fallback: "tactics quizzes from the game spec" } },
+    { id: "self-report", available: true, backend: "native", models: [], details: { capture } }
   ];
 
   const localModels = [
