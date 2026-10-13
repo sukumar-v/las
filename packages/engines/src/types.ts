@@ -117,6 +117,10 @@ export interface AnalyzeContext {
   /** stamped into Analysis.version */
   specId?: string;
   modelVersion?: number;
+  /** proof or drill criteria to evaluate over the metrics: id -> expression */
+  criteria?: Record<string, string>;
+  /** engine-specific extras (reference bytes, expected text, submitted grades...) */
+  [extra: string]: unknown;
 }
 
 export type Analyzer<S, E> = (spec: S, evidence: E, ctx?: AnalyzeContext) => Analysis | Promise<Analysis>;

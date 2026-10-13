@@ -1,0 +1,47 @@
+{
+  "metrics": {
+    "legal_moves": 6,
+    "agreement": 0.333333,
+    "mean_eval_loss_cp": 80.833333,
+    "blunders": 1,
+    "mistakes": 1,
+    "inaccuracies": 1,
+    "moves_evaluated": 6
+  },
+  "mistakes": [
+    {
+      "id": "blunder",
+      "severity": 3,
+      "at": [
+        5
+      ]
+    },
+    {
+      "id": "mistake",
+      "severity": 2,
+      "at": [
+        4
+      ]
+    }
+  ],
+  "markers": [
+    {
+      "t": 4,
+      "label": "mistake: Nc6, best Nf6",
+      "role": "attention"
+    },
+    {
+      "t": 5,
+      "label": "blunder: Bb5, best Bc4",
+      "role": "attention"
+    },
+    {
+      "t": 6,
+      "label": "inaccuracy: a6, best Nf6",
+      "role": "attention"
+    }
+  ],
+  "criteria": {
+    "pass": false
+  }
+}

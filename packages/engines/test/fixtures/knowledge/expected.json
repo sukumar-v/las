@@ -1,0 +1,30 @@
+{
+  "metrics": {
+    "correct": 4,
+    "total": 6,
+    "accuracy": 0.625,
+    "stopped_early": 1,
+    "difficulty_reached": 3,
+    "mean_ms": 6116.666667
+  },
+  "mistakes": [
+    {
+      "id": "guessing",
+      "severity": 2,
+      "at": [
+        4,
+        5
+      ]
+    },
+    {
+      "id": "slow",
+      "severity": 1,
+      "at": [
+        1
+      ]
+    }
+  ],
+  "criteria": {
+    "pass": true
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "metrics": {
+    "balance_symmetry": 0.831402,
+    "balance_asymmetry": 0.168598,
+    "light_mean_luma": 0.542429,
+    "light_dark_clip": 0,
+    "light_bright_clip": 0,
+    "light_clipping": 0,
+    "detail_edge_density": 0.568966,
+    "detail_edge_strength": 0.320981,
+    "strokes_line_count": 1,
+    "strokes_line_share": 1,
+    "tone_r_offset": 0.043137,
+    "tone_g_offset": 0,
+    "tone_b_offset": -0.043137,
+    "tone_cast": 0.043137,
+    "shape_d1": 18,
+    "shape_d2": 18,
+    "shape_span": 36,
+    "shape_ratio": 0.5,
+    "shape_ratio_error": 0,
+    "balance_level": 2,
+    "balance_confidence": 0.8,
+    "light_level": 2,
+    "light_confidence": 0.8,
+    "score": 0.75
+  },
+  "criteria": {
+    "pass": true
+  },
+  "precision": "reduced"
+}
