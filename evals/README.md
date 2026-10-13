@@ -95,10 +95,7 @@ The checks (each returns a list of problems):
 
 Some checks can't apply to a model, and the table's n/a column says which. No drill is above the lowered cap in the non-physical models or ASL, since all their drills are intensity 1. Chess has no drill an engine measures, so its essayist has no attempt to give feedback on. A separate test injects faults into a recorded run (media in an event, an oversize result, a skipped event, a refused screen that leaked, a fallback screen while the coach was present, a lost question) and checks that each one is flagged.
 
-**Known server bugs.** Two tests are `it.fails`. Each one asserts the designed behavior; flip it to `it` once the bug is fixed:
-
-- A `coach_wait` made after the session ended returns no events, so what was still pending is never delivered: the wrap-up's `screen.viewed`, or a last question. This is the `!row` branch of `coachWait` in `packages/server/src/core/director.ts`. `eventsDelivered` leaves out these waits, and `eventsLostAfterEnd` lists them.
-- A coach screen queued before a leaving message still shows after the coach left. `serveNext` in `director.ts` shows the queued screen before it checks presence. `leaverHandsOver` leaves that screen out, and `queuedShownAfterLeaving` lists it.
+**Two checks came from bugs these evals found** (both fixed in the director): a `coach_wait` made after the session ended now delivers what was still pending (the wrap-up's `screen.viewed`, a last question), and a screen the coach queued before leaving is dropped, so the fallback takes over at once. `eventsLostAfterEnd` and `queuedShownAfterLeaving` in `CoachRun` keep watching for them.
 
 **Adding a policy.**
 

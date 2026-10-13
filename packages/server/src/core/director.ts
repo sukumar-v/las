@@ -382,8 +382,13 @@ function serveNext(ctx: LasContext, st: SkState, row: LiveSessionRow, data: Live
   }
   const queued = screenById(ctx, data.queuedId);
   if (queued) {
-    makeCurrent(ctx, data, queued, now);
-    return { screen: queued };
+    if (isPresent(row, s, now)) {
+      makeCurrent(ctx, data, queued, now);
+      return { screen: queued };
+    }
+    // the coach is away: a screen it queued earlier no longer fits; the fallback takes over (§8, §15 rule 6)
+    ctx.store.deleteCoachScreen(queued.id);
+    data.queuedId = undefined;
   }
   if (!opts.force && isPresent(row, s, now)) {
     if (!data.waitingSince) {
@@ -1019,7 +1024,16 @@ export async function coachWait(ctx: LasContext, sk: string, opts: CoachWaitOpti
   let row = ctx.store.openLiveSession(st.enrollment.id);
   if (!row) {
     const last = ctx.store.listLiveSessions({ enrollmentId: st.enrollment.id, limit: 1 })[0];
-    if (last && last.state === "ended" && tokensOf(ctx).has(last.id)) return waitResult(ctx, last, st, [], now, "The session ended. Call coach_end for the summary, then say a few words to the learner.");
+    if (last && last.state === "ended" && tokensOf(ctx).has(last.id)) {
+      // the session ended between two waits: what happened at the end is still delivered, at least once (§3.2)
+      const fin = mutate(ctx, last.id, (_r, d) => {
+        const ack = opts.ack !== undefined && /^\d+$/.test(opts.ack) ? Number(opts.ack) : Math.max(0, ...d.lastBatch);
+        if (ack > 0) ctx.store.db.run("UPDATE coach_event SET delivered_at = ? WHERE live_session_id = ? AND delivered_at IS NULL AND id <= ?", iso(now), last.id, ack);
+        d.lastBatch = pendingEvents(ctx, last.id).map((e) => Number(e.id));
+        return { patch: {} };
+      }).row;
+      return waitResult(ctx, fin, st, pendingEvents(ctx, last.id), now, "The session ended. Call coach_end for the summary, then say a few words to the learner.");
+    }
     throw new LoopError("No live session for this skill. Call coach_start first.");
   }
   row = holderCheck(ctx, row, now, { attach: true }).row;
@@ -1143,6 +1157,10 @@ export function coachShow(ctx: LasContext, sk: string, screen: unknown): CoachSh
       ctx.store.updateCoachScreen(scr.id, { shownAt: iso(now) });
       d.messageId = scr.id;
       const leaving = res.input.kind === "message" && res.input.leaving;
+      if (leaving && d.queuedId) {
+        ctx.store.deleteCoachScreen(d.queuedId);
+        d.queuedId = undefined;
+      }
       return { patch: leaving ? { leftOnPurpose: true, state: r.state === "live" ? "coach-away" : r.state } : {}, out: { ok: true, errors: [], screenId: scr.id, status: "shown", current, instruction: leaving ? "You left on purpose: the session continues on fallback content. coach_start brings you back." : "Shown over the current screen. Call coach_wait." } };
     }
     return { out: place(ctx, r, d, scr, now) };

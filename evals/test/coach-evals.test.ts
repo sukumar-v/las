@@ -96,7 +96,7 @@ describe("known server bugs (flip to it once fixed)", () => {
   // BUG: packages/server/src/core/director.ts, coachWait (the `!row` branch, line 1022): a coach_wait made after the
   // session ended returns `events: []`, so events still pending (the wrap-up's screen.viewed, a last question) are
   // never delivered. When the session ends during a wait they are returned. eventsDelivered leaves these waits out.
-  it.fails("a coach_wait after the learner finished the wrap-up still delivers the pending events", async () => {
+  it("a coach_wait after the learner finished the wrap-up still delivers the pending events", async () => {
     const lost = [...(await someRuns())].flatMap(([id, run]) => eventsLostAfterEnd(run).map((p) => `${id}: ${p}`));
     expect(lost).toEqual([]);
   });
@@ -104,7 +104,7 @@ describe("known server bugs (flip to it once fixed)", () => {
   // BUG: packages/server/src/core/director.ts, serveNext: a queued coach screen is shown before the presence check,
   // so the screen a coach queued before its leaving message shows after it left (§8: coach-away screens come from
   // the planner's next item; §15 rule 6: the session continues on fallback content). leaverHandsOver leaves it out.
-  it.fails("after a leaving message the next screen is the fallback's, not one the coach queued before", async () => {
+  it("after a leaving message the next screen is the fallback's, not one the coach queued before", async () => {
     const shown = [...(await someRuns())].flatMap(([id, run]) => queuedShownAfterLeaving(run).map((p) => `${id}: ${p}`));
     expect(shown).toEqual([]);
   });
