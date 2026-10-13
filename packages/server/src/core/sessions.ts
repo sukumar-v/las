@@ -330,6 +330,19 @@ export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new
     case "theme.changed":
       ctx.store.logEvent(null, event.type, event);
       return {};
+    // live coach events (docs/design/live-coach.md §6): the director reacts (core/director.ts); here they are only logged
+    case "screen.viewed":
+    case "card.answered":
+    case "learner.asked":
+    case "learner.hesitated":
+    case "session.paused":
+    case "session.resumed":
+    case "session.left":
+    case "plan.chosen": {
+      const s = ctx.store.getSession(event.sessionId);
+      ctx.store.logEvent(s?.enrollmentId ?? null, event.type, event);
+      return { sessionId: event.sessionId };
+    }
   }
 }
 

@@ -79,5 +79,27 @@ CREATE TABLE proof (id TEXT PRIMARY KEY, enrollment_id TEXT NOT NULL, milestone_
 CREATE TABLE metric_history (id INTEGER PRIMARY KEY AUTOINCREMENT, enrollment_id TEXT NOT NULL, metric_id TEXT NOT NULL, value REAL NOT NULL, attempt_id TEXT, created_at TEXT NOT NULL);
 CREATE INDEX metric_history_idx ON metric_history(enrollment_id, metric_id, created_at);
 `
+  },
+  {
+    version: 2,
+    sql: `
+CREATE TABLE live_session (
+  id TEXT PRIMARY KEY, enrollment_id TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'idle',
+  coach_session_id TEXT, client TEXT, coach_pid INTEGER, coach_token TEXT, last_wait_at TEXT, wait_open INTEGER NOT NULL DEFAULT 0,
+  left_on_purpose INTEGER NOT NULL DEFAULT 0, studio_seen_at TEXT, wakes INTEGER NOT NULL DEFAULT 0, last_wake_at TEXT,
+  json TEXT NOT NULL DEFAULT '{}', started_at TEXT NOT NULL, ended_at TEXT
+);
+CREATE INDEX live_session_enrollment ON live_session(enrollment_id, state);
+CREATE TABLE coach_event (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, live_session_id TEXT NOT NULL, type TEXT NOT NULL, json TEXT NOT NULL,
+  created_at TEXT NOT NULL, delivered_at TEXT
+);
+CREATE INDEX coach_event_session ON coach_event(live_session_id, delivered_at);
+CREATE TABLE coach_screen (
+  id TEXT PRIMARY KEY, live_session_id TEXT NOT NULL, kind TEXT NOT NULL, source TEXT NOT NULL, json TEXT NOT NULL,
+  queued_at TEXT NOT NULL, shown_at TEXT, answered_at TEXT
+);
+CREATE INDEX coach_screen_session ON coach_screen(live_session_id, queued_at);
+`
   }
 ];

@@ -141,6 +141,50 @@ export interface Checkin {
   payload: any;
 }
 
+export interface LiveSessionRow {
+  /** = the session's id */
+  id: string;
+  enrollmentId: string;
+  state: "idle" | "live" | "coach-away" | "paused" | "ended";
+  /** the client's conversation id the watcher resumes */
+  coachSessionId?: string;
+  /** client id from the setup CLI's table (claude-code, codex, ...) */
+  client?: string;
+  /** the LAS server process that holds the coach */
+  coachPid?: number;
+  /** a token the holder's process keeps, so a second coach's calls can be told apart */
+  coachToken?: string;
+  lastWaitAt?: string;
+  /** a coach_wait call is open right now */
+  waitOpen: boolean;
+  leftOnPurpose: boolean;
+  studioSeenAt?: string;
+  wakes: number;
+  lastWakeAt?: string;
+  /** the director's own state (current screen, step, overrides...) */
+  data: Record<string, any>;
+  startedAt: string;
+  endedAt?: string;
+}
+export interface CoachEventRow {
+  id: number;
+  liveSessionId: string;
+  type: string;
+  payload: any;
+  createdAt: string;
+  deliveredAt?: string;
+}
+export interface CoachScreenRow {
+  id: string;
+  liveSessionId: string;
+  kind: string;
+  source: "coach" | "fallback";
+  screen: any;
+  queuedAt: string;
+  shownAt?: string;
+  answeredAt?: string;
+}
+
 const bool = (v: any) => v === 1 || v === true;
 
 /** The one source of truth: everything the agent reads back comes from here. */
@@ -526,20 +570,112 @@ export class Store {
     return this.db.all("SELECT * FROM proof WHERE enrollment_id = ? ORDER BY created_at", enrollmentId).map((r) => ({ id: r.id, milestoneId: r.milestone_id, attemptId: r.attempt_id ?? undefined, result: json(r.result, {}), clipRef: r.clip_ref ?? undefined, at: r.created_at }));
   }
 
+  // ---- live coach (docs/design/live-coach.md §8) ----
+  createLiveSession(s: { id: string; enrollmentId: string; state?: LiveSessionRow["state"]; coachSessionId?: string; client?: string; coachPid?: number; coachToken?: string; data?: Record<string, any> }): LiveSessionRow {
+    this.db.run("INSERT INTO live_session (id, enrollment_id, state, coach_session_id, client, coach_pid, coach_token, json, started_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", s.id, s.enrollmentId, s.state ?? "idle", s.coachSessionId, s.client, s.coachPid, s.coachToken, s.data ?? {}, now());
+    return this.getLiveSession(s.id)!;
+  }
+  getLiveSession(id: string): LiveSessionRow | undefined {
+    const r = this.db.get("SELECT * FROM live_session WHERE id = ?", id);
+    return r ? this.liveSession(r) : undefined;
+  }
+  /** the enrollment's live session that hasn't ended, newest first */
+  openLiveSession(enrollmentId: string): LiveSessionRow | undefined {
+    const r = this.db.get("SELECT * FROM live_session WHERE enrollment_id = ? AND state != 'ended' ORDER BY started_at DESC LIMIT 1", enrollmentId);
+    return r ? this.liveSession(r) : undefined;
+  }
+  listLiveSessions(opts: { states?: LiveSessionRow["state"][]; enrollmentId?: string; limit?: number } = {}): LiveSessionRow[] {
+    const where: string[] = [];
+    const params: any[] = [];
+    if (opts.states?.length) {
+      where.push(`state IN (${opts.states.map(() => "?").join(",")})`);
+      params.push(...opts.states);
+    }
+    if (opts.enrollmentId) {
+      where.push("enrollment_id = ?");
+      params.push(opts.enrollmentId);
+    }
+    return this.db.all(`SELECT * FROM live_session ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY started_at DESC LIMIT ?`, ...params, opts.limit ?? 100).map((r) => this.liveSession(r));
+  }
+  updateLiveSession(id: string, patch: Partial<Omit<LiveSessionRow, "id" | "enrollmentId" | "startedAt">>): LiveSessionRow {
+    const s = this.getLiveSession(id);
+    if (!s) throw new Error(`unknown live session ${id}`);
+    const n = { ...s, ...patch };
+    this.db.run(
+      "UPDATE live_session SET state = ?, coach_session_id = ?, client = ?, coach_pid = ?, coach_token = ?, last_wait_at = ?, wait_open = ?, left_on_purpose = ?, studio_seen_at = ?, wakes = ?, last_wake_at = ?, json = ?, ended_at = ? WHERE id = ?",
+      n.state, n.coachSessionId, n.client, n.coachPid, n.coachToken, n.lastWaitAt, n.waitOpen, n.leftOnPurpose, n.studioSeenAt, n.wakes, n.lastWakeAt, n.data, n.endedAt, id
+    );
+    return this.getLiveSession(id)!;
+  }
+  private liveSession(r: Row): LiveSessionRow {
+    return { id: r.id, enrollmentId: r.enrollment_id, state: r.state, coachSessionId: r.coach_session_id ?? undefined, client: r.client ?? undefined, coachPid: r.coach_pid ?? undefined, coachToken: r.coach_token ?? undefined, lastWaitAt: r.last_wait_at ?? undefined, waitOpen: bool(r.wait_open), leftOnPurpose: bool(r.left_on_purpose), studioSeenAt: r.studio_seen_at ?? undefined, wakes: r.wakes ?? 0, lastWakeAt: r.last_wake_at ?? undefined, data: json(r.json, {}), startedAt: r.started_at, endedAt: r.ended_at ?? undefined };
+  }
+
+  /** queues an event for the coach; returns its id (ids rise in order) */
+  queueCoachEvent(liveSessionId: string, type: string, payload: unknown): number {
+    this.db.run("INSERT INTO coach_event (live_session_id, type, json, created_at) VALUES (?, ?, ?, ?)", liveSessionId, type, payload, now());
+    return (this.db.get("SELECT last_insert_rowid() AS id") as Row).id as number;
+  }
+  /** undelivered events in id order; `afterId` narrows to newer ones */
+  pendingCoachEvents(liveSessionId: string, afterId = 0, limit = 200): CoachEventRow[] {
+    return this.db.all("SELECT * FROM coach_event WHERE live_session_id = ? AND delivered_at IS NULL AND id > ? ORDER BY id LIMIT ?", liveSessionId, afterId, limit).map((r) => this.coachEvent(r));
+  }
+  countPendingCoachEvents(liveSessionId: string, types?: string[]): number {
+    const t = types?.length ? ` AND type IN (${types.map(() => "?").join(",")})` : "";
+    return (this.db.get(`SELECT COUNT(*) AS n FROM coach_event WHERE live_session_id = ? AND delivered_at IS NULL${t}`, liveSessionId, ...(types ?? [])) as Row).n as number;
+  }
+  markCoachEventsDelivered(ids: number[], at = now()): void {
+    if (!ids.length) return;
+    this.db.run(`UPDATE coach_event SET delivered_at = ? WHERE id IN (${ids.map(() => "?").join(",")})`, at, ...ids);
+  }
+  listCoachEvents(liveSessionId: string, limit = 500): CoachEventRow[] {
+    return this.db.all("SELECT * FROM coach_event WHERE live_session_id = ? ORDER BY id LIMIT ?", liveSessionId, limit).map((r) => this.coachEvent(r));
+  }
+  private coachEvent(r: Row): CoachEventRow {
+    return { id: r.id, liveSessionId: r.live_session_id, type: r.type, payload: json(r.json, {}), createdAt: r.created_at, deliveredAt: r.delivered_at ?? undefined };
+  }
+
+  addCoachScreen(s: { id?: string; liveSessionId: string; kind: string; source: "coach" | "fallback"; screen: unknown; shownAt?: string }): CoachScreenRow {
+    const id = s.id ?? newId("scr");
+    this.db.run("INSERT INTO coach_screen (id, live_session_id, kind, source, json, queued_at, shown_at) VALUES (?, ?, ?, ?, ?, ?, ?)", id, s.liveSessionId, s.kind, s.source, s.screen, now(), s.shownAt);
+    return this.getCoachScreen(id)!;
+  }
+  getCoachScreen(id: string): CoachScreenRow | undefined {
+    const r = this.db.get("SELECT * FROM coach_screen WHERE id = ?", id);
+    return r ? this.coachScreen(r) : undefined;
+  }
+  updateCoachScreen(id: string, patch: Partial<Pick<CoachScreenRow, "screen" | "shownAt" | "answeredAt" | "source">>): void {
+    const s = this.getCoachScreen(id);
+    if (!s) throw new Error(`unknown coach screen ${id}`);
+    const n = { ...s, ...patch };
+    this.db.run("UPDATE coach_screen SET json = ?, source = ?, shown_at = ?, answered_at = ? WHERE id = ?", n.screen, n.source, n.shownAt, n.answeredAt, id);
+  }
+  deleteCoachScreen(id: string): void {
+    this.db.run("DELETE FROM coach_screen WHERE id = ?", id);
+  }
+  listCoachScreens(liveSessionId: string, limit = 500): CoachScreenRow[] {
+    return this.db.all("SELECT * FROM coach_screen WHERE live_session_id = ? ORDER BY queued_at, rowid LIMIT ?", liveSessionId, limit).map((r) => this.coachScreen(r));
+  }
+  private coachScreen(r: Row): CoachScreenRow {
+    return { id: r.id, liveSessionId: r.live_session_id, kind: r.kind, source: r.source, screen: json(r.json, {}), queuedAt: r.queued_at, shownAt: r.shown_at ?? undefined, answeredAt: r.answered_at ?? undefined };
+  }
+
   // ---- export and delete ----
   exportAll(scope: { enrollmentId?: string } = {}): Record<string, Row[]> {
-    const tables = ["learner", "skill_model", "enrollment", "theme", "theme_scope", "intake", "intent", "constraints", "milestone", "node_mastery", "review_card", "session", "attempt", "mistake_state", "checkin", "plan_change", "event", "time_log", "dispute", "proof", "metric_history", "setting"];
+    const tables = ["learner", "skill_model", "enrollment", "theme", "theme_scope", "intake", "intent", "constraints", "milestone", "node_mastery", "review_card", "session", "attempt", "mistake_state", "checkin", "plan_change", "event", "time_log", "dispute", "proof", "metric_history", "live_session", "coach_event", "coach_screen", "setting"];
     const out: Record<string, Row[]> = {};
     for (const t of tables) {
       const hasEnrollment = ["intent", "constraints", "milestone", "node_mastery", "review_card", "session", "attempt", "mistake_state", "checkin", "plan_change", "event", "time_log", "dispute", "proof", "metric_history"].includes(t);
-      out[t] = scope.enrollmentId && hasEnrollment ? this.db.all(`SELECT * FROM ${t} WHERE enrollment_id = ?`, scope.enrollmentId) : this.db.all(`SELECT * FROM ${t}`);
+      if (scope.enrollmentId && (t === "coach_event" || t === "coach_screen")) out[t] = this.db.all(`SELECT * FROM ${t} WHERE live_session_id IN (SELECT id FROM live_session WHERE enrollment_id = ?)`, scope.enrollmentId);
+      else out[t] = scope.enrollmentId && (hasEnrollment || t === "live_session") ? this.db.all(`SELECT * FROM ${t} WHERE enrollment_id = ?`, scope.enrollmentId) : this.db.all(`SELECT * FROM ${t}`);
     }
     return out;
   }
   deleteEnrollment(enrollmentId: string): string[] {
     const media = this.db.all("SELECT media_ref FROM attempt WHERE enrollment_id = ? AND media_ref IS NOT NULL", enrollmentId).map((r) => r.media_ref as string);
     this.db.transaction(() => {
-      for (const t of ["intent", "constraints", "milestone", "node_mastery", "review_card", "session", "attempt", "mistake_state", "checkin", "plan_change", "event", "time_log", "dispute", "proof", "metric_history"]) this.db.run(`DELETE FROM ${t} WHERE enrollment_id = ?`, enrollmentId);
+      for (const t of ["coach_event", "coach_screen"]) this.db.run(`DELETE FROM ${t} WHERE live_session_id IN (SELECT id FROM live_session WHERE enrollment_id = ?)`, enrollmentId);
+      for (const t of ["intent", "constraints", "milestone", "node_mastery", "review_card", "session", "attempt", "mistake_state", "checkin", "plan_change", "event", "time_log", "dispute", "proof", "metric_history", "live_session"]) this.db.run(`DELETE FROM ${t} WHERE enrollment_id = ?`, enrollmentId);
       this.db.run("DELETE FROM theme_scope WHERE enrollment_id = ?", enrollmentId);
       this.db.run("DELETE FROM intake WHERE enrollment_id = ?", enrollmentId);
       this.db.run("DELETE FROM enrollment WHERE id = ?", enrollmentId);
@@ -549,7 +685,7 @@ export class Store {
   deleteEverything(): string[] {
     const media = this.db.all("SELECT media_ref FROM attempt WHERE media_ref IS NOT NULL").map((r) => r.media_ref as string);
     this.db.transaction(() => {
-      for (const t of ["intent", "constraints", "milestone", "node_mastery", "review_card", "session", "attempt", "mistake_state", "checkin", "plan_change", "event", "time_log", "dispute", "proof", "metric_history", "theme_scope", "intake", "enrollment", "theme", "skill_model", "push_subscription", "pairing", "setting", "planner_log", "learner"]) this.db.run(`DELETE FROM ${t}`);
+      for (const t of ["intent", "constraints", "milestone", "node_mastery", "review_card", "session", "attempt", "mistake_state", "checkin", "plan_change", "event", "time_log", "dispute", "proof", "metric_history", "coach_event", "coach_screen", "live_session", "theme_scope", "intake", "enrollment", "theme", "skill_model", "push_subscription", "pairing", "setting", "planner_log", "learner"]) this.db.run(`DELETE FROM ${t}`);
     });
     return media;
   }

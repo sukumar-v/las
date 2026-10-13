@@ -12,3 +12,4 @@ export * from "./events.js";
 export * from "./capabilities.js";
 export * from "./validate/skill-model.js";
 export * from "./views.js";
+export * from "./coach.js";
