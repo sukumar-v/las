@@ -14,7 +14,8 @@ export type KnowledgeItem = z.infer<typeof KnowledgeItemSchema>;
 
 export const ItemsSpecSchema = z.object({
   kind: z.literal("items").default("items"),
-  items: z.array(KnowledgeItemSchema).min(1),
+  /** fallback content when only practice drills use the spec (docs/design/live-coach.md §9); probes and proofs need items */
+  items: z.array(KnowledgeItemSchema).default([]),
   /** stop after this many wrong answers in a row (placement quizzes use 2) */
   stop_after_wrong: z.number().int().min(1).max(5).default(2),
   pass: z.string().optional()

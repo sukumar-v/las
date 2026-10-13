@@ -7,6 +7,8 @@ import { activeTheme, readCachedFontCss } from "../core/theme.js";
 import { Router, wrap } from "./router.js";
 import { mountLoopRoutes } from "./loop-routes.js";
 import { mountStudioRoutes } from "./studio-routes.js";
+import { mountLiveRoutes } from "./live-routes.js";
+import { startLivePoller } from "../core/director.js";
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -122,6 +124,7 @@ export function createHttpApp(ctx: LasContext, sink?: EventSink): { server: Serv
   });
   mountStudioRoutes(router, ctx);
   mountLoopRoutes(router, ctx);
+  mountLiveRoutes(router, ctx);
   router.get("/api/models/*", (req, res) => {
     const rel = normalize(req.params["*"]).replace(/^(\.\.[/\\])+/, "");
     const file = resolve(ctx.config.modelsDir, rel);
@@ -156,6 +159,9 @@ export function createHttpApp(ctx: LasContext, sink?: EventSink): { server: Serv
       res.end(JSON.stringify({ error: (e as Error).message }));
     }
   });
+  // changes another process makes to a live session reach this studio's stream (docs/design/live-coach.md §8)
+  const stopPoller = startLivePoller(ctx);
+  server.on("close", stopPoller);
   return { server, router };
 }
 

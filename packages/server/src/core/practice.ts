@@ -9,6 +9,7 @@ import { findByDrill, loadSk, LoopError, nodeMap, type SkState } from "./common.
 import { loadEngines } from "./engines.js";
 import { drillEngine, startingDifficulty, CARD_SECONDS } from "./planner.js";
 import { handleEvent, sessionState, saveSessionState } from "./sessions.js";
+import { coachDrill, liveDrillAnswered } from "./director.js";
 
 const KNOWLEDGE_TYPES = new Set(["choice", "match", "order", "hotspot", "predict-output", "fill"]);
 
@@ -60,7 +61,9 @@ export async function startDrill(ctx: LasContext, drillId: string, opts: { sk?: 
   if (opts.sessionId && !session) throw new LoopError(`Unknown session "${opts.sessionId}".`);
   const st: SkState = session ? loadSk(ctx, session.enrollmentId) : findByDrill(ctx, drillId, opts.sk);
   const sk = st.enrollment.id;
-  const drill = st.model.drills.find((d) => d.id === drillId);
+  // a live coach's knowledge drill with its own items (docs/design/live-coach.md §7)
+  const custom = coachDrill(ctx, session?.id, drillId);
+  const drill = st.model.drills.find((d) => d.id === drillId) ?? custom?.drill;
   if (!drill) throw new LoopError(`"${st.model.name}" has no drill "${drillId}".`);
   const mastery = ctx.store.getMastery(sk);
   const m = Math.min(...drill.nodes.map((n) => mastery.get(n)?.pKnown ?? nodeMap(st.model).get(n)?.bkt.p_init ?? 0));
@@ -69,7 +72,7 @@ export async function startDrill(ctx: LasContext, drillId: string, opts: { sk?: 
   const difficulty = Math.max(0, Math.min(levels - 1, opts.difficulty ?? state?.difficulty[drill.id] ?? startingDifficulty(drill, m)));
   const lv = drill.difficulty?.levels[difficulty];
   const label = lv !== undefined ? `${drill.difficulty!.param}: ${lv}` : drill.title;
-  const items = KNOWLEDGE_TYPES.has(drill.type) ? drillItems(st.model, drill) : undefined;
+  const items = KNOWLEDGE_TYPES.has(drill.type) ? (custom ? { kind: "items" as const, items: custom.items, stop_after_wrong: 2 } : drillItems(st.model, drill)) : undefined;
   if (items) {
     const eng = await loadEngines();
     let history: { itemId: string; correct: boolean }[] = session ? (state!.quiz[drill.id] ?? []) : ctx.store.getSetting<{ itemId: string; correct: boolean }[]>(quizKey(sk, drill.id), []);
@@ -107,10 +110,12 @@ export async function startDrill(ctx: LasContext, drillId: string, opts: { sk?: 
         }
       }
       save([]);
-      const outcome = await handleEvent(ctx, { type: "drill.outcome", sessionId: session?.id, outcome: { drillId: drill.id, nodes: drill.nodes, success, score: accuracy, metrics: { correct, total: history.length, accuracy }, mistakes: [], difficulty } }, now);
+      const outcome = await handleEvent(ctx, { type: "drill.outcome", sessionId: session?.id, outcome: { drillId: drill.id, nodes: drill.nodes, success, score: accuracy, metrics: { correct, total: history.length, accuracy }, mistakes: [], difficulty } }, now, { lastItem: last });
       return { sk, drill, kind: "items", difficulty, label, last, progress: { answered: history.length, correct }, done: true, outcome, studioPath: `/app/drill/${drill.id}?sk=${sk}` };
     }
     save(history);
+    // each answer reaches a live coach as drill.answered; the last one comes with the outcome above
+    if (last) liveDrillAnswered(ctx, session?.id, { drillId: drill.id, itemId: last.itemId, correct: last.correct, difficulty, done: false });
     return { sk, drill, kind: "items", difficulty, label, item: next ? publicItem(next) : undefined, last, progress: { answered: history.length, correct }, done: !next, studioPath: `/app/drill/${drill.id}?sk=${sk}` };
   }
   // performance and interaction drills: a capture in the studio

@@ -54,7 +54,7 @@ describe("validateSkillModel", () => {
   it("enforces word budgets and headline length", () => {
     const m = minimalModel();
     m.mistakes![0].headline = "one two three four five six seven eight nine";
-    m.lessons[0].cards[0].text = "a ".repeat(30).trim();
+    m.lessons[0].cards![0].text = "a ".repeat(30).trim();
     const r = validateSkillModel(m);
     expect(r.errors.filter((e) => e.check === "word-budget").length).toBeGreaterThanOrEqual(2);
   });

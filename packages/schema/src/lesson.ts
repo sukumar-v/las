@@ -63,6 +63,6 @@ export function checkLesson(lesson: LessonSpec): { path: string; message: string
     if (c.type === "sim" && c.sim.prompt) words += countWords(c.sim.prompt);
     if (words > CARD_WORD_BUDGET) issues.push({ path: `cards[${i}]`, message: `${words} words; a card has at most ${CARD_WORD_BUDGET}` });
   });
-  if (lesson.cards[0].type !== "predict") issues.push({ path: "cards[0]", message: "warning: the first card should be a prediction when possible" });
+  if (lesson.cards[0] && lesson.cards[0].type !== "predict") issues.push({ path: "cards[0]", message: "warning: the first card should be a prediction when possible" });
   return issues.filter((i) => !i.message.startsWith("warning"));
 }

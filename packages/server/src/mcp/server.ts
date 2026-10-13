@@ -10,6 +10,7 @@ import { registerTeachTools } from "./tools/teach.js";
 import { registerPracticeTools } from "./tools/practice.js";
 import { registerEvaluateTools } from "./tools/evaluate.js";
 import { registerTrackTools } from "./tools/track.js";
+import { registerCoachTools } from "./tools/coach.js";
 import { registerResources } from "./resources.js";
 import { registerPrompts } from "./prompts.js";
 import { LAS_VERSION } from "../config.js";
@@ -20,7 +21,7 @@ export function createMcpServer(ctx: LasContext): McpServer {
     { name: "learn-any-skill", version: LAS_VERSION },
     {
       instructions:
-        "LAS coaches someone through learning any skill. Follow the learn-any-skill skill: visuals first (call render_* before explaining), never grade raw recordings (only get_analysis), one fix at a time, no silent plan changes, pain means stop, talk to the learner's why. For a new skill: get_capabilities, draft_skill_model, write the model, validate_skill_model until ok, then start_intake. If the learner brings a look: draft_theme, validate_theme, set_theme first."
+        "LAS coaches someone through learning any skill. Follow the learn-any-skill skill: visuals first (call render_* before explaining), never grade raw recordings (only get_analysis), one fix at a time, no silent plan changes, pain means stop, talk to the learner's why. For a new skill: get_capabilities, draft_skill_model, write the model, validate_skill_model until ok, then start_intake. If the learner brings a look: draft_theme, validate_theme, set_theme first. To coach a practice session live: coach_start, then loop coach_wait → coach_show (a heartbeat means call coach_wait again) until coach_end."
     }
   );
   server.server.oninitialized = () => {
@@ -37,6 +38,7 @@ export function createMcpServer(ctx: LasContext): McpServer {
   registerPracticeTools(server, ctx);
   registerEvaluateTools(server, ctx);
   registerTrackTools(server, ctx);
+  registerCoachTools(server, ctx);
   for (const extra of extraRegistrars) extra(server, ctx);
   registerResources(server, ctx);
   registerPrompts(server, ctx);

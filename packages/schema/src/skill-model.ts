@@ -2,7 +2,7 @@ import { z } from "zod";
 import { EngineIdSchema } from "./engines.js";
 import { EngineSpecSchema } from "./specs/index.js";
 import { CaptureSpecSchema } from "./specs/metric.js";
-import { LessonSpecSchema } from "./lesson.js";
+import { CardSchema, LessonSpecSchema } from "./lesson.js";
 import { DrillSchema } from "./drill.js";
 import { FigureSchema } from "./lesson.js";
 
@@ -127,14 +127,24 @@ export const MistakeSchema = z.object({
     min_confidence: z.number().min(0).max(1).default(0.7)
   }),
   severity: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(2),
-  /** the visual explanation under "Why?": a lesson card or a figure */
-  explain: z.union([z.object({ lesson: z.string(), card: z.number().int().min(0).default(0) }), z.object({ figure: FigureSchema })]),
+  /** the visual explanation under "Why?": a lesson card or a figure. Fallback content (live coach §9): without it the Why button is left out */
+  explain: z.union([z.object({ lesson: z.string(), card: z.number().int().min(0).default(0) }), z.object({ figure: FigureSchema })]).optional(),
   fix_drill: z.string(),
   resolved_after: z.number().int().min(1).max(10).default(3),
-  /** headline of 8 words or fewer */
-  headline: short(60)
+  /**
+   * headline of 8 words or fewer. Fallback content (live coach §9): optional; "" when the agent didn't write one,
+   * and the fallback feedback uses the mistake's `name`
+   */
+  headline: z.string().max(60).default("")
 });
 export type Mistake = z.infer<typeof MistakeSchema>;
+
+/**
+ * A lesson in the skill model. Its cards are fallback content (live coach §9): optional, checked whenever present.
+ * A lesson without cards is skipped by the fallback; a live coach writes the cards for this learner.
+ */
+export const ModelLessonSchema = LessonSpecSchema.required({ id: true }).extend({ cards: z.array(CardSchema).max(5).default([]) });
+export type ModelLesson = z.infer<typeof ModelLessonSchema>;
 
 export const WarmupSchema = z.object({
   id,
@@ -195,7 +205,7 @@ export const SkillModelSchema = z.object({
   placement: z.array(PlacementRuleSchema).default([]),
   ladder: z.array(LadderStepSchema).min(4).max(9),
   nodes: z.array(NodeSchema).min(1),
-  lessons: z.array(LessonSpecSchema.required({ id: true })).min(1),
+  lessons: z.array(ModelLessonSchema).min(1),
   drills: z.array(DrillSchema).min(1),
   specs: z.record(z.string(), EngineSpecSchema).prefault({}),
   mistakes: z.array(MistakeSchema).default([]),

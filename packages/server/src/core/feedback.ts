@@ -17,6 +17,11 @@ const humanize = (id: string) => {
   return s ? s[0].toUpperCase() + s.slice(1) : id;
 };
 
+/** The headline for a mistake: the model's fallback headline, else its name, else its id made readable. */
+export function mistakeHeadline(mk: SkillModel["mistakes"][number] | undefined, id: string): string {
+  return mk?.headline?.trim() || mk?.name || humanize(id);
+}
+
 /** The confidence a mistake needs before it is shown: the floor, or the model detector's own if higher. */
 export function floorFor(model: SkillModel, mistakeId: string): number {
   return Math.max(CONFIDENCE_FLOOR, model.mistakes.find((m) => m.id === mistakeId)?.detector.min_confidence ?? 0);
@@ -80,7 +85,8 @@ export function evidenceVisual(model: SkillModel, analysis: Analysis, m?: Analys
 /** The "Why?" visual: the mistake's lesson card or figure from the skill model. */
 export function whyVisual(model: SkillModel, mistakeId: string): { figure?: Figure; card?: Card } | undefined {
   const mk = model.mistakes.find((x) => x.id === mistakeId);
-  if (!mk) return undefined;
+  // fallback content (live coach §9): no explanation means no Why button
+  if (!mk?.explain) return undefined;
   if ("figure" in mk.explain) return { figure: mk.explain.figure };
   const lesson = model.lessons.find((l) => l.id === (mk.explain as { lesson: string }).lesson);
   const card = lesson?.cards[(mk.explain as { card: number }).card] ?? lesson?.cards[0];
@@ -131,7 +137,8 @@ export function buildFeedback(ctx: LasContext, attemptId: string, opts: { markCo
     const s = states.get(top.mistake.id);
     if (s && (s.state === "detected" || s.state === "resurfaced")) ctx.store.setMistakeState({ ...s, state: "coached" });
   }
-  const headline = reRecord ? "Let's record that again" : top ? (mk?.headline ?? humanize(top.mistake.id)) : (analysis.praise?.label ?? "Clean attempt");
+  // a model without a fallback headline uses the mistake's name (live coach §9): never invented text
+  const headline = reRecord ? "Let's record that again" : top ? mistakeHeadline(mk, top.mistake.id) : (analysis.praise?.label ?? "Clean attempt");
   return {
     attemptId: attempt.id,
     sk: st.enrollment.id,

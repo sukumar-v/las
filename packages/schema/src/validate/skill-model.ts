@@ -92,8 +92,17 @@ export function validateSkillModel(input: unknown, capabilities?: Capabilities |
     if ((s.kind === "task" || s.kind === "sensor" || s.kind === "game" || s.kind === "self-report" || s.kind === "items" || s.kind === "rubric") && s.pass) safeParseExpr(s.pass, `specs.${id}.pass`, errors, "expr");
   }
 
+  // Specs that probes and proofs read need their items (scaffold); a practice-only items spec may leave them to the coach (fallback content, live coach §9)
+  const scaffoldSpecs = new Set<string>([...m.probes.flatMap((p) => (p.spec ? [p.spec] : [])), ...m.ladder.flatMap((s) => [s.proof?.spec, s.proof?.fallback_spec].filter((x): x is string => !!x))]);
+  for (const [id, s] of specs) {
+    if (s.kind !== "items" || s.items.length) continue;
+    if (scaffoldSpecs.has(id)) err(`specs.${id}.items`, "spec", "a level check or proof reads this spec: it needs items");
+    else warn(`specs.${id}.items`, "fallback", `spec "${id}" has no items: with no coach, drills that use it are skipped`);
+  }
+
   // Lessons: word budget, sim cards checked
   m.lessons.forEach((l, i) => {
+    if (!l.cards.length) warn(`lessons[${i}].cards`, "fallback", `lesson "${l.id}" has no cards: with no coach, the session skips it`);
     for (const issue of checkLesson(l)) err(`lessons[${i}].${issue.path}`, "word-budget", issue.message);
     l.cards.forEach((c, k) => {
       if (c.type === "sim") for (const issue of checkSimSpec(c.sim)) err(`lessons[${i}].cards[${k}].sim.${issue.path}`, "spec", issue.message);
@@ -109,7 +118,7 @@ export function validateSkillModel(input: unknown, capabilities?: Capabilities |
     if (d.prompt) {
       words += countWords(d.prompt);
       if (countWords(d.prompt) > 25) err(`drills[${i}].prompt`, "word-budget", "25 words or fewer");
-    }
+    } else warn(`drills[${i}].prompt`, "fallback", `drill "${d.id}" has no prompt: with no coach, the studio shows its title`);
     if (needEngine !== "knowledge" || d.spec) {
       if (!d.spec) {
         if (needEngine !== "knowledge" && needEngine !== "interaction") err(`drills[${i}].spec`, "spec", `a "${d.type}" drill needs a ${needEngine} spec`);
@@ -209,12 +218,15 @@ export function validateSkillModel(input: unknown, capabilities?: Capabilities |
   m.mistakes.forEach((x, i) => {
     for (const n of x.nodes) if (!nodeIds.has(n)) err(`mistakes[${i}].nodes`, "refs", `unknown node "${n}"`);
     if (!drillIds.has(x.fix_drill)) err(`mistakes[${i}].fix_drill`, "refs", `unknown drill "${x.fix_drill}"`);
-    if ("lesson" in x.explain) {
+    if (!x.explain) warn(`mistakes[${i}].explain`, "fallback", `mistake "${x.id}" has no explain: the fallback feedback leaves out the Why button`);
+    else if ("lesson" in x.explain) {
       const ex = x.explain;
       const lesson = m.lessons.find((l) => l.id === ex.lesson);
       if (!lesson) err(`mistakes[${i}].explain.lesson`, "refs", `unknown lesson "${ex.lesson}"`);
+      else if (!lesson.cards.length) warn(`mistakes[${i}].explain.card`, "fallback", `lesson "${lesson.id}" has no cards yet: the fallback feedback leaves out the Why button`);
       else if (ex.card >= lesson.cards.length) err(`mistakes[${i}].explain.card`, "refs", `lesson "${lesson.id}" has ${lesson.cards.length} cards`);
     }
+    if (!x.headline.trim()) warn(`mistakes[${i}].headline`, "fallback", `mistake "${x.id}" has no headline: the fallback feedback will use its name`);
     if (!engines.has(x.engine)) err(`mistakes[${i}].engine`, "engines", `"${x.engine}" is not in model.engines`);
     safeParseExpr(x.detector.when, `mistakes[${i}].detector.when`, errors, "expr");
     if (countWords(x.headline) > FEEDBACK_HEADLINE_BUDGET) err(`mistakes[${i}].headline`, "word-budget", `${FEEDBACK_HEADLINE_BUDGET} words or fewer`);

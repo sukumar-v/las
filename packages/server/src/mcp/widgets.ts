@@ -30,7 +30,8 @@ export type ViewName =
   | "theme-preview"
   | "capabilities"
   | "plan"
-  | "route";
+  | "route"
+  | "coach";
 
 /**
  * MCP Apps protocol constants the fallback widget speaks (from @modelcontextprotocol/ext-apps spec.types:

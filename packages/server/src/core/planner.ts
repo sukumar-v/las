@@ -274,7 +274,7 @@ function shortAlloc(kinds: BlockKind[]): Record<BlockKind, number> {
 function practiceReason(c: Candidate, mistakes: ReturnType<typeof mistakeMap>): string {
   const w = { mastery: WEIGHTS.mastery * c.parts.mastery, mistake: WEIGHTS.mistake * c.parts.mistake, mix: WEIGHTS.mix * c.parts.mix, relevance: WEIGHTS.relevance * c.parts.relevance };
   const top = (Object.keys(w) as (keyof typeof w)[]).reduce((a, b) => (w[b] > w[a] ? b : a));
-  if (top === "mistake" && c.topMistake) return `Your last attempt showed: ${lc1(mistakes.get(c.topMistake)?.headline ?? c.topMistake)}.`;
+  if (top === "mistake" && c.topMistake) return `Your last attempt showed: ${lc1(mistakes.get(c.topMistake)?.headline || mistakes.get(c.topMistake)?.name || c.topMistake)}.`;
   if (top === "mix" && c.category) return `You've had less ${lc1(c.category)} than planned these two weeks.`;
   if (top === "relevance") return `Your milestone needs ${lc1(c.name)}.`;
   return `${c.name} is the biggest gap between you and your milestone.`;
@@ -381,7 +381,8 @@ export function planSession(ctx: LasContext, sk: string, opts: PlanOptions = {})
   if (d.learn) {
     const n = nodes.get(d.learn)!;
     const lesson = model.lessons.find((l) => l.id === n.lesson);
-    if (lesson) items.learn.push({ type: "lesson", lessonId: lesson.id, title: lesson.title, cards: lesson.cards, nodes: lesson.nodes.length ? lesson.nodes : [n.id] });
+    // a lesson without cards (fallback content left to the live coach) isn't served on its own
+    if (lesson?.cards.length) items.learn.push({ type: "lesson", lessonId: lesson.id, title: lesson.title, cards: lesson.cards, nodes: lesson.nodes.length ? lesson.nodes : [n.id] });
   }
   for (const p of d.practice) {
     const drill = drills.get(p.drillId)!;
@@ -403,6 +404,12 @@ export function planSession(ctx: LasContext, sk: string, opts: PlanOptions = {})
     }
   }
   const blocks: SessionBlock[] = d.blocks.map((b) => ({ ...b, items: items[b.kind] }));
+  if (d.learn && !items.learn.length) {
+    const n = nodes.get(d.learn)!;
+    const lesson = model.lessons.find((l) => l.id === n.lesson);
+    const lb = blocks.find((b) => b.kind === "learn");
+    if (lb) lb.lesson = { lessonId: lesson?.id ?? n.lesson, title: lesson?.title ?? n.name, nodes: lesson?.nodes.length ? lesson.nodes : [n.id] };
+  }
   const n = sessions.filter((s) => s.status === "done").length + 1;
   const focusName = d.focus ? (nodes.get(d.focus)?.name ?? d.focus) : "Review";
   const plan: SessionPlan = {

@@ -18,6 +18,7 @@ import { planMix } from "./route.js";
 import { RECOVERY_CATEGORY } from "./rules.js";
 import { loopSettings } from "./settings.js";
 import { sessionSummary } from "./progress.js";
+import { coachDrill, liveAnalyzed, liveCompleted, liveDrillAnswered, livePain, onStudioEvent } from "./director.js";
 
 /** In-session difficulty (§2 rules): up one level after 3 successes in a row, down one after 2 misses. */
 export const UP_AFTER = 3;
@@ -142,7 +143,11 @@ export function processAnalysis(ctx: LasContext, attemptId: string, analysis: An
   ctx.store.setAttemptAnalysis(attemptId, analysis);
   // a level-check attempt during onboarding belongs to the intake until the enrollment exists
   if (!ctx.store.getEnrollment(attempt.enrollmentId)) return { stored: true };
-  if (repeat) return { feedback: buildFeedback(ctx, attemptId), repeat: true };
+  if (repeat) {
+    // a re-grade (a rubric graded after "grading pending") still reaches a live coach
+    liveAnalyzed(ctx, attempt, analysis);
+    return { feedback: buildFeedback(ctx, attemptId), repeat: true };
+  }
   const st = loadSk(ctx, attempt.enrollmentId);
   for (const km of st.model.key_metrics) {
     const m = analysis.metrics[km.metric];
@@ -160,6 +165,7 @@ export function processAnalysis(ctx: LasContext, attemptId: string, analysis: An
   const proof = attempt.kind === "proof" ? recordProofResult(ctx, ctx.store.getAttempt(attemptId)!, analysis, now) : undefined;
   checkPlateau(ctx, st, now);
   ensureCheckins(ctx, st.enrollment.id, now);
+  liveAnalyzed(ctx, attempt, analysis, proof);
   return { feedback: buildFeedback(ctx, attemptId), proof, mastery };
 }
 
@@ -239,8 +245,8 @@ function sessionForEvent(ctx: LasContext, sessionId: string) {
   return s;
 }
 
-/** Every studio event goes through here (POST /api/events, and tools that act like the studio). */
-export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new Date()): Promise<Record<string, unknown>> {
+/** Every studio event goes through here (POST /api/events, and tools that act like the studio). `lastItem`: the knowledge item whose answer ended a drill. */
+export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new Date(), opts: { lastItem?: { itemId: string; correct: boolean } } = {}): Promise<Record<string, unknown>> {
   switch (event.type) {
     case "session.started": {
       const s = sessionForEvent(ctx, event.sessionId);
@@ -251,7 +257,9 @@ export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new
     case "session.completed": {
       const s = sessionForEvent(ctx, event.sessionId);
       ctx.store.logEvent(s.enrollmentId, event.type, event);
-      return completeSession(ctx, s.id, event.minutes, event.at, now);
+      const done = completeSession(ctx, s.id, event.minutes, event.at, now);
+      liveCompleted(ctx, s.id);
+      return done;
     }
     case "block.completed": {
       const s = sessionForEvent(ctx, event.sessionId);
@@ -267,8 +275,10 @@ export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new
       const st = session ? loadSk(ctx, session.enrollmentId) : findByDrill(ctx, o.drillId);
       const sk = st.enrollment.id;
       ctx.store.logEvent(sk, event.type, event);
-      const drill = drillMap(st.model).get(o.drillId);
+      // a knowledge drill a live coach brought its own items for counts like the model's own
+      const drill = drillMap(st.model).get(o.drillId) ?? coachDrill(ctx, session?.id, o.drillId)?.drill;
       if (!drill) throw new LoopError(`"${st.model.name}" has no drill "${o.drillId}".`);
+      const pre = ctx.store.getMastery(sk);
       const mastery = observe(ctx, st, o.nodes.length ? o.nodes : drill.nodes, o.success);
       const levels = drill.difficulty?.levels.length ?? 1;
       let state: SessionState;
@@ -282,7 +292,20 @@ export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new
       updateMistakes(ctx, st, drillEngine(st.model, drill), o.mistakes, o.nodes.length ? o.nodes : drill.nodes, now);
       ensureCheckins(ctx, sk, now);
       const lv = drill.difficulty?.levels[step.level];
-      return { difficulty: step.level, label: lv !== undefined ? `${drill.difficulty!.param}: ${lv}` : undefined, changed: step.changed ?? null, mastery };
+      const result = { difficulty: step.level, label: lv !== undefined ? `${drill.difficulty!.param}: ${lv}` : undefined, changed: step.changed ?? null, mastery };
+      liveDrillAnswered(ctx, session?.id, {
+        drillId: drill.id,
+        itemId: opts.lastItem?.itemId,
+        correct: opts.lastItem?.correct,
+        success: o.success,
+        score: o.score,
+        difficulty: step.level,
+        changed: step.changed ?? null,
+        mastery: Object.entries(mastery).map(([nodeId, after]) => ({ nodeId, before: Math.round((pre.get(nodeId)?.pKnown ?? 0) * 1000) / 1000, after })),
+        done: true,
+        outcome: o as unknown as Record<string, unknown>
+      });
+      return result;
     }
     case "review.graded": {
       const card = ctx.store.getReviewCard(event.cardId);
@@ -314,7 +337,9 @@ export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new
     case "pain.reported": {
       const st = loadSk(ctx, event.sk);
       ctx.store.logEvent(st.enrollment.id, event.type, event);
-      return reportPainState(ctx, st.enrollment.id, event.area, event.level, now);
+      const pain = reportPainState(ctx, st.enrollment.id, event.area, event.level, now);
+      livePain(ctx, st.enrollment.id, event.area, event.level, pain.cap, pain.stopToday);
+      return pain;
     }
     case "checkin.answered": {
       const c = ctx.store.getCheckin(event.checkinId);
@@ -330,7 +355,7 @@ export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new
     case "theme.changed":
       ctx.store.logEvent(null, event.type, event);
       return {};
-    // live coach events (docs/design/live-coach.md §6): the director reacts (core/director.ts); here they are only logged
+    // live coach events (docs/design/live-coach.md §6): the director reacts and queues them for the coach (core/director.ts)
     case "screen.viewed":
     case "card.answered":
     case "learner.asked":
@@ -341,7 +366,7 @@ export async function handleEvent(ctx: LasContext, event: StudioEvent, now = new
     case "plan.chosen": {
       const s = ctx.store.getSession(event.sessionId);
       ctx.store.logEvent(s?.enrollmentId ?? null, event.type, event);
-      return { sessionId: event.sessionId };
+      return { sessionId: event.sessionId, ...(await onStudioEvent(ctx, event)) };
     }
   }
 }

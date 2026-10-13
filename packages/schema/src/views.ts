@@ -108,6 +108,8 @@ export interface SessionBlock {
   title: string;
   /** what the block holds */
   items: SessionItem[];
+  /** a learn block whose lesson has no cards yet (fallback content, live coach §9): what a live coach is advised to teach */
+  lesson?: { lessonId: string; title: string; nodes: string[] };
 }
 
 export type SessionItem =
@@ -116,7 +118,12 @@ export type SessionItem =
   | { type: "lesson"; lessonId: string; title: string; cards: Card[]; nodes: string[] }
   | { type: "drill"; drill: Drill; difficulty: number; label: string }
   | { type: "capture"; attemptSpecId: string; engine: EngineId; specId: string; prompt: string; how?: string; drillId?: string; kind: "perform" | "proof" | "rehearsal"; angle?: string; durationS?: number }
-  | { type: "wrapup" };
+  /** `summary` is set on a live wrap-up screen (the coach's praise and one fix over the server's summary) */
+  | { type: "wrapup"; summary?: SummaryView }
+  /** a live feedback screen (docs/design/live-coach.md §7) */
+  | { type: "feedback"; view: FeedbackView }
+  /** the learner paused a live session */
+  | { type: "pause"; pausedAt: string };
 
 export interface SessionPlan {
   sessionId: string;
@@ -172,6 +179,8 @@ export interface SummaryView {
   praise?: string;
   next: { title: string; focus: string; when?: string };
   metric?: { label: string; before?: number; after?: number; unit: string };
+  /** a live coach's note on the next session */
+  nextNote?: string;
 }
 
 export interface ProofResultView {

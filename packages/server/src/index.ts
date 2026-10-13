@@ -19,3 +19,7 @@ export { logExternal, reportPain, revisitWhy, exportData, deleteData } from "./c
 export { buildFeedback } from "./core/feedback.js";
 export { planView, routeView } from "./core/route.js";
 export { mountLoopRoutes } from "./http/loop-routes.js";
+export { mountLiveRoutes } from "./http/live-routes.js";
+export { coachStart, coachWait, coachShow, coachEnd, isPresent, coachSettings, liveView, setDirectorClock, startLivePoller, type DirectorClock } from "./core/director.js";
+export { checkScreen } from "./core/coach-screens.js";
+export { discoverClientSession, readClientSessionFiles } from "./core/client-session.js";

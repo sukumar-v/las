@@ -6,7 +6,7 @@
 import { checkLesson, checkSimSpec, FigureSchema, LessonSpecSchema, SimSpecSchema, type Card, type Figure, type LessonSpec, type SimSpec } from "@las/schema";
 import type { LasContext } from "../context.js";
 import { loadSk, LoopError, type SkState } from "./common.js";
-import { evidenceVisual, whyVisual } from "./feedback.js";
+import { evidenceVisual, mistakeHeadline, whyVisual } from "./feedback.js";
 
 const firstIssue = (issues: { path: string; message: string }[]) => issues.map((i) => `${i.path}: ${i.message}`);
 
@@ -90,5 +90,5 @@ export function explainMistake(ctx: LasContext, mistakeId: string, opts: { attem
     const v = evidenceVisual(st.model, attempt.analysis, am);
     learner = { attemptId: attempt.id, frame: v.frame, figure: v.figure, label: am ? undefined : "Not seen in this attempt" };
   }
-  return { sk: st.enrollment.id, mistakeId, name: mk.name, headline: mk.headline, why: whyVisual(st.model, mistakeId), learner, fixDrillId: mk.fix_drill, fixDrillTitle: st.model.drills.find((d) => d.id === mk.fix_drill)?.title };
+  return { sk: st.enrollment.id, mistakeId, name: mk.name, headline: mistakeHeadline(mk, mk.id), why: whyVisual(st.model, mistakeId), learner, fixDrillId: mk.fix_drill, fixDrillTitle: st.model.drills.find((d) => d.id === mk.fix_drill)?.title };
 }

@@ -179,6 +179,24 @@ export interface CoachShowResult {
   status?: "shown" | "queued";
   /** what the studio shows now */
   current?: { id: string; kind: ScreenKind; source: ScreenSource };
+  /** what to do next, for the agent */
+  instruction?: string;
+}
+
+/** `coach_end` result. */
+export interface CoachEndResult {
+  liveSessionId: string;
+  sk: string;
+  summary: SummaryView;
+  instruction: string;
+}
+
+/** `POST /api/live/:sessionId/advance` result. */
+export interface LiveAdvanceResult {
+  screen?: CoachScreen;
+  waiting?: true;
+  until?: string;
+  view: LiveView;
 }
 
 // ------------------------------------------------------------------ views (§7)
@@ -230,6 +248,8 @@ export interface LiveSessionState {
   studio: { connected: boolean; lastSeenAt?: string };
   /** which client holds the coach, when two coaches meet (§8) */
   holder?: { client?: string; present: boolean };
+  /** the learner finished the screen and nothing is queued: the fallback shows at `until` (the screen deadline) */
+  waiting?: { since: string; until: string };
 }
 
 export interface CoachWaitResult {
